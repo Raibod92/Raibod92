@@ -89,8 +89,8 @@
         }
 
         @keyframes cursorPulse {
-            0%, 100% { transform: translate(-50%, -50%) scale(1); }
-            50% { transform: translate(-50%, -50%) scale(1.2); }
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
         }
 
         .cursor-outer.click {
@@ -251,11 +251,12 @@
                 0 0 250px rgba(0, 0, 0, 0.7),
                 inset 0 0 120px rgba(0, 255, 65, 0.02);
             animation: cardEntrance 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         @keyframes cardEntrance {
             from {
-                transform: rotateX(15deg) rotateY(-10deg) scale(0.75) translateY(80px);
+                transform: rotateX(5deg) rotateY(-5deg) scale(0.8) translateY(60px);
                 opacity: 0;
                 filter: blur(20px);
             }
@@ -626,7 +627,6 @@
             animation: dotBlink 2.5s ease-in-out infinite;
         }
 
-        .status-dot-mini:nth-child(1) { animation-delay: 0s; }
         .status-item:nth-child(2) .status-dot-mini { animation-delay: 0.5s; }
         .status-item:nth-child(3) .status-dot-mini { animation-delay: 1s; }
 
@@ -1221,7 +1221,7 @@
         }
 
         // ==========================================
-        // 3D TILT EFFECT
+        // 3D TILT EFFECT (FIXED - Smooth & Only on card hover)
         // ==========================================
         const card = document.getElementById('portal-card');
         
@@ -1232,17 +1232,30 @@
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
             
+            // Only tilt when mouse is over the card
+            if (x < 0 || x > rect.width || y < 0 || y > rect.height) {
+                gsap.to(card, {
+                    rotateX: 0,
+                    rotateY: 0,
+                    duration: 1.2,
+                    ease: 'elastic.out(1, 0.4)'
+                });
+                return;
+            }
+            
             const centerX = rect.width / 2;
             const centerY = rect.height / 2;
             
-            const rotateX = (y - centerY) / centerY * -4;
-            const rotateY = (x - centerX) / centerX * 4;
+            // Reduced tilt intensity
+            const rotateX = (y - centerY) / centerY * -2;
+            const rotateY = (x - centerX) / centerX * 2;
             
             gsap.to(card, {
                 rotateX: rotateX,
                 rotateY: rotateY,
-                duration: 0.5,
-                ease: 'power2.out'
+                duration: 0.6,
+                ease: 'power2.out',
+                overwrite: 'auto'
             });
         });
         
@@ -1250,13 +1263,13 @@
             gsap.to(card, {
                 rotateX: 0,
                 rotateY: 0,
-                duration: 0.8,
+                duration: 1.2,
                 ease: 'elastic.out(1, 0.5)'
             });
         });
 
         // ==========================================
-        // LOGIN SYSTEM
+        // LOGIN SYSTEM (FIXED)
         // ==========================================
         const CORRECT_PASSWORD = 'rayan1403';
         
@@ -1266,7 +1279,11 @@
             const input = document.getElementById('access-key');
             
             if (password === CORRECT_PASSWORD) {
-                // Success
+                // ✅ Set auth flags BEFORE redirect
+                localStorage.setItem('codeorbit_auth', 'true');
+                sessionStorage.setItem('codeorbit_just_logged', 'true');
+                
+                // Success UI
                 btn.innerHTML = '<span class="btn-content"><span>✓ ACCESS GRANTED</span></span>';
                 btn.style.background = 'linear-gradient(135deg, #00ff41, #00cc33)';
                 btn.style.boxShadow = '0 0 80px rgba(0,255,65,0.8), 0 0 150px rgba(0,255,65,0.4)';
@@ -1275,6 +1292,7 @@
                 
                 createSuccessExplosion();
                 
+                // Redirect after animation
                 setTimeout(() => {
                     window.location.href = 'dashboard.html';
                 }, 1500);
@@ -1328,11 +1346,9 @@
                 `;
                 
                 document.body.appendChild(particle);
-                
                 setTimeout(() => particle.remove(), 2000);
             }
             
-            // Second wave
             setTimeout(() => {
                 for (let i = 0; i < 50; i++) {
                     const p = document.createElement('div');
