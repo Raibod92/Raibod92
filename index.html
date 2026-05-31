@@ -1,11 +1,459 @@
 <!DOCTYPE html>
-<html lang="fa">
+<html lang="fa" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>تست سایت</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CODEORBIT | مدار کد</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;700;900&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Vazirmatn', sans-serif;
+            background: #0a0a0a;
+            overflow: hidden;
+            height: 100vh;
+            cursor: default;
+        }
+
+        /* === پس‌زمینه ماتریکسی === */
+        #matrix-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        /* === Container اصلی === */
+        .main-container {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        /* === کارت شیشه‌ای === */
+        .glass-card {
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(30px);
+            border: 1px solid rgba(0, 255, 65, 0.3);
+            border-radius: 24px;
+            padding: 50px 40px;
+            width: 450px;
+            box-shadow: 
+                0 0 50px rgba(0, 255, 65, 0.15),
+                inset 0 0 50px rgba(0, 255, 65, 0.05);
+            animation: cardFloat 4s ease-in-out infinite;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .glass-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(
+                transparent,
+                rgba(0, 255, 65, 0.1),
+                transparent,
+                rgba(0, 255, 65, 0.15),
+                transparent
+            );
+            animation: rotate 8s linear infinite;
+        }
+
+        .glass-card::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            right: 2px;
+            bottom: 2px;
+            background: rgba(0, 0, 0, 0.85);
+            border-radius: 22px;
+            z-index: -1;
+        }
+
+        @keyframes rotate {
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes cardFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+
+        /* === لوگو === */
+        .logo-container {
+            text-align: center;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .logo-orbit {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 20px;
+            position: relative;
+        }
+
+        .planet {
+            width: 60px;
+            height: 60px;
+            background: radial-gradient(circle at 30% 30%, #00ff41, #003d0f);
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 
+                0 0 30px rgba(0, 255, 65, 0.6),
+                0 0 60px rgba(0, 255, 65, 0.3),
+                0 0 90px rgba(0, 255, 65, 0.2),
+                inset 0 -10px 20px rgba(0, 0, 0, 0.5);
+            animation: planetPulse 3s ease-in-out infinite;
+        }
+
+        .ring {
+            width: 90px;
+            height: 90px;
+            border: 2px solid rgba(0, 255, 65, 0.4);
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotateX(75deg);
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
+            animation: ringRotate 4s linear infinite;
+        }
+
+        @keyframes planetPulse {
+            0%, 100% { box-shadow: 0 0 30px rgba(0,255,65,0.6), 0 0 60px rgba(0,255,65,0.3); }
+            50% { box-shadow: 0 0 50px rgba(0,255,65,0.9), 0 0 100px rgba(0,255,65,0.5); }
+        }
+
+        @keyframes ringRotate {
+            100% { transform: translate(-50%, -50%) rotateX(75deg) rotateZ(360deg); }
+        }
+
+        /* === عنوان === */
+        .title {
+            font-size: 2.5em;
+            font-weight: 900;
+            text-align: center;
+            background: linear-gradient(180deg, #00ff41 0%, #00cc33 50%, #009926 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: none;
+            filter: drop-shadow(0 0 20px rgba(0, 255, 65, 0.5));
+            letter-spacing: 2px;
+        }
+
+        .subtitle {
+            color: rgba(0, 255, 65, 0.7);
+            text-align: center;
+            font-size: 0.9em;
+            margin-top: 5px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        /* === فرم ورود === */
+        .input-group {
+            position: relative;
+            margin: 25px 0;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 15px 20px;
+            background: rgba(0, 255, 65, 0.03);
+            border: 1px solid rgba(0, 255, 65, 0.3);
+            border-radius: 12px;
+            color: #00ff41;
+            font-family: 'Vazirmatn', sans-serif;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .input-field:focus {
+            border-color: #00ff41;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.2);
+            background: rgba(0, 255, 65, 0.05);
+        }
+
+        .input-field::placeholder {
+            color: rgba(0, 255, 65, 0.3);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #00ff41 0%, #009926 100%);
+            border: none;
+            border-radius: 12px;
+            color: #000;
+            font-family: 'Vazirmatn', sans-serif;
+            font-size: 1.1em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            letter-spacing: 1px;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(0, 255, 65, 0.4);
+        }
+
+        .login-btn:active {
+            transform: translateY(0);
+        }
+
+        .login-btn::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.2), transparent);
+            transform: rotate(45deg);
+            animation: btnShine 3s infinite;
+        }
+
+        @keyframes btnShine {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .signature {
+            color: rgba(0, 255, 65, 0.4);
+            text-align: center;
+            font-size: 0.8em;
+            margin-top: 20px;
+        }
+
+        /* === ذرات شناور === */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: #00ff41;
+            border-radius: 50%;
+            animation: floatUp 4s linear infinite;
+            opacity: 0;
+        }
+
+        @keyframes floatUp {
+            0% { transform: translateY(100vh) scale(0); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100px) scale(1.5); opacity: 0; }
+        }
+
+        /* === Responsive === */
+        @media (max-width: 500px) {
+            .glass-card {
+                width: 90%;
+                padding: 30px 20px;
+            }
+            .title {
+                font-size: 1.8em;
+            }
+        }
+    </style>
 </head>
 <body>
-  <h1>سایت من بالا آمد 🎉</h1>
+    <!-- پس‌زمینه ماتریکسی -->
+    <canvas id="matrix-bg"></canvas>
+
+    <!-- ذرات -->
+    <div class="particles" id="particles"></div>
+
+    <!-- کارت ورود -->
+    <div class="main-container">
+        <div class="glass-card">
+            <div class="logo-container">
+                <div class="logo-orbit">
+                    <div class="planet"></div>
+                    <div class="ring"></div>
+                </div>
+            </div>
+            
+            <h1 class="title">CODEORBIT</h1>
+            <p class="subtitle">┃ کد اربیت ┃ مدار کد ┃</p>
+            
+            <div class="input-group">
+                <input type="password" 
+                       id="password" 
+                       class="input-field" 
+                       placeholder="🔐 رمز عبور کهکشانی">
+            </div>
+            
+            <button class="login-btn" onclick="login()">
+                🚀 ورود به مدار
+            </button>
+            
+            <p class="signature">⚡ مخصوص رایبد ⚡</p>
+        </div>
+    </div>
+
+    <script>
+        // === ماتریکس پس‌زمینه ===
+        const canvas = document.getElementById('matrix-bg');
+        const ctx = canvas.getContext('2d');
+        
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*()<>{}[]|/\\~`';
+        const fontSize = 14;
+        const columns = canvas.width / fontSize;
+        const drops = Array(Math.floor(columns)).fill(1);
+        
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.fillStyle = '#00ff41';
+            ctx.font = `${fontSize}px monospace`;
+            
+            for(let i = 0; i < drops.length; i++) {
+                const text = chars[Math.floor(Math.random() * chars.length)];
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                
+                if(drops[i] * fontSize > canvas.height || Math.random() > 0.99) {
+                    drops[i] = 0;
+                }
+                drops[i]++;
+            }
+        }
+        
+        setInterval(drawMatrix, 50);
+        
+        // === ذرات شناور ===
+        function createParticles() {
+            const container = document.getElementById('particles');
+            for(let i = 0; i < 30; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 4 + 's';
+                particle.style.animationDuration = (3 + Math.random() * 5) + 's';
+                container.appendChild(particle);
+            }
+        }
+        
+        createParticles();
+        
+        // === سیستم ورود ===
+        function login() {
+            const password = document.getElementById('password').value;
+            // رمز: rayan1403
+            if(password === 'rayan1403') {
+                // انفجار ذرات
+                for(let i = 0; i < 20; i++) {
+                    setTimeout(() => {
+                        const p = document.createElement('div');
+                        p.style.cssText = `
+                            position: fixed;
+                            width: 10px;
+                            height: 10px;
+                            background: #00ff41;
+                            border-radius: 50%;
+                            top: 50%;
+                            left: 50%;
+                            z-index: 100;
+                            box-shadow: 0 0 20px #00ff41;
+                            animation: explode ${0.5+Math.random()}s ease-out forwards;
+                        `;
+                        p.style.setProperty('--tx', (Math.random()-0.5)*400 + 'px');
+                        p.style.setProperty('--ty', (Math.random()-0.5)*400 + 'px');
+                        document.body.appendChild(p);
+                        setTimeout(() => p.remove(), 1000);
+                    }, i * 50);
+                }
+                
+                const style = document.createElement('style');
+                style.textContent = `
+                    @keyframes explode {
+                        100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
+                    }
+                `;
+                document.head.appendChild(style);
+                
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 800);
+            } else {
+                // لرزش در صورت رمز اشتباه
+                const card = document.querySelector('.glass-card');
+                card.style.animation = 'none';
+                card.offsetHeight;
+                card.style.animation = 'shake 0.5s ease';
+                
+                const shakeKeyframes = `
+                    @keyframes shake {
+                        0%, 100% { transform: translateX(0); }
+                        10%, 90% { transform: translateX(-10px); }
+                        30%, 70% { transform: translateX(10px); }
+                        50% { transform: translateX(-10px); }
+                    }
+                `;
+                
+                if(!document.getElementById('shake-style')) {
+                    const shakeStyle = document.createElement('style');
+                    shakeStyle.id = 'shake-style';
+                    shakeStyle.textContent = shakeKeyframes;
+                    document.head.appendChild(shakeStyle);
+                }
+                
+                document.getElementById('password').style.borderColor = '#ff0040';
+                document.getElementById('password').style.boxShadow = '0 0 20px rgba(255,0,64,0.5)';
+                setTimeout(() => {
+                    document.getElementById('password').style.borderColor = 'rgba(0,255,65,0.3)';
+                    document.getElementById('password').style.boxShadow = 'none';
+                }, 1000);
+            }
+        }
+        
+        // Enter key login
+        document.getElementById('password').addEventListener('keypress', (e) => {
+            if(e.key === 'Enter') login();
+        });
+        
+        // Resize handler
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+    </script>
 </body>
 </html>
