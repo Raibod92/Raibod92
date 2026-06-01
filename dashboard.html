@@ -21,17 +21,18 @@
             --neon: #00ff41; --neon-glow: rgba(0,255,65,0.8); --neon-soft: rgba(0,255,65,0.08);
             --bg: #010101; --panel: rgba(0,0,0,0.82); --border: rgba(0,255,65,0.2); --border-bright: rgba(0,255,65,0.5);
             --text: #e8ffe8; --dim: rgba(0,255,65,0.5); --danger: #ff1744; --success: #00e676; --info: #00b0ff; --warning: #ffab00;
-            --dark-bg: #0a0a0a; --light-bg: #f5f5f5; --light-text: #1a1a1a;
         }
 
         * { margin:0; padding:0; box-sizing:border-box; }
-        body { font-family:'Vazirmatn',sans-serif; background:var(--bg); color:var(--text); overflow-x:hidden; min-height:100vh; cursor:none; transition:all 0.5s; }
+        body { font-family:'Vazirmatn',sans-serif; background:var(--bg); color:var(--text); overflow-x:hidden; min-height:100vh; cursor:none; transition:background 0.5s,color 0.5s; }
         body.light-mode { background:#e8e8e8; color:#1a1a1a; --bg:#e8e8e8; --panel:rgba(255,255,255,0.9); --border:rgba(0,0,0,0.15); --text:#1a1a1a; --dim:rgba(0,0,0,0.5); --neon-soft:rgba(0,150,50,0.08); }
 
         .cursor-outer { width:30px;height:30px;border:2px solid var(--neon);border-radius:50%;position:fixed;pointer-events:none;z-index:99999;transition:all 0.2s;box-shadow:0 0 25px var(--neon-glow);transform:translate(-50%,-50%);mix-blend-mode:screen; }
         .cursor-inner { width:5px;height:5px;background:var(--neon);border-radius:50%;position:fixed;pointer-events:none;z-index:99999;box-shadow:0 0 12px var(--neon-glow);transform:translate(-50%,-50%); }
         .cursor-outer.hover { width:55px;height:55px;border-color:#fff;box-shadow:0 0 40px var(--neon-glow);mix-blend-mode:difference; }
         .cursor-outer.click { width:18px;height:18px;border-color:#fff;box-shadow:0 0 25px #fff; }
+        .cursor-trail { position:fixed;pointer-events:none;z-index:99998;width:3px;height:3px;background:var(--neon);border-radius:50%;opacity:0;box-shadow:0 0 8px var(--neon-glow);animation:trailFade 0.6s ease-out forwards; }
+        @keyframes trailFade { 0%{opacity:0.7;transform:scale(1);} 100%{opacity:0;transform:scale(0);} }
 
         #three-bg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;}
         #particles-canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:1;pointer-events:none;}
@@ -44,8 +45,8 @@
 
         .app{position:relative;z-index:10;max-width:1400px;margin:0 auto;padding:20px;}
 
-        /* Header */
-        .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px;flex-wrap:wrap;gap:12px;background:var(--panel);backdrop-filter:blur(40px);border:1px solid var(--border);border-radius:20px;padding:18px 24px;box-shadow:0 8px 35px rgba(0,0,0,0.5);}
+        .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px;background:var(--panel);backdrop-filter:blur(40px);border:1px solid var(--border);border-radius:20px;padding:18px 24px;box-shadow:0 8px 35px rgba(0,0,0,0.5);position:relative;overflow:hidden;}
+        .header::before{content:'';position:absolute;top:-30px;right:-30px;width:100px;height:100px;background:var(--neon);border-radius:50%;filter:blur(60px);opacity:0.04;}
         .header h1{font-family:'Orbitron',sans-serif;font-size:1.6em;font-weight:900;background:linear-gradient(180deg,#fff 0%,#b8ffb8 25%,#00ff41 50%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 20px var(--neon-glow));letter-spacing:3px;}
         .header .sub{color:var(--dim);font-size:0.7em;letter-spacing:2px;}
 
@@ -55,22 +56,18 @@
         @keyframes btnGlow{0%,100%{box-shadow:0 0 18px rgba(0,255,65,0.12);}50%{box-shadow:0 0 40px rgba(0,255,65,0.35);}}
         .btn-danger{border-color:var(--danger);color:var(--danger);}
         .btn-danger:hover{background:rgba(255,23,68,0.1);box-shadow:0 0 20px rgba(255,23,68,0.4);}
-        .btn-sm{padding:6px 12px;font-size:0.7em;}
 
-        /* Tabs */
-        .tabs{display:flex;gap:4px;margin-bottom:18px;flex-wrap:wrap;background:var(--panel);backdrop-filter:blur(40px);border:1px solid var(--border);border-radius:16px;padding:6px;}
-        .tab{padding:10px 16px;border-radius:12px;cursor:pointer;transition:all 0.3s;color:var(--dim);font-size:0.75em;font-weight:500;white-space:nowrap;}
+        .tabs{display:flex;gap:3px;margin-bottom:16px;flex-wrap:wrap;background:var(--panel);backdrop-filter:blur(40px);border:1px solid var(--border);border-radius:16px;padding:5px;}
+        .tab{padding:9px 14px;border-radius:11px;cursor:pointer;transition:all 0.3s;color:var(--dim);font-size:0.73em;font-weight:500;white-space:nowrap;}
         .tab:hover{background:var(--neon-soft);color:var(--neon);}
         .tab.active{background:var(--neon-soft);color:var(--neon);border:1px solid var(--border-bright);}
 
-        /* Panels */
-        .panels{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+        .panels{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
         .panel{background:var(--panel);backdrop-filter:blur(40px);border:1px solid var(--border);border-radius:18px;padding:20px;position:relative;overflow:hidden;box-shadow:0 6px 30px rgba(0,0,0,0.4);}
         .panel::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--neon),transparent);opacity:0.4;}
         .panel-title{font-family:'Orbitron',sans-serif;font-size:0.85em;font-weight:700;letter-spacing:1.5px;margin-bottom:14px;}
         .panel-title span{color:var(--neon);text-shadow:0 0 10px var(--neon-glow);}
 
-        /* Upload */
         .upload-zone{border:2px dashed var(--border);border-radius:14px;padding:28px 20px;text-align:center;transition:all 0.4s;cursor:pointer;background:var(--neon-soft);}
         .upload-zone:hover{border-color:var(--neon);background:rgba(0,255,65,0.05);}
         .upload-zone.drag-over{border-color:var(--neon);border-style:solid;background:rgba(0,255,65,0.07);transform:scale(1.02);}
@@ -82,11 +79,9 @@
         .tag{padding:3px 9px;border-radius:12px;background:rgba(0,255,65,0.03);border:1px solid var(--border);font-size:0.58em;font-family:'JetBrains Mono',monospace;color:var(--dim);}
         .tag.exe{background:var(--neon-soft);border-color:var(--neon);color:var(--neon);font-weight:700;}
 
-        /* Note */
         .note-area{width:100%;min-height:90px;background:rgba(0,0,0,0.5);border:1px solid var(--border);border-radius:12px;padding:12px;color:var(--text);font-family:'Vazirmatn','JetBrains Mono',sans-serif;font-size:0.78em;resize:vertical;outline:none;transition:all 0.3s;}
         .note-area:focus{border-color:var(--neon);box-shadow:0 0 20px var(--neon-soft);}
 
-        /* List */
         .list{max-height:350px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;padding-left:2px;}
         .list::-webkit-scrollbar{width:3px;}
         .list::-webkit-scrollbar-thumb{background:var(--neon);border-radius:6px;}
@@ -107,7 +102,6 @@
         .act-btn:hover{background:var(--neon-soft);border-color:var(--neon);color:var(--neon);}
         .act-btn.del:hover{color:var(--danger);border-color:var(--danger);background:rgba(255,23,68,0.1);}
 
-        /* QR Modal */
         .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(10px);z-index:200;display:flex;align-items:center;justify-content:center;animation:fadeIn 0.3s;}
         @keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
         .modal{background:var(--panel);border:1px solid var(--neon);border-radius:18px;padding:24px;max-width:450px;width:90%;box-shadow:0 0 70px rgba(0,255,65,0.1);animation:modalPop 0.4s;}
@@ -116,8 +110,9 @@
         .link-box{background:rgba(0,0,0,0.6);border:1px solid var(--neon);border-radius:10px;padding:11px;font-family:'JetBrains Mono',monospace;color:var(--neon);font-size:0.62em;word-break:break-all;display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;}
         .copy-btn{padding:7px 13px;border-radius:8px;background:var(--neon);color:#000;border:none;cursor:pointer;font-weight:700;font-size:0.75em;white-space:nowrap;}
         .qr-container{display:flex;justify-content:center;padding:10px;background:#fff;border-radius:10px;margin:10px 0;}
+        .password-input{width:100%;padding:10px;background:rgba(0,0,0,0.5);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:0.8em;outline:none;margin-top:8px;}
+        .password-input:focus{border-color:var(--neon);}
 
-        /* Toast */
         .toast-container{position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:300;pointer-events:none;}
         .toast{padding:10px 18px;border-radius:10px;font-weight:600;font-size:0.75em;text-align:center;margin-bottom:4px;backdrop-filter:blur(30px);animation:tIn 0.3s,tOut 0.3s 2s forwards;}
         .toast.success{background:rgba(0,230,118,0.15);border:1px solid var(--success);color:var(--success);}
@@ -129,10 +124,6 @@
         .empty-state{text-align:center;padding:25px;}
         .empty-icon{font-size:2.2em;opacity:0.2;margin-bottom:5px;}
         .empty-text{color:var(--dim);font-size:0.75em;}
-
-        /* Password input for links */
-        .password-input{width:100%;padding:10px;background:rgba(0,0,0,0.5);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:0.8em;outline:none;margin-top:8px;}
-        .password-input:focus{border-color:var(--neon);}
 
         .storage-bar{margin-top:12px;padding:8px 12px;background:rgba(0,0,0,0.4);border-radius:8px;border:1px solid var(--border);}
         .storage-label{display:flex;justify-content:space-between;font-size:0.55em;color:var(--dim);font-family:'Orbitron',sans-serif;letter-spacing:1px;margin-bottom:4px;}
@@ -175,7 +166,7 @@
         </div>
 
         <!-- Tabs -->
-        <div class="tabs">
+        <div class="tabs" id="tabs-nav">
             <div class="tab active" data-tab="upload">⬆ آپلود</div>
             <div class="tab" data-tab="note">📝 یادداشت</div>
             <div class="tab" data-tab="links">🔗 لینک‌ها</div>
@@ -184,10 +175,9 @@
             <div class="tab" data-tab="stats">📊 آمار</div>
         </div>
 
-        <!-- Tab Content -->
-        <div id="tab-content">
-            <!-- Upload Panel -->
-            <div class="panels" id="tab-upload">
+        <!-- Upload + Note (Always together) -->
+        <div id="tab-upload-content">
+            <div class="panels">
                 <div class="panel">
                     <div class="panel-title">⬆ <span>آپلود فایل</span> · لینک عمومی</div>
                     <div class="upload-zone" id="upload-zone">
@@ -214,25 +204,27 @@
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Links List -->
-            <div class="panel" id="tab-links" style="display:none;">
-                <div class="panel-title">🔗 <span>لینک‌های عمومی</span></div>
-                <div class="list" id="links-list">
-                    <div class="empty-state"><div class="empty-icon">⊡</div><div class="empty-text">هنوز لینکی ساخته نشده</div></div>
-                </div>
+        <!-- Links -->
+        <div class="panel" id="tab-links-content" style="display:none;">
+            <div class="panel-title">🔗 <span>لینک‌های عمومی</span></div>
+            <div class="list" id="links-list">
+                <div class="empty-state"><div class="empty-icon">⊡</div><div class="empty-text">هنوز لینکی ساخته نشده</div></div>
             </div>
+        </div>
 
-            <!-- History -->
-            <div class="panel" id="tab-history" style="display:none;">
-                <div class="panel-title">🕐 <span>تاریخچه بازدید</span></div>
-                <div class="list" id="history-list">
-                    <div class="empty-state"><div class="empty-icon">🕐</div><div class="empty-text">هنوز بازدیدی ثبت نشده</div></div>
-                </div>
+        <!-- History -->
+        <div class="panel" id="tab-history-content" style="display:none;">
+            <div class="panel-title">🕐 <span>تاریخچه بازدید</span></div>
+            <div class="list" id="history-list">
+                <div class="empty-state"><div class="empty-icon">🕐</div><div class="empty-text">هنوز بازدیدی ثبت نشده</div></div>
             </div>
+        </div>
 
-            <!-- Live Editor -->
-            <div class="panels" id="tab-editor" style="display:none;">
+        <!-- Editor -->
+        <div id="tab-editor-content" style="display:none;">
+            <div class="panels">
                 <div class="panel">
                     <div class="panel-title">💻 <span>ادیتور زنده</span></div>
                     <textarea class="note-area" id="live-editor" style="min-height:200px;font-family:'JetBrains Mono',monospace;font-size:0.75em;" placeholder="کد HTML/CSS/JS را اینجا بنویسید..."></textarea>
@@ -246,16 +238,16 @@
                     <iframe id="live-preview" style="width:100%;height:250px;border:1px solid var(--border);border-radius:10px;background:#fff;"></iframe>
                 </div>
             </div>
+        </div>
 
-            <!-- Stats -->
-            <div class="panel" id="tab-stats" style="display:none;">
-                <div class="panel-title">📊 <span>آمار</span></div>
-                <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;text-align:center;">
-                    <div><div style="font-family:'Orbitron',sans-serif;font-size:1.5em;color:var(--neon);" id="s-total">0</div><div style="font-size:0.6em;color:var(--dim);">کل فایل‌ها</div></div>
-                    <div><div style="font-family:'Orbitron',sans-serif;font-size:1.5em;color:var(--neon);" id="s-links">0</div><div style="font-size:0.6em;color:var(--dim);">لینک‌ها</div></div>
-                    <div><div style="font-family:'Orbitron',sans-serif;font-size:1.5em;color:var(--neon);" id="s-views">0</div><div style="font-size:0.6em;color:var(--dim);">بازدیدها</div></div>
-                    <div><div style="font-family:'Orbitron',sans-serif;font-size:1.5em;color:var(--neon);" id="s-uptime">99.9%</div><div style="font-size:0.6em;color:var(--dim);">آپتایم</div></div>
-                </div>
+        <!-- Stats -->
+        <div class="panel" id="tab-stats-content" style="display:none;">
+            <div class="panel-title">📊 <span>آمار</span></div>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;text-align:center;">
+                <div><div style="font-family:'Orbitron',sans-serif;font-size:1.5em;color:var(--neon);" id="s-total">0</div><div style="font-size:0.6em;color:var(--dim);">کل فایل‌ها</div></div>
+                <div><div style="font-family:'Orbitron',sans-serif;font-size:1.5em;color:var(--neon);" id="s-links">0</div><div style="font-size:0.6em;color:var(--dim);">لینک‌ها</div></div>
+                <div><div style="font-family:'Orbitron',sans-serif;font-size:1.5em;color:var(--neon);" id="s-views">0</div><div style="font-size:0.6em;color:var(--dim);">بازدیدها</div></div>
+                <div><div style="font-family:'Orbitron',sans-serif;font-size:1.5em;color:var(--neon);" id="s-uptime">99.9%</div><div style="font-size:0.6em;color:var(--dim);">آپتایم</div></div>
             </div>
         </div>
     </div>
@@ -283,11 +275,16 @@
         if(sessionStorage.getItem('codeorbit_just_logged')){localStorage.setItem('codeorbit_auth','true');sessionStorage.removeItem('codeorbit_just_logged');}
 
         // ==========================================
-        // CURSOR
+        // CURSOR + TRAIL
         // ==========================================
         const cO=document.getElementById('cursor-outer'),cI=document.getElementById('cursor-inner');
         let mx=0,my=0;
-        document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cO.style.left=(mx-15)+'px';cO.style.top=(my-15)+'px';cI.style.left=(mx-2.5)+'px';cI.style.top=(my-2.5)+'px';});
+        document.addEventListener('mousemove',e=>{
+            mx=e.clientX;my=e.clientY;
+            cO.style.left=(mx-15)+'px';cO.style.top=(my-15)+'px';
+            cI.style.left=(mx-2.5)+'px';cI.style.top=(my-2.5)+'px';
+            if(Math.random()>0.5){const t=document.createElement('div');t.className='cursor-trail';t.style.left=(mx+(Math.random()-0.5)*6)+'px';t.style.top=(my+(Math.random()-0.5)*6)+'px';document.body.appendChild(t);setTimeout(()=>t.remove(),600);}
+        });
         document.addEventListener('mousedown',()=>cO.classList.add('click'));
         document.addEventListener('mouseup',()=>cO.classList.remove('click'));
         document.querySelectorAll('button,a,.upload-zone,.item,.act-btn,.note-area,.tab').forEach(el=>{el.addEventListener('mouseenter',()=>cO.classList.add('hover'));el.addEventListener('mouseleave',()=>cO.classList.remove('hover'));});
@@ -303,7 +300,7 @@
         sGeo.setAttribute('position',new THREE.BufferAttribute(sPos,3));
         const stars=new THREE.Points(sGeo,new THREE.PointsMaterial({size:0.1,color:0x00ff41,blending:THREE.AdditiveBlending,depthWrite:false,transparent:true,opacity:0.6}));
         scene.add(stars);
-        (function anim(){requestAnimationFrame(anim);stars.rotation.x+=0.00006;stars.rotation.y+=0.0001;renderer.render(scene,camera);})();
+        (function anim(){requestAnimationFrame(anim);stars.rotation.x+=0.00006+(my/innerHeight-0.5)*0.0003;stars.rotation.y+=0.0001+(mx/innerWidth-0.5)*0.0003;renderer.render(scene,camera);})();
 
         // ==========================================
         // PARTICLES
@@ -311,15 +308,17 @@
         const pCanvas=document.getElementById('particles-canvas'),pCtx=pCanvas.getContext('2d');
         pCanvas.width=innerWidth;pCanvas.height=innerHeight;
         const particles=[];
-        for(let i=0;i<50;i++)particles.push({x:Math.random()*innerWidth,y:Math.random()*innerHeight,vx:(Math.random()-0.5)*0.3,vy:(Math.random()-0.5)*0.3,size:Math.random()*2+0.5,opacity:Math.random()*0.3+0.05});
-        function drawP(){pCtx.clearRect(0,0,pCanvas.width,pCanvas.height);particles.forEach(p=>{const dx=mx-p.x,dy=my-p.y,dist=Math.sqrt(dx*dx+dy*dy);if(dist<150){p.vx+=dx/dist*0.03;p.vy+=dy/dist*0.03;}p.x+=p.vx;p.y+=p.vy;p.vx*=0.99;p.vy*=0.99;if(p.x<0)p.x=pCanvas.width;if(p.x>pCanvas.width)p.x=0;if(p.y<0)p.y=pCanvas.height;if(p.y>pCanvas.height)p.y=0;pCtx.beginPath();pCtx.arc(p.x,p.y,p.size,0,Math.PI*2);pCtx.fillStyle=`rgba(0,255,65,${p.opacity})`;pCtx.fill();});requestAnimationFrame(drawP);}
+        for(let i=0;i<60;i++)particles.push({x:Math.random()*innerWidth,y:Math.random()*innerHeight,vx:(Math.random()-0.5)*0.3,vy:(Math.random()-0.5)*0.3,size:Math.random()*2+0.5,opacity:Math.random()*0.3+0.05});
+        function drawP(){pCtx.clearRect(0,0,pCanvas.width,pCanvas.height);
+        for(let i=0;i<particles.length;i++)for(let j=i+1;j<particles.length;j++){const dx=particles[i].x-particles[j].x,dy=particles[i].y-particles[j].y,dist=Math.sqrt(dx*dx+dy*dy);if(dist<100){pCtx.beginPath();pCtx.moveTo(particles[i].x,particles[i].y);pCtx.lineTo(particles[j].x,particles[j].y);pCtx.strokeStyle=`rgba(0,255,65,${0.06*(1-dist/100)})`;pCtx.lineWidth=0.5;pCtx.stroke();}}
+        particles.forEach(p=>{const dx=mx-p.x,dy=my-p.y,dist=Math.sqrt(dx*dx+dy*dy);if(dist<160){p.vx+=dx/dist*0.03;p.vy+=dy/dist*0.03;}p.x+=p.vx;p.y+=p.vy;p.vx*=0.99;p.vy*=0.99;if(p.x<0)p.x=pCanvas.width;if(p.x>pCanvas.width)p.x=0;if(p.y<0)p.y=pCanvas.height;if(p.y>pCanvas.height)p.y=0;pCtx.beginPath();pCtx.arc(p.x,p.y,p.size,0,Math.PI*2);pCtx.fillStyle=`rgba(0,255,65,${p.opacity})`;pCtx.fill();});requestAnimationFrame(drawP);}
         drawP();
 
         // ==========================================
         // ORBS
         // ==========================================
         const orbsLayer=document.getElementById('orbs-layer');
-        for(let i=0;i<5;i++){const orb=document.createElement('div');orb.className='orb';orb.style.cssText=`width:${60+Math.random()*100}px;height:${60+Math.random()*100}px;left:${Math.random()*90}%;top:${Math.random()*90}%;--dur:${6+Math.random()*7}s;--del:${Math.random()*4}s;`;orbsLayer.appendChild(orb);}
+        for(let i=0;i<6;i++){const orb=document.createElement('div');orb.className='orb';orb.style.cssText=`width:${60+Math.random()*100}px;height:${60+Math.random()*100}px;left:${Math.random()*90}%;top:${Math.random()*90}%;--dur:${6+Math.random()*7}s;--del:${Math.random()*4}s;`;orbsLayer.appendChild(orb);}
 
         // ==========================================
         // THEME
@@ -328,48 +327,38 @@
         if(localStorage.getItem('codeorbit_theme')==='light')document.body.classList.add('light-mode');
 
         // ==========================================
-       // TABS (FIXED)
-       // ==========================================
-        document.querySelectorAll('.tab').forEach(tab => {
-        tab.addEventListener('click', function() {
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        this.classList.add('active');
-        
-        var tabName = this.dataset.tab;
-        
-        // Hide all tab contents
-        document.getElementById('tab-upload').style.display = 'none';
-        document.getElementById('tab-links').style.display = 'none';
-        document.getElementById('tab-history').style.display = 'none';
-        document.getElementById('tab-editor').style.display = 'none';
-        document.getElementById('tab-stats').style.display = 'none';
-        
-        // Show selected tab
-        if (tabName === 'upload') {
-            document.getElementById('tab-upload').style.display = 'grid';
-            document.getElementById('tab-links').style.display = 'block';
-        } else if (tabName === 'note') {
-            document.getElementById('tab-upload').style.display = 'grid';
-            document.getElementById('tab-links').style.display = 'block';
-            // Focus on note
-            document.getElementById('quick-note').focus();
-        } else if (tabName === 'links') {
-            document.getElementById('tab-links').style.display = 'block';
-        } else if (tabName === 'history') {
-            document.getElementById('tab-history').style.display = 'block';
-            updateHistoryUI();
-        } else if (tabName === 'editor') {
-            document.getElementById('tab-editor').style.display = 'grid';
-        } else if (tabName === 'stats') {
-            document.getElementById('tab-stats').style.display = 'block';
-            updateStatsUI();
-        }
-    });
-});
+        // TABS - FIXED
+        // ==========================================
+        var allTabContents=['tab-upload-content','tab-links-content','tab-history-content','tab-editor-content','tab-stats-content'];
+        var currentTab='upload';
 
-// Show upload + links by default
-document.getElementById('tab-upload').style.display = 'grid';
-document.getElementById('tab-links').style.display = 'block';
+        function switchTab(tabName){
+            currentTab=tabName;
+            allTabContents.forEach(function(id){var el=document.getElementById(id);if(el)el.style.display='none';});
+            if(tabName==='upload'||tabName==='note'){
+                document.getElementById('tab-upload-content').style.display='block';
+                document.getElementById('tab-links-content').style.display='block';
+            }else if(tabName==='links'){
+                document.getElementById('tab-upload-content').style.display='block';
+                document.getElementById('tab-links-content').style.display='block';
+            }else if(tabName==='history'){
+                document.getElementById('tab-history-content').style.display='block';
+                updateHistoryUI();
+            }else if(tabName==='editor'){
+                document.getElementById('tab-editor-content').style.display='block';
+            }else if(tabName==='stats'){
+                document.getElementById('tab-stats-content').style.display='block';
+                updateStatsUI();
+            }
+            localStorage.setItem('codeorbit_active_tab',tabName);
+            document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');if(t.dataset.tab===tabName)t.classList.add('active');});
+        }
+
+        document.querySelectorAll('.tab').forEach(function(tab){tab.addEventListener('click',function(){switchTab(this.dataset.tab);});});
+
+        var savedTab=localStorage.getItem('codeorbit_active_tab')||'upload';
+        switchTab(savedTab);
+
         // ==========================================
         // OPFS
         // ==========================================
@@ -382,10 +371,10 @@ document.getElementById('tab-links').style.display = 'block';
         // ==========================================
         // INDEXEDDB
         // ==========================================
-        function openDB(){return new Promise((resolve,reject)=>{const req=indexedDB.open('CodeOrbitDB',1);req.onupgradeneeded=e=>{if(!e.target.result.objectStoreNames.contains('files'))e.target.result.createObjectStore('files',{keyPath:'id'});};req.onsuccess=e=>resolve(e.target.result);req.onerror=e=>reject(e.target.error);});}
-        function storeInDB(id,data){return new Promise(resolve=>{openDB().then(db=>{const tx=db.transaction('files','readwrite');tx.objectStore('files').put({id,data,timestamp:Date.now()});tx.oncomplete=()=>{db.close();resolve(true);};tx.onerror=()=>{db.close();resolve(false);};}).catch(()=>resolve(false));});}
-        function getFromDB(id){return new Promise(resolve=>{openDB().then(db=>{if(!db.objectStoreNames.contains('files')){resolve(null);return;}const tx=db.transaction('files','readonly');const req=tx.objectStore('files').get(id);req.onsuccess=()=>resolve(req.result?req.result.data:null);req.onerror=()=>resolve(null);tx.oncomplete=()=>db.close();}).catch(()=>resolve(null));});}
-        function deleteFromDB(id){openDB().then(db=>{const tx=db.transaction('files','readwrite');tx.objectStore('files').delete(id);tx.oncomplete=()=>db.close();}).catch(()=>{});}
+        function openDB(){return new Promise((resolve)=>{const req=indexedDB.open('CodeOrbitDB',1);req.onupgradeneeded=e=>{if(!e.target.result.objectStoreNames.contains('files'))e.target.result.createObjectStore('files',{keyPath:'id'});};req.onsuccess=e=>resolve(e.target.result);req.onerror=()=>resolve(null);});}
+        function storeInDB(id,data){return new Promise(resolve=>{openDB().then(db=>{if(!db){resolve(false);return;}const tx=db.transaction('files','readwrite');tx.objectStore('files').put({id,data,timestamp:Date.now()});tx.oncomplete=()=>{db.close();resolve(true);};tx.onerror=()=>{db.close();resolve(false);};}).catch(()=>resolve(false));});}
+        function getFromDB(id){return new Promise(resolve=>{openDB().then(db=>{if(!db||!db.objectStoreNames.contains('files')){resolve(null);return;}const tx=db.transaction('files','readonly');const req=tx.objectStore('files').get(id);req.onsuccess=()=>resolve(req.result?req.result.data:null);req.onerror=()=>resolve(null);tx.oncomplete=()=>db.close();}).catch(()=>resolve(null));});}
+        function deleteFromDB(id){openDB().then(db=>{if(!db)return;const tx=db.transaction('files','readwrite');tx.objectStore('files').delete(id);tx.oncomplete=()=>db.close();}).catch(()=>{});}
 
         // ==========================================
         // DATA
@@ -401,18 +390,17 @@ document.getElementById('tab-links').style.display = 'block';
         function formatSize(b){if(!b||b===0)return'0 B';if(b<1024)return b+' B';if(b<1048576)return(b/1024).toFixed(1)+' KB';return(b/1048576).toFixed(1)+' MB';}
 
         async function updateUI(){
-            const list=document.getElementById('links-list');
+            var list=document.getElementById('links-list');
             if(shareLinks.length===0){list.innerHTML='<div class="empty-state"><div class="empty-icon">⊡</div><div class="empty-text">هنوز لینکی ساخته نشده</div></div>';}
-            else{list.innerHTML=shareLinks.slice().reverse().map(l=>{const ic=l.type==='python'?'py':l.type==='html'?'html':l.type==='js'?'js':l.type==='note'?'note':'other';const em=l.type==='python'?'🐍':l.type==='html'?'🌐':l.type==='js'?'JS':l.type==='note'?'📝':'📄';const name=l.type==='note'?(l.name.substring(0,40)+'...'):l.name;const lockIcon=linkPasswords[l.id]?'🔒':'';return`<div class="item"><div class="item-icon ${ic}">${em}</div><div class="item-info"><div class="item-name">${lockIcon} ${name}</div><div class="item-meta"><span>${new Date(l.date).toLocaleString('fa-IR')}</span><span>${l.size}</span></div></div><div class="item-actions"><button class="act-btn" onclick="copyLink('${l.id}')">📋</button><button class="act-btn" onclick="openLink('${l.id}')">🔗</button><button class="act-btn" onclick="showQR('${l.id}')">📱</button><button class="act-btn del" onclick="deleteLink('${l.id}')">🗑</button></div></div>`;}).join('');}
-
-            const used=await getOPFSSize();const pct=Math.min(100,Math.round((used/(1024*1024*1024))*100));
+            else{list.innerHTML=shareLinks.slice().reverse().map(l=>{var ic=l.type==='python'?'py':l.type==='html'?'html':l.type==='js'?'js':l.type==='note'?'note':'other';var em=l.type==='python'?'🐍':l.type==='html'?'🌐':l.type==='js'?'JS':l.type==='note'?'📝':'📄';var name=l.type==='note'?(l.name.substring(0,40)+'...'):l.name;var lockIcon=linkPasswords[l.id]?'🔒':'';return'<div class="item"><div class="item-icon '+ic+'">'+em+'</div><div class="item-info"><div class="item-name">'+lockIcon+' '+name+'</div><div class="item-meta"><span>'+new Date(l.date).toLocaleString('fa-IR')+'</span><span>'+l.size+'</span></div></div><div class="item-actions"><button class="act-btn" onclick="copyLink(\''+l.id+'\')">📋</button><button class="act-btn" onclick="openLink(\''+l.id+'\')">🔗</button><button class="act-btn" onclick="showQR(\''+l.id+'\')">📱</button><button class="act-btn del" onclick="deleteLink(\''+l.id+'\')">🗑</button></div></div>';}).join('');}
+            var used=await getOPFSSize();var pct=Math.min(100,Math.round((used/(1024*1024*1024))*100));
             document.getElementById('storage-percent').textContent=pct+'%';document.getElementById('storage-fill').style.width=pct+'%';
         }
 
-        async function updateHistoryUI(){
-            const list=document.getElementById('history-list');
+        function updateHistoryUI(){
+            var list=document.getElementById('history-list');
             if(viewHistory.length===0){list.innerHTML='<div class="empty-state"><div class="empty-icon">🕐</div><div class="empty-text">هنوز بازدیدی ثبت نشده</div></div>';}
-            else{list.innerHTML=viewHistory.slice().reverse().slice(0,20).map(h=>`<div class="item"><div class="item-icon other">👁</div><div class="item-info"><div class="item-name">${h.name||'Unknown'}</div><div class="item-meta"><span>${new Date(h.date).toLocaleString('fa-IR')}</span></div></div></div>`).join('');}
+            else{list.innerHTML=viewHistory.slice().reverse().slice(0,20).map(h=>'<div class="item"><div class="item-icon other">👁</div><div class="item-info"><div class="item-name">'+(h.name||'Unknown')+'</div><div class="item-meta"><span>'+new Date(h.date).toLocaleString('fa-IR')+'</span></div></div></div>').join('');}
         }
 
         function updateStatsUI(){
@@ -424,7 +412,7 @@ document.getElementById('tab-links').style.display = 'block';
         // ==========================================
         // SMART STORE
         // ==========================================
-        async function smartStore(key,data){if(await storeInOPFS(key,data))return true;if(await storeInDB(key,data))return true;try{const compressed=LZString.compressToUTF16(data.content);localStorage.setItem(key,JSON.stringify({...data,content:compressed,compressed:true}));return true;}catch(e){return false;}}
+        async function smartStore(key,data){if(await storeInOPFS(key,data))return true;if(await storeInDB(key,data))return true;try{var compressed=LZString.compressToUTF16(data.content);localStorage.setItem(key,JSON.stringify({name:data.name,content:compressed,language:data.language,date:data.date,compressed:true}));return true;}catch(e){return false;}}
 
         // ==========================================
         // UPLOAD
@@ -438,61 +426,75 @@ document.getElementById('tab-links').style.display = 'block';
 
         function handleFiles(files){
             if(!files||files.length===0){showToast('❌ فایلی انتخاب نشد','error');return;}
-            let ok=0,err=0;const total=files.length,base=location.origin+location.pathname.replace('dashboard.html','');
-            showToast(`⏳ ${total} فایل...`,'info');
-            Array.from(files).forEach(file=>{
-                if(file.size>20*1024*1024){err++;showToast(`⚠️ ${file.name} > ۲۰MB`,'error');if(ok+err===total&&ok===0)finish();return;}
-                const reader=new FileReader();
+            var ok=0,err=0,total=files.length,base=location.origin+location.pathname.replace('dashboard.html','');
+            showToast('⏳ '+total+' فایل...','info');
+            Array.from(files).forEach(function(file){
+                if(file.size>20*1024*1024){err++;showToast('⚠️ '+file.name+' > ۲۰MB','error');if(ok+err===total&&ok===0)finish();return;}
+                var reader=new FileReader();
                 reader.onload=async function(e){
-                    const content=e.target.result;if(!content||content.length===0){err++;if(ok+err===total)finish();return;}
-                    const id='c_'+Date.now()+'_'+Math.random().toString(36).substr(2,9);
-                    const ext=file.name.split('.').pop()?.toLowerCase()||'txt';
-                    const key='codeorbit_shared_'+id;let url;
-                    codes.push({id,name:file.name,size:formatSize(file.size),date:new Date().toISOString(),language:ext.toUpperCase()});
+                    var content=e.target.result;if(!content||content.length===0){err++;if(ok+err===total)finish();return;}
+                    var id='c_'+Date.now()+'_'+Math.random().toString(36).substr(2,9);
+                    var ext=file.name.split('.').pop()?.toLowerCase()||'txt';
+                    var key='codeorbit_shared_'+id,url;
+                    codes.push({id:id,name:file.name,size:formatSize(file.size),date:new Date().toISOString(),language:ext.toUpperCase()});
                     if(content.length<1500){url=base+'runner.html?code='+LZString.compressToEncodedURIComponent(content)+'&type='+ext+'&name='+encodeURIComponent(file.name);}
-                    else{const stored=await smartStore(key,{name:file.name,content,language:ext.toUpperCase(),date:new Date().toISOString()});if(stored){url=base+'runner.html?share='+id;}else{err++;showToast(`❌ ${file.name} - خطا`,'error');if(ok+err===total)finish();return;}}
-                    shareLinks.push({id,name:file.name,url,type:ext==='py'?'python':ext==='html'?'html':ext==='js'?'js':'other',size:formatSize(file.size),date:new Date().toISOString()});
+                    else{var stored=await smartStore(key,{name:file.name,content:content,language:ext.toUpperCase(),date:new Date().toISOString()});if(stored){url=base+'runner.html?share='+id;}else{err++;showToast('❌ '+file.name+' - خطا','error');if(ok+err===total)finish();return;}}
+                    shareLinks.push({id:id,name:file.name,url:url,type:ext==='py'?'python':ext==='html'?'html':ext==='js'?'js':'other',size:formatSize(file.size),date:new Date().toISOString()});
                     ok++;if(ok+err===total)finish();
                 };
-                reader.onerror=()=>{err++;if(ok+err===total)finish();};
+                reader.onerror=function(){err++;if(ok+err===total)finish();};
                 reader.readAsText(file);
             });
-            function finish(){save();if(ok>0){showToast(`✅ ${ok} فایل آپلود شد!`,'success');if(shareLinks.length>0)showLinkModal(shareLinks[shareLinks.length-1]);}else showToast('❌ هیچ فایلی آپلود نشد','error');}
+            function finish(){save();if(ok>0){showToast('✅ '+ok+' فایل آپلود شد!','success');if(shareLinks.length>0)showLinkModal(shareLinks[shareLinks.length-1]);}else showToast('❌ هیچ فایلی آپلود نشد','error');}
         }
 
         // ==========================================
         // NOTE
         // ==========================================
         async function shareNote(){
-            const text=document.getElementById('quick-note').value.trim();
+            var text=document.getElementById('quick-note').value.trim();
             if(!text){showToast('❌ متنی نوشته نشده','error');return;}
-            const id='n_'+Date.now()+'_'+Math.random().toString(36).substr(2,9);
-            const key='codeorbit_shared_'+id;const base=location.origin+location.pathname.replace('dashboard.html','');let url;
+            var id='n_'+Date.now()+'_'+Math.random().toString(36).substr(2,9);
+            var key='codeorbit_shared_'+id,base=location.origin+location.pathname.replace('dashboard.html',''),url;
             if(text.length<1500){url=base+'runner.html?code='+LZString.compressToEncodedURIComponent(text)+'&type=note&name='+encodeURIComponent('یادداشت '+new Date().toLocaleString('fa-IR'));}
-            else{const stored=await smartStore(key,{name:text.substring(0,40),content:text,language:'NOTE',date:new Date().toISOString()});if(stored){url=base+'runner.html?share='+id;}else{showToast('❌ خطا','error');return;}}
-            shareLinks.push({id,name:text.substring(0,40),url,type:'note',size:formatSize(text.length),date:new Date().toISOString()});
-            codes.push({id,name:'Note: '+text.substring(0,25),size:formatSize(text.length),date:new Date().toISOString(),language:'NOTE'});
+            else{var stored=await smartStore(key,{name:text.substring(0,40),content:text,language:'NOTE',date:new Date().toISOString()});if(stored){url=base+'runner.html?share='+id;}else{showToast('❌ خطا','error');return;}}
+            shareLinks.push({id:id,name:text.substring(0,40),url:url,type:'note',size:formatSize(text.length),date:new Date().toISOString()});
+            codes.push({id:id,name:'Note: '+text.substring(0,25),size:formatSize(text.length),date:new Date().toISOString(),language:'NOTE'});
             save();showLinkModal(shareLinks[shareLinks.length-1]);document.getElementById('quick-note').value='';showToast('✅ یادداشت شد!','success');
         }
 
         // ==========================================
         // LIVE PREVIEW
         // ==========================================
-        function livePreview(){const code=document.getElementById('live-editor').value;document.getElementById('live-preview').srcdoc=code;}
+        function livePreview(){document.getElementById('live-preview').srcdoc=document.getElementById('live-editor').value;}
 
         // ==========================================
-        // MODAL & QR
+        // MODAL + QR + PASSWORD
         // ==========================================
-        function showLinkModal(link){document.getElementById('modal-link').textContent=link.url;document.getElementById('link-modal').style.display='flex';document.getElementById('qr-code').innerHTML='';new QRCode(document.getElementById('qr-code'),{text:link.url,width:150,height:150,colorDark:'#000',colorLight:'#fff'});}
-        function showQR(id){const link=shareLinks.find(l=>l.id===id);if(link)showLinkModal(link);}
+        function showLinkModal(link){
+            document.getElementById('modal-link').textContent=link.url;
+            document.getElementById('link-modal').style.display='flex';
+            document.getElementById('qr-code').innerHTML='';
+            new QRCode(document.getElementById('qr-code'),{text:link.url,width:150,height:150,colorDark:'#000',colorLight:'#fff'});
+            document.getElementById('link-password').value=linkPasswords[link.id]||'';
+        }
+        function showQR(id){var link=shareLinks.find(l=>l.id===id);if(link)showLinkModal(link);}
         function copyModalLink(){navigator.clipboard.writeText(document.getElementById('modal-link').textContent).then(()=>showToast('✅ کپی شد','success'));closeModal();}
-        function copyLink(id){const link=shareLinks.find(l=>l.id===id);if(link){navigator.clipboard.writeText(link.url).then(()=>showToast('✅ کپی شد','success'));}}
-        function openLink(id){const link=shareLinks.find(l=>l.id===id);if(link){const pw=linkPasswords[id];if(pw){const input=prompt('🔒 این لینک رمز دارد. رمز را وارد کنید:');if(input!==pw){showToast('❌ رمز اشتباه','error');return;}}viewHistory.push({name:link.name,date:new Date().toISOString()});save();window.open(link.url,'_blank');}}
-        function closeModal(){document.getElementById('link-modal').style.display='none';const pw=document.getElementById('link-password').value;if(pw){const linkUrl=document.getElementById('modal-link').textContent;const id=shareLinks.find(l=>l.url===linkUrl)?.id;if(id){linkPasswords[id]=pw;save();}}document.getElementById('link-password').value='';}
+        function copyLink(id){var link=shareLinks.find(l=>l.id===id);if(link){navigator.clipboard.writeText(link.url).then(()=>showToast('✅ کپی شد','success'));}}
+        function openLink(id){var link=shareLinks.find(l=>l.id===id);if(link){var pw=linkPasswords[id];if(pw){var input=prompt('🔒 این لینک رمز دارد. رمز را وارد کنید:');if(input!==pw){showToast('❌ رمز اشتباه','error');return;}}viewHistory.push({name:link.name,date:new Date().toISOString()});save();window.open(link.url,'_blank');}}
+        function closeModal(){
+            var linkUrl=document.getElementById('modal-link').textContent;
+            var pw=document.getElementById('link-password').value.trim();
+            var link=shareLinks.find(l=>l.url===linkUrl);
+            if(link&&pw){linkPasswords[link.id]=pw;save();showToast('🔒 رمز تنظیم شد','success');}
+            else if(link&&!pw&&linkPasswords[link.id]){delete linkPasswords[link.id];save();showToast('🔓 رمز برداشته شد','info');}
+            document.getElementById('link-modal').style.display='none';
+            document.getElementById('link-password').value='';
+        }
 
-        function deleteLink(id){if(!confirm('⚠️ حذف شود؟'))return;shareLinks=shareLinks.filter(l=>l.id!==id);codes=codes.filter(c=>c.id!==id);const key='codeorbit_shared_'+id;deleteFromOPFS(key);deleteFromDB(key);if(localStorage.getItem(key))localStorage.removeItem(key);delete linkPasswords[id];save();showToast('🗑️ حذف شد','error');}
+        function deleteLink(id){if(!confirm('⚠️ حذف شود؟'))return;shareLinks=shareLinks.filter(l=>l.id!==id);codes=codes.filter(c=>c.id!==id);var key='codeorbit_shared_'+id;deleteFromOPFS(key);deleteFromDB(key);if(localStorage.getItem(key))localStorage.removeItem(key);delete linkPasswords[id];save();showToast('🗑️ حذف شد','error');}
 
-        function showToast(msg,type){type=type||'success';const c=document.getElementById('toast-container'),t=document.createElement('div');t.className='toast '+type;t.textContent=msg;c.appendChild(t);setTimeout(()=>t.remove(),2500);}
+        function showToast(msg,type){type=type||'success';var c=document.getElementById('toast-container'),t=document.createElement('div');t.className='toast '+type;t.textContent=msg;c.appendChild(t);setTimeout(()=>t.remove(),2500);}
         function refreshData(){try{shareLinks=JSON.parse(localStorage.getItem('codeorbit_links')||'[]');codes=JSON.parse(localStorage.getItem('codeorbit_codes')||'[]');viewHistory=JSON.parse(localStorage.getItem('codeorbit_history')||'[]');linkPasswords=JSON.parse(localStorage.getItem('codeorbit_passwords')||'{}');}catch(e){}updateUI();showToast('⟳ بروز شد','info');}
         function logout(){localStorage.removeItem('codeorbit_auth');sessionStorage.clear();location.href='index.html';}
 
@@ -501,7 +503,7 @@ document.getElementById('tab-links').style.display = 'block';
         window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);pCanvas.width=innerWidth;pCanvas.height=innerHeight;});
 
         updateUI();
-        console.log('🌍 CODEORBIT v12 · 10 Features · Commander Raibod');
+        console.log('🌍 CODEORBIT v12 · Commander Raibod · All Systems Ready');
     </script>
 </body>
 </html>
