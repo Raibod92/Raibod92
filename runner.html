@@ -936,20 +936,42 @@
         async function executeCode() {
             const urlParams = new URLSearchParams(location.search);
             const encodedCode = urlParams.get('code');
+            const shareId = urlParams.get('share');
             const codeType = urlParams.get('type') || 'txt';
             const codeName = urlParams.get('name') || 'unnamed';
             
             let codeData;
             
-            if (encodedCode) {
-                // Decode from URL
-                const decoded = LZString.decompressFromEncodedURIComponent(encodedCode);
-                codeData = {
-                    name: codeName,
-                    content: decoded,
-                    language: codeType.toUpperCase(),
-                    size: formatSize(new Blob([decoded]).size)
-                };
+            if (shareId) {
+                // Large file: get from localStorage
+                const tempKey = 'codeorbit_shared_' + shareId;
+                const stored = localStorage.getItem(tempKey);
+                
+                if (stored) {
+                    codeData = JSON.parse(stored);
+                } else {
+                    addLine('╔══════════════════════════════╗', 'error');
+                    addLine('║  ❌ لینک منقضی شده یا وجود ندارد ║', 'error');
+                    addLine('║  لینک‌ها ۲۴ ساعت اعتبار دارند    ║', 'error');
+                    addLine('╚══════════════════════════════╝', 'error');
+                    setStatus('error');
+                    return;
+                }
+            } else if (encodedCode) {
+                // Small file: decode from URL
+                try {
+                    const decoded = LZString.decompressFromEncodedURIComponent(encodedCode);
+                    codeData = {
+                        name: codeName,
+                        content: decoded,
+                        language: codeType.toUpperCase(),
+                        size: formatSize(new Blob([decoded]).size)
+                    };
+                } catch(e) {
+                    addLine('❌ خطا در decode کد', 'error');
+                    setStatus('error');
+                    return;
+                }
             } else {
                 // Fallback: get from sessionStorage
                 codeData = JSON.parse(sessionStorage.getItem('codeorbit_run_code') || 'null');
@@ -962,6 +984,8 @@
                 setStatus('error');
                 return;
             }
+
+            
 
             // Header
             addLine('', 'output');
