@@ -305,7 +305,7 @@
         }
 
         // ==========================================
-        // MAIN FUNCTION (FIXED - FULLY RELIABLE)
+        // MAIN FUNCTION (با ذخیره رمز در خود داده)
         // ==========================================
         async function main() {
             var params = new URLSearchParams(location.search);
@@ -315,47 +315,30 @@
             var codeName = params.get('name') || 'project';
             var codeData = null;
 
-            // 1. OPFS (most reliable, includes _password)
+            // اولویت خواندن: OPFS (دارای _password) -> IndexedDB -> localStorage -> URL
             if(shareId) {
                 codeData = await getFromOPFS('codeorbit_shared_' + shareId);
-            }
-            // 2. IndexedDB
-            if(!codeData && shareId) {
-                codeData = await getFromDB('codeorbit_shared_' + shareId);
-            }
-            // 3. localStorage (legacy, may not have _password)
-            if(!codeData && shareId) {
-                var stored = localStorage.getItem('codeorbit_shared_' + shareId);
-                if(stored) {
-                    try {
-                        codeData = JSON.parse(stored);
-                        if(codeData && codeData.compressed) {
-                            codeData.content = LZString.decompressFromUTF16(codeData.content);
-                        }
-                    } catch(e) {}
+                if(!codeData) codeData = await getFromDB('codeorbit_shared_' + shareId);
+                if(!codeData) {
+                    var stored = localStorage.getItem('codeorbit_shared_' + shareId);
+                    if(stored) {
+                        try {
+                            codeData = JSON.parse(stored);
+                            if(codeData && codeData.compressed) codeData.content = LZString.decompressFromUTF16(codeData.content);
+                        } catch(e) {}
+                    }
                 }
             }
-            // 4. URL encoded (direct sharing)
             if(!codeData && encodedCode) {
                 try {
                     var decoded = LZString.decompressFromEncodedURIComponent(encodedCode);
-                    if(decoded) {
-                        codeData = {
-                            name: decodeURIComponent(codeName),
-                            content: decoded,
-                            language: (codeType === 'note') ? 'NOTE' : codeType.toUpperCase()
-                        };
-                    }
+                    if(decoded) codeData = { name: decodeURIComponent(codeName), content: decoded, language: (codeType === 'note') ? 'NOTE' : codeType.toUpperCase() };
                 } catch(e) {}
             }
-            // 5. sessionStorage (only for editor preview, NOT for shared links)
             if(!codeData && !shareId) {
-                try {
-                    codeData = JSON.parse(sessionStorage.getItem('codeorbit_run_code') || 'null');
-                } catch(e) {}
+                try { codeData = JSON.parse(sessionStorage.getItem('codeorbit_run_code') || 'null'); } catch(e) {}
             }
 
-            // No data
             if(!codeData || !codeData.content) {
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('error-msg').style.display = 'block';
@@ -363,44 +346,46 @@
                 return;
             }
 
-            // 🔒 PASSWORD HANDLING (only for shareId)
+            // 🔒 بررسی رمز (اولویت با _password داخل خود داده است)
+            var password = null;
             if(shareId) {
-                // Retrieve password from dedicated storage
-                var passwords = {};
-                try { passwords = JSON.parse(localStorage.getItem('codeorbit_passwords') || '{}'); } catch(e) {}
-                var pw = passwords[shareId];
-                
-                // If data itself has _password, use that (from OPFS/IndexedDB)
-                if (!pw && codeData && codeData._password) {
-                    pw = codeData._password;
-                }
-                
-                // If password exists but not in current codeData, add it for consistency
-                if(pw && pw.length > 0 && !codeData._password) {
-                    codeData._password = pw;
-                    // Try to update all storages for next time
-                    await storeInOPFS('codeorbit_shared_' + shareId, codeData);
-                    await storeInDB('codeorbit_shared_' + shareId, codeData);
-                    // Also update localStorage if exists
-                    if(localStorage.getItem('codeorbit_shared_' + shareId)) {
-                        var lsCopy = JSON.parse(localStorage.getItem('codeorbit_shared_' + shareId) || '{}');
-                        lsCopy._password = pw;
-                        localStorage.setItem('codeorbit_shared_' + shareId, JSON.stringify(lsCopy));
+                // 1. از خود داده (اگر قبلاً تنظیم شده باشد)
+                if(codeData._password && codeData._password.length > 0) {
+                    password = codeData._password;
+                } else {
+                    // 2. از localStorage.codeorbit_passwords
+                    var passwords = {};
+                    try { passwords = JSON.parse(localStorage.getItem('codeorbit_passwords') || '{}'); } catch(e) {}
+                    password = passwords[shareId];
+                    // اگر رمز در localStorage وجود داشت ولی در داده نبود، آن را به داده اضافه کن تا دفعات بعد نیازی به localStorage نباشد
+                    if(password && password.length > 0 && !codeData._password) {
+                        codeData._password = password;
+                        // به‌روزرسانی در OPFS و IndexedDB برای ماندگاری
+                        await storeInOPFS('codeorbit_shared_' + shareId, codeData);
+                        await storeInDB('codeorbit_shared_' + shareId, codeData);
+                        // همچنین localStorage قدیمی را هم به‌روز کن (اختیاری)
+                        var lsData = localStorage.getItem('codeorbit_shared_' + shareId);
+                        if(lsData) {
+                            try {
+                                var parsed = JSON.parse(lsData);
+                                parsed._password = password;
+                                localStorage.setItem('codeorbit_shared_' + shareId, JSON.stringify(parsed));
+                            } catch(e) {}
+                        }
                     }
                 }
-                
-                if (pw && pw.length > 0) {
-                    // Show password gate
-                    document.getElementById('loading').style.display = 'none';
-                    document.getElementById('password-gate').style.display = 'flex';
-                    document.getElementById('pw-input').focus();
-                    window._codeorbit_pw = pw;
-                    window._codeorbit_data = codeData;
-                    return;
-                }
             }
-            
-            // No password or no shareId -> render immediately
+
+            if(password && password.length > 0) {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('password-gate').style.display = 'flex';
+                document.getElementById('pw-input').focus();
+                window._codeorbit_pw = password;
+                window._codeorbit_data = codeData;
+                return;
+            }
+
+            // بدون رمز یا رمز لازم نیست
             document.getElementById('loading').style.display = 'none';
             renderCode(codeData);
         }
