@@ -16,7 +16,6 @@
 
         :root {
             --neon: #00ff41;
-            --neon-dark: #00cc33;
             --neon-glow: rgba(0, 255, 65, 0.8);
             --neon-soft: rgba(0, 255, 65, 0.08);
             --bg: #010101;
@@ -30,230 +29,75 @@
             --success: #00e676;
             --success-glow: rgba(0, 230, 118, 0.6);
             --info: #00b0ff;
-            --info-glow: rgba(0, 176, 255, 0.6);
             --warning: #ffab00;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Vazirmatn', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; min-height: 100vh; cursor: none; }
 
-        body {
-            font-family: 'Vazirmatn', sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            overflow-x: hidden;
-            min-height: 100vh;
-            cursor: none;
-        }
+        .cursor-outer { width: 30px; height: 30px; border: 2px solid var(--neon); border-radius: 50%; position: fixed; pointer-events: none; z-index: 99999; transition: width 0.2s, height 0.2s; box-shadow: 0 0 25px var(--neon-glow); transform: translate(-50%, -50%); mix-blend-mode: screen; }
+        .cursor-inner { width: 5px; height: 5px; background: var(--neon); border-radius: 50%; position: fixed; pointer-events: none; z-index: 99999; box-shadow: 0 0 12px var(--neon-glow); transform: translate(-50%, -50%); }
+        .cursor-outer.hover { width: 55px; height: 55px; border-color: #fff; box-shadow: 0 0 40px var(--neon-glow); mix-blend-mode: difference; }
+        .cursor-outer.click { width: 18px; height: 18px; border-color: #fff; box-shadow: 0 0 25px #fff, 0 0 50px var(--neon-glow); }
 
-        /* Custom Cursor */
-        .cursor-outer {
-            width: 30px; height: 30px;
-            border: 2px solid var(--neon);
-            border-radius: 50%;
-            position: fixed; pointer-events: none; z-index: 99999;
-            transition: width 0.2s, height 0.2s;
-            box-shadow: 0 0 25px var(--neon-glow);
-            transform: translate(-50%, -50%);
-            mix-blend-mode: screen;
-        }
-        .cursor-inner {
-            width: 5px; height: 5px;
-            background: var(--neon);
-            border-radius: 50%;
-            position: fixed; pointer-events: none; z-index: 99999;
-            box-shadow: 0 0 12px var(--neon-glow);
-            transform: translate(-50%, -50%);
-        }
-        .cursor-outer.hover {
-            width: 55px; height: 55px;
-            border-color: #fff;
-            box-shadow: 0 0 40px var(--neon-glow);
-            mix-blend-mode: difference;
-        }
-        .cursor-outer.click {
-            width: 18px; height: 18px;
-            border-color: #fff;
-            box-shadow: 0 0 25px #fff, 0 0 50px var(--neon-glow);
-        }
-
-        /* Background */
         #three-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
         #particles-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
-        .grid-bg {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-image: linear-gradient(rgba(0,255,65,0.015) 1px, transparent 1px),
-                            linear-gradient(90deg, rgba(0,255,65,0.015) 1px, transparent 1px);
-            background-size: 50px 50px; z-index: 2; pointer-events: none;
-        }
-        .scanlines {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.02) 2px, rgba(0,0,0,0.02) 4px);
-            z-index: 3; pointer-events: none;
-        }
-        .vignette {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.7) 100%);
-            z-index: 4; pointer-events: none;
-        }
+        .grid-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-image: linear-gradient(rgba(0,255,65,0.015) 1px, transparent 1px), linear-gradient(90deg, rgba(0,255,65,0.015) 1px, transparent 1px); background-size: 50px 50px; z-index: 2; pointer-events: none; }
+        .scanlines { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.02) 2px, rgba(0,0,0,0.02) 4px); z-index: 3; pointer-events: none; }
+        .vignette { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.7) 100%); z-index: 4; pointer-events: none; }
         .orbs-layer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 5; pointer-events: none; }
-        .orb {
-            position: absolute; border-radius: 50%;
-            background: radial-gradient(circle, rgba(0,255,65,0.1), transparent 70%);
-            animation: orbFloat var(--dur) ease-in-out infinite;
-            animation-delay: var(--del); filter: blur(30px);
-        }
-        @keyframes orbFloat {
-            0%, 100% { transform: translateY(0) translateX(0) scale(1); opacity: 0.06; }
-            50% { transform: translateY(-60px) translateX(30px) scale(1.5); opacity: 0.15; }
-        }
+        .orb { position: absolute; border-radius: 50%; background: radial-gradient(circle, rgba(0,255,65,0.1), transparent 70%); animation: orbFloat var(--dur) ease-in-out infinite; animation-delay: var(--del); filter: blur(30px); }
+        @keyframes orbFloat { 0%, 100% { transform: translateY(0) translateX(0) scale(1); opacity: 0.06; } 50% { transform: translateY(-60px) translateX(30px) scale(1.5); opacity: 0.15; } }
 
-        /* App */
         .app { position: relative; z-index: 10; max-width: 1300px; margin: 0 auto; padding: 25px; }
 
-        /* Header */
-        .header {
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 28px; flex-wrap: wrap; gap: 18px;
-            background: var(--panel); backdrop-filter: blur(40px);
-            border: 1px solid var(--border); border-radius: 20px;
-            padding: 22px 28px;
-            box-shadow: 0 8px 35px rgba(0,0,0,0.5);
-            position: relative; overflow: hidden;
-        }
-        .header::before {
-            content: ''; position: absolute; top: -40px; right: -40px;
-            width: 140px; height: 140px; background: var(--neon);
-            border-radius: 50%; filter: blur(80px); opacity: 0.04;
-        }
-        .header h1 {
-            font-family: 'Orbitron', sans-serif; font-size: 1.8em; font-weight: 900;
-            background: linear-gradient(180deg, #fff 0%, #b8ffb8 25%, #00ff41 50%);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            background-clip: text; filter: drop-shadow(0 0 20px var(--neon-glow));
-            letter-spacing: 3px;
-        }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; flex-wrap: wrap; gap: 18px; background: var(--panel); backdrop-filter: blur(40px); border: 1px solid var(--border); border-radius: 20px; padding: 22px 28px; box-shadow: 0 8px 35px rgba(0,0,0,0.5); position: relative; overflow: hidden; }
+        .header::before { content: ''; position: absolute; top: -40px; right: -40px; width: 140px; height: 140px; background: var(--neon); border-radius: 50%; filter: blur(80px); opacity: 0.04; }
+        .header h1 { font-family: 'Orbitron', sans-serif; font-size: 1.8em; font-weight: 900; background: linear-gradient(180deg, #fff 0%, #b8ffb8 25%, #00ff41 50%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; filter: drop-shadow(0 0 20px var(--neon-glow)); letter-spacing: 3px; }
         .header .subtitle { color: var(--dim); font-size: 0.75em; margin-top: 4px; letter-spacing: 2px; }
 
-        .btn {
-            padding: 11px 22px; border-radius: 13px;
-            border: 1px solid var(--border); background: rgba(0,0,0,0.7);
-            backdrop-filter: blur(20px); color: var(--text);
-            cursor: pointer; font-family: 'Vazirmatn', sans-serif;
-            font-size: 0.82em; font-weight: 500;
-            transition: all 0.35s cubic-bezier(0.4,0,0.2,1);
-            display: inline-flex; align-items: center; gap: 7px;
-        }
+        .btn { padding: 11px 22px; border-radius: 13px; border: 1px solid var(--border); background: rgba(0,0,0,0.7); backdrop-filter: blur(20px); color: var(--text); cursor: pointer; font-family: 'Vazirmatn', sans-serif; font-size: 0.82em; font-weight: 500; transition: all 0.35s cubic-bezier(0.4,0,0.2,1); display: inline-flex; align-items: center; gap: 7px; }
         .btn:hover { border-color: var(--neon); box-shadow: 0 0 25px var(--neon-soft); transform: translateY(-2px); }
-        .btn-primary {
-            background: linear-gradient(135deg, #001a00 0%, #004d00 40%, #00cc33 100%);
-            border-color: var(--neon); font-weight: 700;
-            box-shadow: 0 0 20px rgba(0,255,65,0.15);
-            animation: btnGlow 3s ease-in-out infinite;
-        }
-        @keyframes btnGlow {
-            0%, 100% { box-shadow: 0 0 20px rgba(0,255,65,0.15); }
-            50% { box-shadow: 0 0 45px rgba(0,255,65,0.4); }
-        }
+        .btn-primary { background: linear-gradient(135deg, #001a00 0%, #004d00 40%, #00cc33 100%); border-color: var(--neon); font-weight: 700; box-shadow: 0 0 20px rgba(0,255,65,0.15); animation: btnGlow 3s ease-in-out infinite; }
+        @keyframes btnGlow { 0%, 100% { box-shadow: 0 0 20px rgba(0,255,65,0.15); } 50% { box-shadow: 0 0 45px rgba(0,255,65,0.4); } }
         .btn-danger { border-color: var(--danger); color: var(--danger); }
         .btn-danger:hover { background: rgba(255,23,68,0.1); box-shadow: 0 0 25px var(--danger-glow); }
 
-        /* Stats */
         .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin-bottom: 28px; }
-        .stat-card {
-            background: var(--panel); backdrop-filter: blur(40px);
-            border: 1px solid var(--border); border-radius: 18px;
-            padding: 22px; text-align: center; position: relative;
-            overflow: hidden; transition: all 0.4s; cursor: pointer;
-        }
-        .stat-card:hover {
-            transform: translateY(-8px); border-color: var(--neon);
-            box-shadow: 0 18px 45px rgba(0,0,0,0.5), 0 0 50px var(--neon-soft);
-        }
-        .stat-card::before {
-            content: ''; position: absolute; top: -35px; right: -35px;
-            width: 100px; height: 100px; background: var(--neon);
-            border-radius: 50%; filter: blur(60px); opacity: 0;
-            transition: opacity 0.4s;
-        }
+        .stat-card { background: var(--panel); backdrop-filter: blur(40px); border: 1px solid var(--border); border-radius: 18px; padding: 22px; text-align: center; position: relative; overflow: hidden; transition: all 0.4s; cursor: pointer; }
+        .stat-card:hover { transform: translateY(-8px); border-color: var(--neon); box-shadow: 0 18px 45px rgba(0,0,0,0.5), 0 0 50px var(--neon-soft); }
+        .stat-card::before { content: ''; position: absolute; top: -35px; right: -35px; width: 100px; height: 100px; background: var(--neon); border-radius: 50%; filter: blur(60px); opacity: 0; transition: opacity 0.4s; }
         .stat-card:hover::before { opacity: 0.06; }
         .stat-icon { font-size: 1.8em; margin-bottom: 8px; position: relative; z-index: 1; }
-        .stat-value {
-            font-family: 'Orbitron', sans-serif; font-size: 2.3em; font-weight: 900;
-            color: var(--neon); text-shadow: 0 0 30px var(--neon-glow);
-            position: relative; z-index: 1;
-        }
-        .stat-label {
-            color: var(--dim); font-size: 0.7em; margin-top: 4px;
-            position: relative; z-index: 1; letter-spacing: 1px;
-        }
+        .stat-value { font-family: 'Orbitron', sans-serif; font-size: 2.3em; font-weight: 900; color: var(--neon); text-shadow: 0 0 30px var(--neon-glow); position: relative; z-index: 1; }
+        .stat-label { color: var(--dim); font-size: 0.7em; margin-top: 4px; position: relative; z-index: 1; letter-spacing: 1px; }
 
-        /* Panels */
         .panels { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 22px; }
-        .panel {
-            background: var(--panel); backdrop-filter: blur(40px);
-            border: 1px solid var(--border); border-radius: 20px;
-            padding: 25px; position: relative; overflow: hidden;
-            box-shadow: 0 8px 35px rgba(0,0,0,0.4);
-        }
-        .panel::after {
-            content: ''; position: absolute; top: 0; left: 0; right: 0;
-            height: 1px; background: linear-gradient(90deg, transparent, var(--neon), transparent);
-            opacity: 0.4;
-        }
-        .panel-title {
-            font-family: 'Orbitron', sans-serif; font-size: 0.95em; font-weight: 700;
-            letter-spacing: 1.5px; margin-bottom: 18px;
-        }
+        .panel { background: var(--panel); backdrop-filter: blur(40px); border: 1px solid var(--border); border-radius: 20px; padding: 25px; position: relative; overflow: hidden; box-shadow: 0 8px 35px rgba(0,0,0,0.4); }
+        .panel::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--neon), transparent); opacity: 0.4; }
+        .panel-title { font-family: 'Orbitron', sans-serif; font-size: 0.95em; font-weight: 700; letter-spacing: 1.5px; margin-bottom: 18px; }
         .panel-title span { color: var(--neon); text-shadow: 0 0 12px var(--neon-glow); }
 
-        /* Upload */
-        .upload-zone {
-            border: 2px dashed var(--border); border-radius: 16px;
-            padding: 38px 28px; text-align: center; transition: all 0.4s;
-            cursor: pointer; background: var(--neon-soft);
-            position: relative; overflow: hidden;
-        }
+        .upload-zone { border: 2px dashed var(--border); border-radius: 16px; padding: 38px 28px; text-align: center; transition: all 0.4s; cursor: pointer; background: var(--neon-soft); position: relative; overflow: hidden; }
         .upload-zone:hover { border-color: var(--neon); background: rgba(0,255,65,0.05); box-shadow: inset 0 0 80px rgba(0,255,65,0.03); }
         .upload-zone.drag-over { border-color: var(--neon); border-style: solid; background: rgba(0,255,65,0.07); transform: scale(1.02); }
         .upload-icon { font-size: 3.5em; position: relative; z-index: 1; animation: floatIcon 3s ease-in-out infinite; }
         @keyframes floatIcon { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-18px); } }
-        .upload-text {
-            font-family: 'Orbitron', sans-serif; font-size: 1.15em;
-            color: var(--neon); margin: 10px 0; letter-spacing: 2px;
-            position: relative; z-index: 1;
-        }
+        .upload-text { font-family: 'Orbitron', sans-serif; font-size: 1.15em; color: var(--neon); margin: 10px 0; letter-spacing: 2px; position: relative; z-index: 1; }
         .upload-hint { color: var(--dim); font-size: 0.75em; position: relative; z-index: 1; }
         .tags { display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; margin-top: 16px; position: relative; z-index: 1; }
-        .tag {
-            padding: 5px 12px; border-radius: 16px;
-            background: rgba(0,255,65,0.03); border: 1px solid var(--border);
-            font-size: 0.62em; font-family: 'JetBrains Mono', monospace; color: var(--dim);
-        }
+        .tag { padding: 5px 12px; border-radius: 16px; background: rgba(0,255,65,0.03); border: 1px solid var(--border); font-size: 0.62em; font-family: 'JetBrains Mono', monospace; color: var(--dim); }
         .tag.exe { background: var(--neon-soft); border-color: var(--neon); color: var(--neon); font-weight: 700; }
-        .limit-badge {
-            display: inline-block; padding: 4px 10px; border-radius: 10px;
-            background: rgba(255,171,0,0.1); border: 1px solid rgba(255,171,0,0.3);
-            color: var(--warning); font-size: 0.65em; margin-top: 10px;
-            font-family: 'Orbitron', sans-serif; letter-spacing: 1px;
-        }
+        .limit-badge { display: inline-block; padding: 4px 10px; border-radius: 10px; background: rgba(255,171,0,0.1); border: 1px solid rgba(255,171,0,0.3); color: var(--warning); font-size: 0.65em; margin-top: 10px; font-family: 'Orbitron', sans-serif; letter-spacing: 1px; }
 
-        /* List */
         .list { max-height: 420px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-left: 3px; }
         .list::-webkit-scrollbar { width: 4px; }
         .list::-webkit-scrollbar-track { background: transparent; }
         .list::-webkit-scrollbar-thumb { background: var(--neon); border-radius: 8px; }
 
-        .item {
-            display: flex; align-items: center; gap: 12px; padding: 14px;
-            border-radius: 14px; background: rgba(0,255,65,0.01);
-            border: 1px solid transparent; transition: all 0.35s;
-        }
+        .item { display: flex; align-items: center; gap: 12px; padding: 14px; border-radius: 14px; background: rgba(0,255,65,0.01); border: 1px solid transparent; transition: all 0.35s; }
         .item:hover { background: var(--neon-soft); border-color: var(--border); box-shadow: 0 6px 25px rgba(0,0,0,0.3); transform: translateX(-3px); }
-        .item-icon {
-            width: 42px; height: 42px; border-radius: 12px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.2em; flex-shrink: 0;
-        }
+        .item-icon { width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2em; flex-shrink: 0; }
         .item-icon.html { background: linear-gradient(135deg, #2d1513, #4a1a1a); border: 1px solid #e44d26; }
         .item-icon.py { background: linear-gradient(135deg, #1a3d5c, #306998); }
         .item-icon.js { background: #2d2d1a; border: 1px solid #f7df1e; }
@@ -263,53 +107,20 @@
         .item-meta { font-size: 0.62em; color: var(--dim); font-family: 'Orbitron', sans-serif; display: flex; gap: 10px; }
         .item-actions { display: flex; gap: 5px; }
 
-        .act-btn {
-            width: 34px; height: 34px; border-radius: 9px;
-            border: 1px solid var(--border); background: transparent;
-            color: var(--dim); cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
-            transition: all 0.3s; font-size: 0.95em;
-        }
+        .act-btn { width: 34px; height: 34px; border-radius: 9px; border: 1px solid var(--border); background: transparent; color: var(--dim); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s; font-size: 0.95em; }
         .act-btn:hover { background: var(--neon-soft); border-color: var(--neon); color: var(--neon); }
         .act-btn.del:hover { color: var(--danger); border-color: var(--danger); background: rgba(255,23,68,0.1); }
 
-        /* Modal */
-        .modal-overlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.85);
-            backdrop-filter: blur(10px); z-index: 200;
-            display: flex; align-items: center; justify-content: center;
-            animation: fadeIn 0.3s ease;
-        }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 200; display: flex; align-items: center; justify-content: center; animation: fadeIn 0.3s ease; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .modal {
-            background: var(--panel); border: 1px solid var(--neon);
-            border-radius: 20px; padding: 30px; max-width: 520px; width: 92%;
-            box-shadow: 0 0 80px rgba(0,255,65,0.12);
-            animation: modalPop 0.4s cubic-bezier(0.4,0,0.2,1);
-        }
+        .modal { background: var(--panel); border: 1px solid var(--neon); border-radius: 20px; padding: 30px; max-width: 520px; width: 92%; box-shadow: 0 0 80px rgba(0,255,65,0.12); animation: modalPop 0.4s cubic-bezier(0.4,0,0.2,1); }
         @keyframes modalPop { from { transform: scale(0.85) translateY(50px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
         .modal h3 { font-family: 'Orbitron', sans-serif; color: var(--neon); font-size: 1.1em; margin-bottom: 16px; }
-        .link-box {
-            background: rgba(0,0,0,0.6); border: 1px solid var(--neon);
-            border-radius: 12px; padding: 14px;
-            font-family: 'JetBrains Mono', monospace; color: var(--neon);
-            font-size: 0.68em; word-break: break-all;
-            display: flex; align-items: center; justify-content: space-between; gap: 10px;
-        }
-        .copy-btn {
-            padding: 9px 18px; border-radius: 9px;
-            background: var(--neon); color: #000; border: none;
-            cursor: pointer; font-weight: 700; font-size: 0.82em;
-            white-space: nowrap; box-shadow: 0 0 15px var(--neon-glow);
-        }
+        .link-box { background: rgba(0,0,0,0.6); border: 1px solid var(--neon); border-radius: 12px; padding: 14px; font-family: 'JetBrains Mono', monospace; color: var(--neon); font-size: 0.68em; word-break: break-all; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+        .copy-btn { padding: 9px 18px; border-radius: 9px; background: var(--neon); color: #000; border: none; cursor: pointer; font-weight: 700; font-size: 0.82em; white-space: nowrap; box-shadow: 0 0 15px var(--neon-glow); }
 
-        /* Toast */
         .toast-container { position: fixed; top: 22px; left: 50%; transform: translateX(-50%); z-index: 300; pointer-events: none; }
-        .toast {
-            padding: 12px 24px; border-radius: 12px; font-weight: 600; font-size: 0.82em;
-            text-align: center; margin-bottom: 6px; backdrop-filter: blur(30px);
-            animation: tIn 0.35s ease, tOut 0.35s ease 2.2s forwards;
-        }
+        .toast { padding: 12px 24px; border-radius: 12px; font-weight: 600; font-size: 0.82em; text-align: center; margin-bottom: 6px; backdrop-filter: blur(30px); animation: tIn 0.35s ease, tOut 0.35s ease 2.2s forwards; }
         .toast.success { background: rgba(0,230,118,0.15); border: 1px solid var(--success); color: var(--success); }
         .toast.error { background: rgba(255,23,68,0.15); border: 1px solid var(--danger); color: var(--danger); }
         .toast.info { background: rgba(0,176,255,0.15); border: 1px solid var(--info); color: var(--info); }
@@ -320,44 +131,18 @@
         .empty-icon { font-size: 3em; opacity: 0.2; margin-bottom: 8px; }
         .empty-text { color: var(--dim); font-size: 0.85em; }
 
-        .storage-bar {
-            margin-top: 18px; padding: 10px 14px;
-            background: rgba(0,0,0,0.4); border-radius: 10px;
-            border: 1px solid var(--border);
-        }
-        .storage-bar-label {
-            display: flex; justify-content: space-between;
-            font-size: 0.6em; color: var(--dim);
-            font-family: 'Orbitron', sans-serif; letter-spacing: 1px;
-            margin-bottom: 5px;
-        }
-        .storage-bar-track {
-            height: 4px; background: rgba(255,255,255,0.05);
-            border-radius: 2px; overflow: hidden;
-        }
-        .storage-bar-fill {
-            height: 100%; background: linear-gradient(90deg, var(--neon-dark), var(--neon));
-            border-radius: 2px; transition: width 0.5s;
-            box-shadow: 0 0 8px var(--neon-glow);
-        }
+        .storage-bar { margin-top: 18px; padding: 10px 14px; background: rgba(0,0,0,0.4); border-radius: 10px; border: 1px solid var(--border); }
+        .storage-bar-label { display: flex; justify-content: space-between; font-size: 0.6em; color: var(--dim); font-family: 'Orbitron', sans-serif; letter-spacing: 1px; margin-bottom: 5px; }
+        .storage-bar-track { height: 4px; background: rgba(255,255,255,0.05); border-radius: 2px; overflow: hidden; }
+        .storage-bar-fill { height: 100%; background: linear-gradient(90deg, var(--neon), #66ff66); border-radius: 2px; transition: width 0.5s; box-shadow: 0 0 8px var(--neon-glow); }
 
         @media (max-width: 1100px) { .panels { grid-template-columns: 1fr; } .stats { grid-template-columns: repeat(2, 1fr); } }
-        @media (max-width: 650px) {
-            .app { padding: 10px; }
-            .header { padding: 16px; }
-            .header h1 { font-size: 1.3em; }
-            .stats { grid-template-columns: 1fr 1fr; gap: 10px; }
-            .stat-card { padding: 16px; }
-            .stat-value { font-size: 1.6em; }
-            .cursor-outer, .cursor-inner { display: none; }
-            body { cursor: auto; }
-        }
+        @media (max-width: 650px) { .app { padding: 10px; } .header { padding: 16px; } .header h1 { font-size: 1.3em; } .stats { grid-template-columns: 1fr 1fr; gap: 10px; } .stat-card { padding: 16px; } .stat-value { font-size: 1.6em; } .cursor-outer, .cursor-inner { display: none; } body { cursor: auto; } }
     </style>
 </head>
 <body>
     <div class="cursor-outer" id="cursor-outer"></div>
     <div class="cursor-inner" id="cursor-inner"></div>
-
     <canvas id="three-bg"></canvas>
     <canvas id="particles-canvas"></canvas>
     <div class="grid-bg"></div>
@@ -370,7 +155,7 @@
         <div class="header">
             <div>
                 <h1>CODEORBIT</h1>
-                <div class="subtitle">▸ COMMAND CENTER · لینک عمومی · فشرده‌سازی</div>
+                <div class="subtitle">▸ COMMAND CENTER · IndexedDB · تا ۲۵۰MB</div>
             </div>
             <div style="display:flex;gap:7px;">
                 <button class="btn" onclick="refreshData()">⟳</button>
@@ -392,14 +177,14 @@
                 <div class="stat-label">لینک‌ها</div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon">🗜️</div>
-                <div class="stat-value" id="stat-compressed">0%</div>
-                <div class="stat-label">فشرده‌سازی</div>
-            </div>
-            <div class="stat-card">
                 <div class="stat-icon">💾</div>
                 <div class="stat-value" id="stat-storage">0</div>
-                <div class="stat-label">فضای مصرفی</div>
+                <div class="stat-label">فضای IndexedDB</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">⚡</div>
+                <div class="stat-value">∞</div>
+                <div class="stat-label">قابل اشتراک</div>
             </div>
         </div>
 
@@ -418,16 +203,11 @@
                         <span class="tag">.txt</span>
                         <span class="tag">.json</span>
                     </div>
-                    <div class="limit-badge">📏 حداکثر ۲۰ مگابایت · فشرده‌سازی خودکار</div>
+                    <div class="limit-badge">📏 حداکثر ۲۰ مگابایت · ذخیره در IndexedDB</div>
                 </div>
                 <div class="storage-bar">
-                    <div class="storage-bar-label">
-                        <span>💾 فضای ذخیره‌سازی</span>
-                        <span id="storage-percent">0%</span>
-                    </div>
-                    <div class="storage-bar-track">
-                        <div class="storage-bar-fill" id="storage-fill" style="width:0%"></div>
-                    </div>
+                    <div class="storage-bar-label"><span>💾 فضای IndexedDB</span><span id="storage-percent">0%</span></div>
+                    <div class="storage-bar-track"><div class="storage-bar-fill" id="storage-fill" style="width:0%"></div></div>
                 </div>
             </div>
 
@@ -447,10 +227,7 @@
         <div class="modal">
             <h3>🎉 لینک عمومی آماده است!</h3>
             <p style="color:var(--dim);font-size:0.78em;margin-bottom:14px;">🚀 این لینک رو هرکی باز کنه اجرا میشه:</p>
-            <div class="link-box">
-                <span id="modal-link"></span>
-                <button class="copy-btn" onclick="copyModalLink()">📋 کپی</button>
-            </div>
+            <div class="link-box"><span id="modal-link"></span><button class="copy-btn" onclick="copyModalLink()">📋 کپی</button></div>
             <div style="margin-top:14px;display:flex;gap:7px;">
                 <button class="btn btn-primary" onclick="window.open(document.getElementById('modal-link').textContent,'_blank')" style="flex:1;justify-content:center;">🌐 باز کردن</button>
                 <button class="btn" onclick="closeModal()" style="flex:1;justify-content:center;">✕ بستن</button>
@@ -462,108 +239,106 @@
         // ==========================================
         // AUTH
         // ==========================================
-        if (!localStorage.getItem('codeorbit_auth') && !sessionStorage.getItem('codeorbit_just_logged')) {
-            location.href = 'index.html';
-        }
-        if (sessionStorage.getItem('codeorbit_just_logged')) {
-            localStorage.setItem('codeorbit_auth', 'true');
-            sessionStorage.removeItem('codeorbit_just_logged');
-        }
+        if (!localStorage.getItem('codeorbit_auth') && !sessionStorage.getItem('codeorbit_just_logged')) location.href = 'index.html';
+        if (sessionStorage.getItem('codeorbit_just_logged')) { localStorage.setItem('codeorbit_auth', 'true'); sessionStorage.removeItem('codeorbit_just_logged'); }
 
         // ==========================================
         // CUSTOM CURSOR
         // ==========================================
-        const cOuter = document.getElementById('cursor-outer');
-        const cInner = document.getElementById('cursor-inner');
+        const cOuter = document.getElementById('cursor-outer'), cInner = document.getElementById('cursor-inner');
         let mouseX = 0, mouseY = 0;
-
-        document.addEventListener('mousemove', function(e) {
-            mouseX = e.clientX; mouseY = e.clientY;
-            cOuter.style.left = mouseX + 'px';
-            cOuter.style.top = mouseY + 'px';
-            cInner.style.left = mouseX + 'px';
-            cInner.style.top = mouseY + 'px';
-        });
+        document.addEventListener('mousemove', e => { mouseX = e.clientX; mouseY = e.clientY; cOuter.style.left = mouseX+'px'; cOuter.style.top = mouseY+'px'; cInner.style.left = mouseX+'px'; cInner.style.top = mouseY+'px'; });
         document.addEventListener('mousedown', () => cOuter.classList.add('click'));
         document.addEventListener('mouseup', () => cOuter.classList.remove('click'));
-        document.querySelectorAll('button, a, .upload-zone, .stat-card, .item, .act-btn').forEach(el => {
-            el.addEventListener('mouseenter', () => cOuter.classList.add('hover'));
-            el.addEventListener('mouseleave', () => cOuter.classList.remove('hover'));
-        });
+        document.querySelectorAll('button, a, .upload-zone, .stat-card, .item, .act-btn').forEach(el => { el.addEventListener('mouseenter', () => cOuter.classList.add('hover')); el.addEventListener('mouseleave', () => cOuter.classList.remove('hover')); });
 
         // ==========================================
         // THREE.JS
         // ==========================================
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, innerWidth/innerHeight, 0.1, 1000);
+        const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(75, innerWidth/innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('three-bg'), alpha: true, antialias: true });
-        renderer.setSize(innerWidth, innerHeight);
-        renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-        camera.position.z = 28;
-
-        const sGeo = new THREE.BufferGeometry();
-        const sPos = new Float32Array(2500*3);
+        renderer.setSize(innerWidth, innerHeight); renderer.setPixelRatio(Math.min(devicePixelRatio, 2)); camera.position.z = 28;
+        const sGeo = new THREE.BufferGeometry(), sPos = new Float32Array(2500*3);
         for(let i=0; i<7500; i+=3) { sPos[i]=(Math.random()-0.5)*90; sPos[i+1]=(Math.random()-0.5)*90; sPos[i+2]=(Math.random()-0.5)*50; }
         sGeo.setAttribute('position', new THREE.BufferAttribute(sPos,3));
         const stars = new THREE.Points(sGeo, new THREE.PointsMaterial({ size:0.1, color:0x00ff41, blending:THREE.AdditiveBlending, depthWrite:false, transparent:true, opacity:0.7 }));
         scene.add(stars);
-
         const rings = new THREE.Group();
-        for(let i=0; i<5; i++) {
-            const r = new THREE.Mesh(new THREE.TorusGeometry(6+i*3, 0.015, 16, 150), new THREE.MeshBasicMaterial({ color:0x00ff41, transparent:true, opacity:0.1-i*0.015, blending:THREE.AdditiveBlending }));
-            r.rotation.x = Math.PI/2+i*0.3; r.rotation.y = i*0.5;
-            rings.add(r);
-        }
+        for(let i=0; i<5; i++) { const r = new THREE.Mesh(new THREE.TorusGeometry(6+i*3, 0.015, 16, 150), new THREE.MeshBasicMaterial({ color:0x00ff41, transparent:true, opacity:0.1-i*0.015, blending:THREE.AdditiveBlending })); r.rotation.x=Math.PI/2+i*0.3; r.rotation.y=i*0.5; rings.add(r); }
         scene.add(rings);
-
-        (function anim(){
-            requestAnimationFrame(anim);
-            stars.rotation.x += 0.00006 + (mouseY/innerHeight-0.5)*0.0003;
-            stars.rotation.y += 0.0001 + (mouseX/innerWidth-0.5)*0.0003;
-            rings.rotation.x += 0.0005; rings.rotation.y += 0.0006;
-            renderer.render(scene,camera);
-        })();
+        (function anim(){ requestAnimationFrame(anim); stars.rotation.x+=0.00006+(mouseY/innerHeight-0.5)*0.0003; stars.rotation.y+=0.0001+(mouseX/innerWidth-0.5)*0.0003; rings.rotation.x+=0.0005; rings.rotation.y+=0.0006; renderer.render(scene,camera); })();
 
         // ==========================================
         // PARTICLES
         // ==========================================
-        const pCanvas = document.getElementById('particles-canvas');
-        const pCtx = pCanvas.getContext('2d');
-        pCanvas.width = innerWidth; pCanvas.height = innerHeight;
+        const pCanvas = document.getElementById('particles-canvas'), pCtx = pCanvas.getContext('2d');
+        pCanvas.width=innerWidth; pCanvas.height=innerHeight;
         const particles = [];
-        for(let i=0; i<70; i++) {
-            particles.push({
-                x: Math.random()*innerWidth, y: Math.random()*innerHeight,
-                vx: (Math.random()-0.5)*0.5, vy: (Math.random()-0.5)*0.5,
-                size: Math.random()*2+0.5, opacity: Math.random()*0.35+0.08
-            });
-        }
-        function drawP() {
-            pCtx.clearRect(0,0,pCanvas.width,pCanvas.height);
-            particles.forEach(p => {
-                const dx = mouseX-p.x, dy = mouseY-p.y;
-                const dist = Math.sqrt(dx*dx+dy*dy);
-                if(dist<180) { p.vx += dx/dist*0.04; p.vy += dy/dist*0.04; }
-                p.x += p.vx; p.y += p.vy;
-                p.vx *= 0.99; p.vy *= 0.99;
-                if(p.x<0) p.x=pCanvas.width; if(p.x>pCanvas.width) p.x=0;
-                if(p.y<0) p.y=pCanvas.height; if(p.y>pCanvas.height) p.y=0;
-                pCtx.beginPath(); pCtx.arc(p.x,p.y,p.size,0,Math.PI*2);
-                pCtx.fillStyle = `rgba(0,255,65,${p.opacity})`; pCtx.fill();
-            });
-            requestAnimationFrame(drawP);
-        }
+        for(let i=0; i<70; i++) particles.push({ x:Math.random()*innerWidth, y:Math.random()*innerHeight, vx:(Math.random()-0.5)*0.5, vy:(Math.random()-0.5)*0.5, size:Math.random()*2+0.5, opacity:Math.random()*0.35+0.08 });
+        function drawP() { pCtx.clearRect(0,0,pCanvas.width,pCanvas.height); particles.forEach(p=>{ const dx=mouseX-p.x, dy=mouseY-p.y, dist=Math.sqrt(dx*dx+dy*dy); if(dist<180){ p.vx+=dx/dist*0.04; p.vy+=dy/dist*0.04; } p.x+=p.vx; p.y+=p.vy; p.vx*=0.99; p.vy*=0.99; if(p.x<0)p.x=pCanvas.width; if(p.x>pCanvas.width)p.x=0; if(p.y<0)p.y=pCanvas.height; if(p.y>pCanvas.height)p.y=0; pCtx.beginPath(); pCtx.arc(p.x,p.y,p.size,0,Math.PI*2); pCtx.fillStyle=`rgba(0,255,65,${p.opacity})`; pCtx.fill(); }); requestAnimationFrame(drawP); }
         drawP();
 
         // ==========================================
         // ORBS
         // ==========================================
         const orbsLayer = document.getElementById('orbs-layer');
-        for(let i=0; i<6; i++) {
-            const orb = document.createElement('div');
-            orb.className = 'orb';
-            orb.style.cssText = `width:${80+Math.random()*140}px;height:${80+Math.random()*140}px;left:${Math.random()*90}%;top:${Math.random()*90}%;--dur:${8+Math.random()*10}s;--del:${Math.random()*5}s;`;
-            orbsLayer.appendChild(orb);
+        for(let i=0; i<6; i++) { const orb=document.createElement('div'); orb.className='orb'; orb.style.cssText=`width:${80+Math.random()*140}px;height:${80+Math.random()*140}px;left:${Math.random()*90}%;top:${Math.random()*90}%;--dur:${8+Math.random()*10}s;--del:${Math.random()*5}s;`; orbsLayer.appendChild(orb); }
+
+        // ==========================================
+        // INDEXEDDB
+        // ==========================================
+        function openDB() {
+            return new Promise((resolve, reject) => {
+                const req = indexedDB.open('CodeOrbitDB', 1);
+                req.onupgradeneeded = e => { if(!e.target.result.objectStoreNames.contains('files')) e.target.result.createObjectStore('files', { keyPath: 'id' }); };
+                req.onsuccess = e => resolve(e.target.result);
+                req.onerror = e => reject(e.target.error);
+            });
+        }
+
+        function storeInDB(id, data) {
+            return new Promise((resolve) => {
+                openDB().then(db => {
+                    const tx = db.transaction('files', 'readwrite');
+                    tx.objectStore('files').put({ id, data, timestamp: Date.now() });
+                    tx.oncomplete = () => { db.close(); resolve(true); };
+                    tx.onerror = () => { db.close(); resolve(false); };
+                }).catch(() => resolve(false));
+            });
+        }
+
+        function getFromDB(id) {
+            return new Promise((resolve) => {
+                openDB().then(db => {
+                    if(!db.objectStoreNames.contains('files')) { resolve(null); return; }
+                    const tx = db.transaction('files', 'readonly');
+                    const req = tx.objectStore('files').get(id);
+                    req.onsuccess = () => resolve(req.result ? req.result.data : null);
+                    req.onerror = () => resolve(null);
+                    tx.oncomplete = () => db.close();
+                }).catch(() => resolve(null));
+            });
+        }
+
+        function deleteFromDB(id) {
+            openDB().then(db => {
+                const tx = db.transaction('files', 'readwrite');
+                tx.objectStore('files').delete(id);
+                tx.oncomplete = () => db.close();
+            }).catch(() => {});
+        }
+
+        async function getDBStorageSize() {
+            try {
+                const db = await openDB();
+                const tx = db.transaction('files', 'readonly');
+                const store = tx.objectStore('files');
+                const all = await new Promise(r => { const req = store.getAll(); req.onsuccess = () => r(req.result); });
+                db.close();
+                let total = 0;
+                all.forEach(item => { if(item.data && item.data.content) total += item.data.content.length * 2; });
+                return total;
+            } catch(e) { return 0; }
         }
 
         // ==========================================
@@ -573,77 +348,23 @@
         try { shareLinks = JSON.parse(localStorage.getItem('codeorbit_links')||'[]'); } catch(e) { shareLinks = []; }
         try { codes = JSON.parse(localStorage.getItem('codeorbit_codes')||'[]'); } catch(e) { codes = []; }
 
-        function getStorageUsed() {
-            let total = 0;
-            for(let key in localStorage) {
-                if(key.startsWith('codeorbit_shared_')) {
-                    total += localStorage.getItem(key).length * 2; // UTF-16
-                }
-            }
-            return total;
-        }
-
         function save() {
-            try {
-                // Compress links data before saving
-                const compressedCodes = codes.map(c => ({
-                    id: c.id, name: c.name, size: c.size, date: c.date, language: c.language
-                    // Don't save content in codes array - it's in separate keys
-                }));
-                localStorage.setItem('codeorbit_links', JSON.stringify(shareLinks));
-                localStorage.setItem('codeorbit_codes', JSON.stringify(compressedCodes));
-            } catch(e) {
-                cleanupStorage();
-                try { localStorage.setItem('codeorbit_links', JSON.stringify(shareLinks)); } catch(e2) {}
-            }
+            try { localStorage.setItem('codeorbit_links', JSON.stringify(shareLinks)); localStorage.setItem('codeorbit_codes', JSON.stringify(codes.map(c=>({id:c.id,name:c.name,size:c.size,date:c.date,language:c.language})))); } catch(e) {}
             updateUI();
         }
 
-        function cleanupStorage() {
-            const keys = Object.keys(localStorage).filter(k => k.startsWith('codeorbit_shared_'));
-            // Remove oldest half
-            keys.slice(0, Math.floor(keys.length/2)).forEach(k => localStorage.removeItem(k));
-            // Remove corresponding links
-            const removedIds = keys.slice(0, Math.floor(keys.length/2)).map(k => k.replace('codeorbit_shared_',''));
-            shareLinks = shareLinks.filter(l => !removedIds.includes(l.id));
-            codes = codes.filter(c => !removedIds.includes(c.id));
-            showToast('⚠️ حافظه پر شد - فایل‌های قدیمی پاک شدند', 'error');
-        }
+        function formatSize(b) { if(!b||b===0) return '0 B'; if(b<1024) return b+' B'; if(b<1048576) return (b/1024).toFixed(1)+' KB'; return (b/1048576).toFixed(1)+' MB'; }
 
-        function formatSize(b) {
-            if(!b||b===0) return '0 B';
-            if(b<1024) return b+' B';
-            if(b<1048576) return (b/1024).toFixed(1)+' KB';
-            return (b/1048576).toFixed(1)+' MB';
-        }
-
-        function updateUI() {
+        async function updateUI() {
             document.getElementById('stat-total').textContent = codes.length;
             document.getElementById('stat-links').textContent = shareLinks.length;
-
-            // Calculate storage
-            const used = getStorageUsed();
+            
+            const used = await getDBStorageSize();
             const usedMB = (used/(1024*1024)).toFixed(1);
             document.getElementById('stat-storage').textContent = usedMB + ' MB';
-            
-            const percent = Math.min(100, Math.round((used/(10*1024*1024))*100));
+            const percent = Math.min(100, Math.round((used/(250*1024*1024))*100));
             document.getElementById('storage-percent').textContent = percent + '%';
             document.getElementById('storage-fill').style.width = percent + '%';
-            
-            // Calculate compression
-            let totalOriginal = 0, totalCompressed = 0;
-            shareLinks.forEach(l => {
-                const key = 'codeorbit_shared_'+l.id;
-                const stored = localStorage.getItem(key);
-                if(stored) {
-                    totalOriginal += l.originalSize || 0;
-                    totalCompressed += stored.length * 2;
-                }
-            });
-            if(totalOriginal > 0) {
-                const ratio = Math.round((1 - totalCompressed/totalOriginal)*100);
-                document.getElementById('stat-compressed').textContent = ratio + '%';
-            }
 
             const list = document.getElementById('links-list');
             if(shareLinks.length===0) {
@@ -652,181 +373,64 @@
                 list.innerHTML = shareLinks.slice().reverse().map(l => {
                     const ic = l.type==='python'?'py':l.type==='html'?'html':l.type==='js'?'js':'other';
                     const em = l.type==='python'?'🐍':l.type==='html'?'🌐':l.type==='js'?'JS':'📄';
-                    return `
-                    <div class="item">
-                        <div class="item-icon ${ic}">${em}</div>
-                        <div class="item-info">
-                            <div class="item-name">${l.name}</div>
-                            <div class="item-meta"><span>${new Date(l.date).toLocaleString('fa-IR')}</span><span>${l.size}</span></div>
-                        </div>
-                        <div class="item-actions">
-                            <button class="act-btn" onclick="navigator.clipboard.writeText('${l.url.replace(/'/g,"\\'")}');showToast('✅ کپی شد','success')" title="کپی">📋</button>
-                            <button class="act-btn" onclick="window.open('${l.url.replace(/'/g,"\\'")}','_blank')" title="باز کردن">🔗</button>
-                            <button class="act-btn del" onclick="deleteLink('${l.id}')" title="حذف">🗑</button>
-                        </div>
-                    </div>`;
+                    return `<div class="item"><div class="item-icon ${ic}">${em}</div><div class="item-info"><div class="item-name">${l.name}</div><div class="item-meta"><span>${new Date(l.date).toLocaleString('fa-IR')}</span><span>${l.size}</span></div></div><div class="item-actions"><button class="act-btn" onclick="navigator.clipboard.writeText('${l.url.replace(/'/g,"\\'")}');showToast('✅ کپی شد','success')">📋</button><button class="act-btn" onclick="window.open('${l.url.replace(/'/g,"\\'")}','_blank')">🔗</button><button class="act-btn del" onclick="deleteLink('${l.id}')">🗑</button></div></div>`;
                 }).join('');
             }
         }
 
         // ==========================================
-        // UPLOAD WITH COMPRESSION
+        // UPLOAD
         // ==========================================
-        document.getElementById('upload-zone').addEventListener('click', function() {
-            document.getElementById('file-input').click();
-        });
-        document.getElementById('upload-zone').addEventListener('dragover', function(e) {
-            e.preventDefault(); this.classList.add('drag-over');
-        });
-        document.getElementById('upload-zone').addEventListener('dragleave', function() {
-            this.classList.remove('drag-over');
-        });
-        document.getElementById('upload-zone').addEventListener('drop', function(e) {
-            e.preventDefault(); this.classList.remove('drag-over');
-            handleFiles(e.dataTransfer.files);
-        });
-        document.getElementById('file-input').addEventListener('change', function() {
-            if(this.files&&this.files.length>0) handleFiles(this.files);
-            this.value = '';
-        });
+        document.getElementById('upload-zone').addEventListener('click', () => document.getElementById('file-input').click());
+        document.getElementById('upload-zone').addEventListener('dragover', e => { e.preventDefault(); e.target.classList.add('drag-over'); });
+        document.getElementById('upload-zone').addEventListener('dragleave', e => { e.target.classList.remove('drag-over'); });
+        document.getElementById('upload-zone').addEventListener('drop', e => { e.preventDefault(); e.target.classList.remove('drag-over'); handleFiles(e.dataTransfer.files); });
+        document.getElementById('file-input').addEventListener('change', function() { if(this.files&&this.files.length>0) handleFiles(this.files); this.value=''; });
 
         function handleFiles(files) {
-            if (!files || files.length === 0) {
-                showToast('❌ فایلی انتخاب نشد', 'error');
-                return;
-            }
+            if(!files||files.length===0) { showToast('❌ فایلی انتخاب نشد','error'); return; }
+            let ok=0, err=0;
+            const total=files.length, base=location.origin+location.pathname.replace('dashboard.html','');
+            showToast(`⏳ ${total} فایل در حال پردازش...`,'info');
 
-            let ok = 0, err = 0;
-            const total = files.length;
-            const base = location.origin + location.pathname.replace('dashboard.html', '');
-            
-            showToast(`⏳ ${total} فایل در حال پردازش...`, 'info');
-
-            Array.from(files).forEach(function(file) {
-                // Check size
-                if (file.size > 20 * 1024 * 1024) {
-                    err++;
-                    showToast(`⚠️ ${file.name} - بزرگتر از ۲۰MB`, 'error');
-                    checkDone();
-                    return;
-                }
-
+            Array.from(files).forEach(file => {
+                if(file.size>20*1024*1024) { err++; showToast(`⚠️ ${file.name} > ۲۰MB`,'error'); if(ok+err===total&&ok===0) finish(); return; }
                 const reader = new FileReader();
-
-                reader.onload = function(e) {
+                reader.onload = async function(e) {
                     const content = e.target.result;
-                    if (!content || content.length === 0) {
-                        err++;
-                        checkDone();
-                        return;
-                    }
-
-                    const id = 'c_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-                    const ext = file.name.split('.').pop()?.toLowerCase() || 'txt';
+                    if(!content||content.length===0) { err++; if(ok+err===total) finish(); return; }
+                    const id = 'c_'+Date.now()+'_'+Math.random().toString(36).substr(2,9);
+                    const ext = file.name.split('.').pop()?.toLowerCase()||'txt';
                     let url;
 
-                    // Save to codes list
-                    codes.push({
-                        id: id,
-                        name: file.name,
-                        size: formatSize(file.size),
-                        date: new Date().toISOString(),
-                        language: ext.toUpperCase()
-                    });
+                    codes.push({ id, name:file.name, size:formatSize(file.size), date:new Date().toISOString(), language:ext.toUpperCase() });
 
-                    // Store content
-                    const key = 'codeorbit_shared_' + id;
-                    
-                    if (content.length < 1500) {
-                        // Small file - encode in URL
-                        url = base + 'runner.html?code=' + LZString.compressToEncodedURIComponent(content) + '&type=' + ext + '&name=' + encodeURIComponent(file.name);
+                    if(content.length<1500) {
+                        url = base+'runner.html?code='+LZString.compressToEncodedURIComponent(content)+'&type='+ext+'&name='+encodeURIComponent(file.name);
                     } else {
-                        // Large file - compress and store in localStorage
-                        try {
-                            const compressed = LZString.compressToUTF16(content);
-                            const dataToStore = JSON.stringify({
-                                name: file.name,
-                                content: compressed,
-                                language: ext.toUpperCase(),
-                                date: new Date().toISOString(),
-                                compressed: true
-                            });
-                            
-                            // Check if we have space
-                            localStorage.setItem(key, dataToStore);
-                            url = base + 'runner.html?share=' + id;
-                        } catch(e) {
-                            // Storage full - try cleanup
-                            try {
-                                cleanupStorage();
-                                const compressed = LZString.compressToUTF16(content);
-                                localStorage.setItem(key, JSON.stringify({
-                                    name: file.name, content: compressed,
-                                    language: ext.toUpperCase(), date: new Date().toISOString(),
-                                    compressed: true
-                                }));
-                                url = base + 'runner.html?share=' + id;
-                            } catch(e2) {
-                                err++;
-                                showToast(`❌ ${file.name} - حافظه پر شد`, 'error');
-                                checkDone();
-                                return;
-                            }
+                        const stored = await storeInDB('codeorbit_shared_'+id, { name:file.name, content, language:ext.toUpperCase(), date:new Date().toISOString() });
+                        if(stored) {
+                            url = base+'runner.html?share='+id;
+                        } else {
+                            err++; showToast(`❌ ${file.name} - خطا در ذخیره`,'error');
+                            if(ok+err===total) finish(); return;
                         }
                     }
 
-                    // Add to share links
-                    shareLinks.push({
-                        id: id,
-                        name: file.name,
-                        url: url,
-                        type: ext === 'py' ? 'python' : ext === 'html' ? 'html' : ext === 'js' ? 'js' : 'other',
-                        size: formatSize(file.size),
-                        date: new Date().toISOString(),
-                        originalSize: content.length
-                    });
-
+                    shareLinks.push({ id, name:file.name, url, type:ext==='py'?'python':ext==='html'?'html':ext==='js'?'js':'other', size:formatSize(file.size), date:new Date().toISOString() });
                     ok++;
-                    checkDone();
+                    if(ok+err===total) finish();
                 };
-
-                reader.onerror = function() {
-                    err++;
-                    showToast(`❌ خطا در خواندن ${file.name}`, 'error');
-                    checkDone();
-                };
-
+                reader.onerror = () => { err++; if(ok+err===total) finish(); };
                 reader.readAsText(file);
             });
 
-            function checkDone() {
-                if (ok + err === total) {
-                    save();
-                    if (ok > 0) {
-                        showToast(`✅ ${ok} فایل آپلود شد!`, 'success');
-                        if (shareLinks.length > 0) {
-                            const last = shareLinks[shareLinks.length - 1];
-                            document.getElementById('modal-link').textContent = last.url;
-                            document.getElementById('link-modal').style.display = 'flex';
-                        }
-                    } else {
-                        showToast(`❌ هیچ فایلی آپلود نشد (${err} خطا)`, 'error');
-                    }
-                }
-            }
-        }
-            function finishAll() {
+            function finish() {
                 save();
                 if(ok>0) {
                     showToast(`✅ ${ok} فایل آپلود شد!`,'success');
-                    if(shareLinks.length>0) {
-                        const last = shareLinks[shareLinks.length-1];
-                        document.getElementById('modal-link').textContent = last.url;
-                        document.getElementById('link-modal').style.display = 'flex';
-                    }
-                } else {
-                    showToast('❌ هیچ فایلی آپلود نشد','error');
-                }
+                    if(shareLinks.length>0) { const last=shareLinks[shareLinks.length-1]; document.getElementById('modal-link').textContent=last.url; document.getElementById('link-modal').style.display='flex'; }
+                } else showToast('❌ هیچ فایلی آپلود نشد','error');
             }
         }
 
@@ -835,52 +439,27 @@
         // ==========================================
         function deleteLink(id) {
             if(!confirm('⚠️ حذف شود؟')) return;
-            shareLinks = shareLinks.filter(function(l){ return l.id!==id; });
-            codes = codes.filter(function(c){ return c.id!==id; });
+            shareLinks = shareLinks.filter(l=>l.id!==id);
+            codes = codes.filter(c=>c.id!==id);
+            deleteFromDB('codeorbit_shared_'+id);
             const key = 'codeorbit_shared_'+id;
             if(localStorage.getItem(key)) localStorage.removeItem(key);
             save();
             showToast('🗑️ حذف شد','error');
         }
 
-        function copyModalLink() {
-            navigator.clipboard.writeText(document.getElementById('modal-link').textContent).then(()=>showToast('✅ کپی شد','success'));
-            closeModal();
-        }
+        function copyModalLink() { navigator.clipboard.writeText(document.getElementById('modal-link').textContent).then(()=>showToast('✅ کپی شد','success')); closeModal(); }
+        function closeModal() { document.getElementById('link-modal').style.display='none'; }
+        function showToast(msg, type) { type=type||'success'; const c=document.getElementById('toast-container'), t=document.createElement('div'); t.className='toast '+type; t.textContent=msg; c.appendChild(t); setTimeout(()=>t.remove(),2500); }
+        function refreshData() { try { shareLinks=JSON.parse(localStorage.getItem('codeorbit_links')||'[]'); codes=JSON.parse(localStorage.getItem('codeorbit_codes')||'[]'); } catch(e) {} updateUI(); showToast('⟳ بروز شد','info'); }
+        function logout() { localStorage.removeItem('codeorbit_auth'); sessionStorage.clear(); location.href='index.html'; }
 
-        function closeModal() { document.getElementById('link-modal').style.display = 'none'; }
-        function showToast(msg, type) {
-            type = type||'success';
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            toast.className = 'toast '+type;
-            toast.textContent = msg;
-            container.appendChild(toast);
-            setTimeout(()=>toast.remove(), 2500);
-        }
-        function refreshData() {
-            try { shareLinks=JSON.parse(localStorage.getItem('codeorbit_links')||'[]'); } catch(e) { shareLinks=[]; }
-            try { codes=JSON.parse(localStorage.getItem('codeorbit_codes')||'[]'); } catch(e) { codes=[]; }
-            updateUI();
-            showToast('⟳ بروز شد','info');
-        }
-        function logout() {
-            localStorage.removeItem('codeorbit_auth');
-            sessionStorage.clear();
-            location.href='index.html';
-        }
-
-        document.getElementById('link-modal').addEventListener('click', function(e){ if(e.target===this) closeModal(); });
-        document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeModal(); });
-        window.addEventListener('resize', function() {
-            camera.aspect = innerWidth/innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(innerWidth, innerHeight);
-            pCanvas.width = innerWidth; pCanvas.height = innerHeight;
-        });
+        document.getElementById('link-modal').addEventListener('click', e => { if(e.target===e.currentTarget) closeModal(); });
+        document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); });
+        window.addEventListener('resize', () => { camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth,innerHeight); pCanvas.width=innerWidth; pCanvas.height=innerHeight; });
 
         updateUI();
-        console.log('🌍 CODEORBIT v9 · COMPRESSION ENABLED · 20MB LIMIT');
+        console.log('🌍 CODEORBIT v10 · IndexedDB · 250MB');
     </script>
 </body>
 </html>
