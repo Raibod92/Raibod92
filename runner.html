@@ -3,51 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title id="page-title">اجرای کد</title>
+    <title>اجرای کد</title>
     
     <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"></script>
     
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            font-family: 'Vazirmatn', sans-serif;
-            background: #000;
-            overflow: auto;
-        }
-        #output-frame {
-            width: 100%;
-            height: 100vh;
-            border: none;
-            background: #fff;
-        }
-        #fallback {
-            color: #0f0;
-            background: #000;
-            padding: 20px;
-            font-family: monospace;
-            min-height: 100vh;
-            white-space: pre-wrap;
-            word-break: break-all;
-            font-size: 14px;
-            line-height: 1.6;
-        }
-        #error-msg {
-            color: #f44;
-            text-align: center;
-            padding: 50px;
-            font-size: 18px;
-        }
+        body { font-family: 'Vazirmatn', sans-serif; background: #000; overflow: auto; }
+        #output-frame { width: 100%; height: 100vh; border: none; background: #fff; }
+        #fallback { color: #0f0; background: #000; padding: 20px; font-family: monospace; min-height: 100vh; white-space: pre-wrap; word-break: break-all; font-size: 14px; line-height: 1.6; }
+        #error-msg { color: #f44; text-align: center; padding: 50px; font-size: 18px; }
+        #loading { color: #0f0; text-align: center; padding: 50px; font-size: 18px; font-family: monospace; }
     </style>
 </head>
 <body>
+    <div id="loading">⏳ در حال بارگذاری...</div>
     <div id="error-msg" style="display:none;"></div>
     <iframe id="output-frame" style="display:none;"></iframe>
     <pre id="fallback" style="display:none;"></pre>
 
     <script>
         // ==========================================
-        // EXECUTION ENGINE (SIMPLE - JUST SHOW RESULT)
+        // INDEXEDDB READER
+        // ==========================================
+        function getFromDB(id) {
+            return new Promise((resolve) => {
+                const req = indexedDB.open('CodeOrbitDB', 1);
+                req.onsuccess = function(e) {
+                    const db = e.target.result;
+                    if (!db.objectStoreNames.contains('files')) { resolve(null); return; }
+                    const tx = db.transaction('files', 'readonly');
+                    const store = tx.objectStore('files');
+                    const getReq = store.get(id);
+                    getReq.onsuccess = function() { resolve(getReq.result ? getReq.result.data : null); };
+                    getReq.onerror = function() { resolve(null); };
+                    tx.oncomplete = function() { db.close(); };
+                };
+                req.onerror = function() { resolve(null); };
+            });
+        }
+
+        function formatSize(bytes) {
+            if (!bytes || bytes === 0) return '0 B';
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / 1048576).toFixed(1) + ' MB';
+        }
+
+        // ==========================================
+        // EXECUTION ENGINE
         // ==========================================
         async function executeCode() {
             const urlParams = new URLSearchParams(location.search);
@@ -58,22 +63,29 @@
             
             let codeData = null;
             
-            // Try share ID
+            // 1. Try IndexedDB (for large files)
             if (shareId) {
-                const tempKey = 'codeorbit_shared_' + shareId;
-                const stored = localStorage.getItem(tempKey);
+                const dbKey = 'codeorbit_shared_' + shareId;
+                const dbData = await getFromDB(dbKey);
                 
-                if (stored) {
-                    try { codeData = JSON.parse(stored); } catch(e) {}
-                    
-                    
-                    if (codeData && codeData.compressed) {
-                        codeData.content = LZString.decompressFromUTF16(codeData.content);
+                if (dbData) {
+                    codeData = dbData;
+                } else {
+                    // 2. Fallback: Try localStorage
+                    const stored = localStorage.getItem(dbKey);
+                    if (stored) {
+                        try { 
+                            codeData = JSON.parse(stored);
+                            // Check if compressed
+                            if (codeData && codeData.compressed) {
+                                codeData.content = LZString.decompressFromUTF16(codeData.content);
+                            }
+                        } catch(e) {}
                     }
                 }
             }
             
-            // Try encoded URL
+            // 3. Try encoded URL (for small files)
             if (!codeData && encodedCode) {
                 try {
                     const decoded = LZString.decompressFromEncodedURIComponent(encodedCode);
@@ -87,7 +99,7 @@
                 } catch(e) {}
             }
             
-            // Fallback
+            // 4. Fallback: sessionStorage
             if (!codeData) {
                 try {
                     codeData = JSON.parse(sessionStorage.getItem('codeorbit_run_code') || 'null');
@@ -95,65 +107,47 @@
             }
 
             if (!codeData || !codeData.content) {
+                document.getElementById('loading').style.display = 'none';
                 document.getElementById('error-msg').style.display = 'block';
                 document.getElementById('error-msg').textContent = '❌ کدی برای اجرا پیدا نشد';
                 return;
             }
 
-            // SET PAGE TITLE
+            // Hide loading
+            document.getElementById('loading').style.display = 'none';
+            
+            // Set page title
             document.title = codeData.name || 'اجرای کد';
             
             const code = codeData.content;
             const ext = (codeData.name || '').split('.').pop()?.toLowerCase() || codeType;
 
             if (ext === 'html' || ext === 'htm') {
-                // Show HTML in iframe
                 document.getElementById('output-frame').style.display = 'block';
                 document.getElementById('output-frame').srcdoc = code;
             } 
             else if (ext === 'js') {
-                // Execute JavaScript and show output
                 document.getElementById('fallback').style.display = 'block';
-                const fallback = document.getElementById('fallback');
-                fallback.textContent = '';
-                
+                const fb = document.getElementById('fallback');
+                fb.textContent = '';
                 const origLog = console.log;
-                console.log = (...args) => {
-                    fallback.textContent += args.join(' ') + '\n';
-                };
-                
-                try {
-                    eval(code);
-                } catch(e) {
-                    fallback.textContent += 'Error: ' + e.message;
-                }
-                
+                console.log = (...args) => { fb.textContent += args.join(' ') + '\n'; };
+                try { eval(code); } catch(e) { fb.textContent += 'Error: ' + e.message; }
                 console.log = origLog;
             }
             else if (ext === 'py') {
-                // Execute Python
                 document.getElementById('fallback').style.display = 'block';
-                const fallback = document.getElementById('fallback');
-                fallback.textContent = '🐍 Loading Python...\n';
-                
+                const fb = document.getElementById('fallback');
+                fb.textContent = '🐍 Loading Python...\n';
                 try {
                     const pyodide = await loadPyodide();
-                    fallback.textContent += 'Running...\n\n';
-                    
-                    pyodide.setStdout({
-                        batched: (text) => {
-                            fallback.textContent += text;
-                        }
-                    });
-                    
+                    fb.textContent += 'Running...\n\n';
+                    pyodide.setStdout({ batched: (text) => { fb.textContent += text; } });
                     await pyodide.runPythonAsync(code);
-                    fallback.textContent += '\n\n✅ Done.';
-                } catch(e) {
-                    fallback.textContent += '\n❌ Error: ' + e.message;
-                }
+                    fb.textContent += '\n\n✅ Done.';
+                } catch(e) { fb.textContent += '\n❌ Error: ' + e.message; }
             }
             else {
-                // Show source code
                 document.getElementById('fallback').style.display = 'block';
                 document.getElementById('fallback').textContent = code;
             }
