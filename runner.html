@@ -252,27 +252,29 @@
                 return;
             }
 
-            // 🔒 CHECK PASSWORD (only for shared links with password)
-            if(shareId) {
-                var passwords = {};
-                try { passwords = JSON.parse(localStorage.getItem('codeorbit_passwords') || '{}'); } catch(e) {}
-                var pw = passwords[shareId];
-                
-                if(pw && pw.length > 0) {
-                    // Password exists - show gate
-                    document.getElementById('loading').style.display = 'none';
-                    document.getElementById('password-gate').style.display = 'flex';
-                    document.getElementById('pw-input').focus();
-                    // Store for later
-                    window._codeorbit_pw = pw;
-                    window._codeorbit_data = codeData;
-                    return;
-                }
-            }
-
-            // No password - render directly
-            renderCode(codeData);
-        }
+            // 🔒 CHECK PASSWORD - FIXED (checks inside stored data too)
+if(shareId) {
+    var pw = null;
+    
+    // 1. Check localStorage passwords
+    var passwords = {};
+    try { passwords = JSON.parse(localStorage.getItem('codeorbit_passwords') || '{}'); } catch(e) {}
+    pw = passwords[shareId];
+    
+    // 2. Check inside the stored data
+    if (!pw && codeData && codeData._password) {
+        pw = codeData._password;
+    }
+    
+    if (pw && pw.length > 0) {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('password-gate').style.display = 'flex';
+        document.getElementById('pw-input').focus();
+        window._codeorbit_pw = pw;
+        window._codeorbit_data = codeData;
+        return;
+    }
+}
 
         function checkPassword() {
             var input = document.getElementById('pw-input').value;
