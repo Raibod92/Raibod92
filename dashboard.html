@@ -149,7 +149,6 @@
     <button class="theme-toggle" onclick="toggleTheme()" title="Dark/Light">🌓</button>
 
     <div class="app">
-        <!-- Header -->
         <div class="header">
             <div>
                 <h1>CODEORBIT</h1>
@@ -165,7 +164,6 @@
             </div>
         </div>
 
-        <!-- Tabs -->
         <div class="tabs" id="tabs-nav">
             <div class="tab active" data-tab="upload">⬆ آپلود</div>
             <div class="tab" data-tab="note">📝 یادداشت</div>
@@ -175,7 +173,6 @@
             <div class="tab" data-tab="stats">📊 آمار</div>
         </div>
 
-        <!-- Upload + Note (Always together) -->
         <div id="tab-upload-content">
             <div class="panels">
                 <div class="panel">
@@ -206,7 +203,6 @@
             </div>
         </div>
 
-        <!-- Links -->
         <div class="panel" id="tab-links-content" style="display:none;">
             <div class="panel-title">🔗 <span>لینک‌های عمومی</span></div>
             <div class="list" id="links-list">
@@ -214,7 +210,6 @@
             </div>
         </div>
 
-        <!-- History -->
         <div class="panel" id="tab-history-content" style="display:none;">
             <div class="panel-title">🕐 <span>تاریخچه بازدید</span></div>
             <div class="list" id="history-list">
@@ -222,7 +217,6 @@
             </div>
         </div>
 
-        <!-- Editor -->
         <div id="tab-editor-content" style="display:none;">
             <div class="panels">
                 <div class="panel">
@@ -240,7 +234,6 @@
             </div>
         </div>
 
-        <!-- Stats -->
         <div class="panel" id="tab-stats-content" style="display:none;">
             <div class="panel-title">📊 <span>آمار</span></div>
             <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;text-align:center;">
@@ -252,7 +245,6 @@
         </div>
     </div>
 
-    <!-- Link Modal -->
     <div class="modal-overlay" id="link-modal" style="display:none">
         <div class="modal">
             <h3>🎉 لینک عمومی آماده است!</h3>
@@ -469,7 +461,7 @@
         function livePreview(){document.getElementById('live-preview').srcdoc=document.getElementById('live-editor').value;}
 
         // ==========================================
-        // MODAL + QR + PASSWORD
+        // MODAL + QR + PASSWORD (FIXED)
         // ==========================================
         function showLinkModal(link){
             document.getElementById('modal-link').textContent=link.url;
@@ -482,68 +474,73 @@
         function copyModalLink(){navigator.clipboard.writeText(document.getElementById('modal-link').textContent).then(()=>showToast('✅ کپی شد','success'));closeModal();}
         function copyLink(id){var link=shareLinks.find(l=>l.id===id);if(link){navigator.clipboard.writeText(link.url).then(()=>showToast('✅ کپی شد','success'));}}
         function openLink(id){var link=shareLinks.find(l=>l.id===id);if(link){var pw=linkPasswords[id];if(pw){var input=prompt('🔒 این لینک رمز دارد. رمز را وارد کنید:');if(input!==pw){showToast('❌ رمز اشتباه','error');return;}}viewHistory.push({name:link.name,date:new Date().toISOString()});save();window.open(link.url,'_blank');}}
-        async function closeModal() {
-    var linkUrl = document.getElementById('modal-link').textContent;
-    var pw = document.getElementById('link-password').value.trim();
-    var link = shareLinks.find(l => l.url === linkUrl);
-    
-    if (link && pw) {
-        // Save password in localStorage
-        linkPasswords[link.id] = pw;
-        save();
         
-        // 🔥 ALSO save password INSIDE the stored file data
-        var key = 'codeorbit_shared_' + link.id;
-        
-        // Update in OPFS
-        var opfsData = await getFromOPFS(key);
-        if (opfsData) {
-            opfsData._password = pw;
-            await storeInOPFS(key, opfsData);
-        }
-        
-        // Update in IndexedDB
-        var dbData = await getFromDB(key);
-        if (dbData) {
-            dbData._password = pw;
-            await storeInDB(key, dbData);
-        }
-        
-        // Update in localStorage
-        var lsData = localStorage.getItem(key);
-        if (lsData) {
-            try {
-                var parsed = JSON.parse(lsData);
-                parsed._password = pw;
-                if (parsed.compressed) {
-                    localStorage.setItem(key, JSON.stringify(parsed));
-                } else {
-                    parsed._password = pw;
-                    localStorage.setItem(key, JSON.stringify(parsed));
+        // 🔥 اصلاح شده: ذخیره رمز در خود داده
+        async function closeModal(){
+            var linkUrl = document.getElementById('modal-link').textContent;
+            var pw = document.getElementById('link-password').value.trim();
+            var link = shareLinks.find(l => l.url === linkUrl);
+            var key = link ? 'codeorbit_shared_' + link.id : null;
+            
+            if (link && pw) {
+                linkPasswords[link.id] = pw;
+                save();
+                
+                // به‌روزرسانی در OPFS
+                if (key) {
+                    var opfsData = await getFromOPFS(key);
+                    if (opfsData) {
+                        opfsData._password = pw;
+                        await storeInOPFS(key, opfsData);
+                    }
+                    // به‌روزرسانی در IndexedDB
+                    var dbData = await getFromDB(key);
+                    if (dbData) {
+                        dbData._password = pw;
+                        await storeInDB(key, dbData);
+                    }
+                    // به‌روزرسانی در localStorage
+                    var lsData = localStorage.getItem(key);
+                    if (lsData) {
+                        try {
+                            var parsed = JSON.parse(lsData);
+                            parsed._password = pw;
+                            localStorage.setItem(key, JSON.stringify(parsed));
+                        } catch(e) {}
+                    }
                 }
-            } catch(e) {}
+                showToast('🔒 رمز تنظیم شد', 'success');
+            } else if (link && !pw && linkPasswords[link.id]) {
+                delete linkPasswords[link.id];
+                save();
+                
+                // حذف رمز از داده
+                if (key) {
+                    var opfsData = await getFromOPFS(key);
+                    if (opfsData && opfsData._password) {
+                        delete opfsData._password;
+                        await storeInOPFS(key, opfsData);
+                    }
+                    var dbData = await getFromDB(key);
+                    if (dbData && dbData._password) {
+                        delete dbData._password;
+                        await storeInDB(key, dbData);
+                    }
+                    var lsData = localStorage.getItem(key);
+                    if (lsData) {
+                        try {
+                            var parsed = JSON.parse(lsData);
+                            delete parsed._password;
+                            localStorage.setItem(key, JSON.stringify(parsed));
+                        } catch(e) {}
+                    }
+                }
+                showToast('🔓 رمز برداشته شد', 'info');
+            }
+            
+            document.getElementById('link-modal').style.display = 'none';
+            document.getElementById('link-password').value = '';
         }
-        
-        showToast('🔒 رمز تنظیم شد', 'success');
-    } else if (link && !pw && linkPasswords[link.id]) {
-        // Remove password
-        delete linkPasswords[link.id];
-        save();
-        
-        // Also remove from stored data
-        var key = 'codeorbit_shared_' + link.id;
-        var opfsData = await getFromOPFS(key);
-        if (opfsData && opfsData._password) {
-            delete opfsData._password;
-            await storeInOPFS(key, opfsData);
-        }
-        
-        showToast('🔓 رمز برداشته شد', 'info');
-    }
-    
-    document.getElementById('link-modal').style.display = 'none';
-    document.getElementById('link-password').value = '';
-}
 
         function deleteLink(id){if(!confirm('⚠️ حذف شود؟'))return;shareLinks=shareLinks.filter(l=>l.id!==id);codes=codes.filter(c=>c.id!==id);var key='codeorbit_shared_'+id;deleteFromOPFS(key);deleteFromDB(key);if(localStorage.getItem(key))localStorage.removeItem(key);delete linkPasswords[id];save();showToast('🗑️ حذف شد','error');}
 
@@ -556,7 +553,7 @@
         window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);pCanvas.width=innerWidth;pCanvas.height=innerHeight;});
 
         updateUI();
-        console.log('🌍 CODEORBIT v12 · Commander Raibod · All Systems Ready');
+        console.log('🌍 CODEORBIT v12 · Commander Raibod · Password Embedded');
     </script>
 </body>
 </html>
