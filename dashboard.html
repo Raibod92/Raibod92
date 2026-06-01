@@ -664,6 +664,7 @@
                     const content = e.target.result;
                     const codeId = 'c_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
                     const ext = file.name.split('.').pop().toLowerCase();
+                    const size = content.length;
                     
                     // Save locally
                     codes.push({
@@ -675,10 +676,32 @@
                         language: ext.toUpperCase()
                     });
                     
-                    // Encode and create public link (COMPRESSED)
-                    const encoded = LZString.compressToEncodedURIComponent(content);
+                    let publicUrl;
                     const base = window.location.origin + window.location.pathname.replace('dashboard.html','');
-                    const publicUrl = `${base}runner.html?code=${encoded}&type=${ext}&name=${encodeURIComponent(file.name)}`;
+                    
+                    // SMART: Small files -> Encode in URL, Large files -> ID-based
+                    if (size < 1500) {
+                        // Small file: encode in URL
+                        const encoded = LZString.compressToEncodedURIComponent(content);
+                        publicUrl = `${base}runner.html?code=${encoded}&type=${ext}&name=${encodeURIComponent(file.name)}`;
+                    } else {
+                        // Large file: use ID + sessionStorage
+                        // Store temporarily for sharing
+                        const tempKey = 'codeorbit_shared_' + codeId;
+                        localStorage.setItem(tempKey, JSON.stringify({
+                            name: file.name,
+                            content: content,
+                            language: ext.toUpperCase(),
+                            date: new Date().toISOString()
+                        }));
+                        
+                        // Auto-expire after 24 hours
+                        setTimeout(() => {
+                            localStorage.removeItem(tempKey);
+                        }, 86400000);
+                        
+                        publicUrl = `${base}runner.html?share=${codeId}`;
+                    }
                     
                     shareLinks.push({
                         id: codeId,
@@ -695,7 +718,8 @@
                     document.getElementById('share-link-text').textContent = publicUrl;
                     document.getElementById('link-modal').style.display = 'flex';
                     
-                    showToast('✅ لینک عمومی ساخته شد! 🚀', 'success');
+                    const method = size < 1500 ? 'مستقیم در URL' : 'با کد اشتراک (۲۴ ساعته)';
+                    showToast(`✅ لینک ساخته شد! (${method}) 🚀`, 'success');
                 };
                 reader.readAsText(file);
             });
