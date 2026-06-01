@@ -328,10 +328,48 @@
         if(localStorage.getItem('codeorbit_theme')==='light')document.body.classList.add('light-mode');
 
         // ==========================================
-        // TABS
-        // ==========================================
-        document.querySelectorAll('.tab').forEach(tab=>{tab.addEventListener('click',function(){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));this.classList.add('active');const tabName=this.dataset.tab;document.querySelectorAll('[id^="tab-"]').forEach(el=>el.style.display='none');const target=document.getElementById('tab-'+tabName);if(target)target.style.display=tabName==='upload'?'grid':'block';if(tabName==='history')updateHistoryUI();if(tabName==='stats')updateStatsUI();if(tabName==='editor')document.getElementById('tab-editor').style.display='grid';});});
+       // TABS (FIXED)
+       // ==========================================
+        document.querySelectorAll('.tab').forEach(tab => {
+        tab.addEventListener('click', function() {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        this.classList.add('active');
+        
+        var tabName = this.dataset.tab;
+        
+        // Hide all tab contents
+        document.getElementById('tab-upload').style.display = 'none';
+        document.getElementById('tab-links').style.display = 'none';
+        document.getElementById('tab-history').style.display = 'none';
+        document.getElementById('tab-editor').style.display = 'none';
+        document.getElementById('tab-stats').style.display = 'none';
+        
+        // Show selected tab
+        if (tabName === 'upload') {
+            document.getElementById('tab-upload').style.display = 'grid';
+            document.getElementById('tab-links').style.display = 'block';
+        } else if (tabName === 'note') {
+            document.getElementById('tab-upload').style.display = 'grid';
+            document.getElementById('tab-links').style.display = 'block';
+            // Focus on note
+            document.getElementById('quick-note').focus();
+        } else if (tabName === 'links') {
+            document.getElementById('tab-links').style.display = 'block';
+        } else if (tabName === 'history') {
+            document.getElementById('tab-history').style.display = 'block';
+            updateHistoryUI();
+        } else if (tabName === 'editor') {
+            document.getElementById('tab-editor').style.display = 'grid';
+        } else if (tabName === 'stats') {
+            document.getElementById('tab-stats').style.display = 'block';
+            updateStatsUI();
+        }
+    });
+});
 
+// Show upload + links by default
+document.getElementById('tab-upload').style.display = 'grid';
+document.getElementById('tab-links').style.display = 'block';
         // ==========================================
         // OPFS
         // ==========================================
