@@ -125,11 +125,22 @@
 
     <script>
         // ==========================================
-        // STORAGE READERS
+        // STORAGE READERS & HELPERS
         // ==========================================
         async function getFromOPFS(key) {
             try { var root = await navigator.storage.getDirectory(); var handle = await root.getFileHandle(key+'.json'); var file = await handle.getFile(); return JSON.parse(await file.text()); }
             catch(e) { return null; }
+        }
+
+        async function storeInOPFS(key, data) {
+            try {
+                const root = await navigator.storage.getDirectory();
+                const handle = await root.getFileHandle(key + '.json', { create: true });
+                const writable = await handle.createWritable();
+                await writable.write(JSON.stringify(data));
+                await writable.close();
+                return true;
+            } catch(e) { return false; }
         }
 
         function getFromDB(key) {
@@ -145,6 +156,21 @@
                     tx.oncomplete = function() { db.close(); };
                 };
                 req.onerror = function() { resolve(null); };
+            });
+        }
+
+        async function storeInDB(key, data) {
+            return new Promise((resolve) => {
+                const req = indexedDB.open('CodeOrbitDB', 1);
+                req.onsuccess = (e) => {
+                    const db = e.target.result;
+                    if (!db.objectStoreNames.contains('files')) { db.close(); resolve(false); return; }
+                    const tx = db.transaction('files', 'readwrite');
+                    tx.objectStore('files').put({ id: key, data: data, timestamp: Date.now() });
+                    tx.oncomplete = () => { db.close(); resolve(true); };
+                    tx.onerror = () => { db.close(); resolve(false); };
+                };
+                req.onerror = () => resolve(false);
             });
         }
 
@@ -259,7 +285,7 @@
                 // Display with Syntax Highlighting
                 var codeDisplay = document.getElementById('code-display');
                 codeDisplay.style.display = 'block';
-                codeDisplay.innerHTML = '<div style="color:var(--dim);margin-bottom:8px;font-family:Orbitron;font-size:0.8em;">📄 ' + escapeHTML(codeData.name) + ' (' + lang + ')</div>';
+                codeDisplay.innerHTML = '<div style="color:rgba(0,255,65,0.5);margin-bottom:8px;font-family:Orbitron;font-size:0.8em;">📄 ' + escapeHTML(codeData.name) + ' (' + lang + ')</div>';
                 codeDisplay.innerHTML += highlightCode(code, ext || lang.toLowerCase());
             }
         }
@@ -279,7 +305,7 @@
         }
 
         // ==========================================
-        // MAIN FUNCTION (FIXED)
+        // MAIN FUNCTION (FIXED - FULLY RELIABLE)
         // ==========================================
         async function main() {
             var params = new URLSearchParams(location.search);
@@ -289,41 +315,47 @@
             var codeName = params.get('name') || 'project';
             var codeData = null;
 
-            // 1. Try OPFS
-            if(shareId) { codeData = await getFromOPFS('codeorbit_shared_' + shareId); }
-            // 2. Try IndexedDB
-            if(!codeData && shareId) { codeData = await getFromDB('codeorbit_shared_' + shareId); }
-            // 3. Try localStorage
+            // 1. OPFS (most reliable, includes _password)
+            if(shareId) {
+                codeData = await getFromOPFS('codeorbit_shared_' + shareId);
+            }
+            // 2. IndexedDB
+            if(!codeData && shareId) {
+                codeData = await getFromDB('codeorbit_shared_' + shareId);
+            }
+            // 3. localStorage (legacy, may not have _password)
             if(!codeData && shareId) {
                 var stored = localStorage.getItem('codeorbit_shared_' + shareId);
                 if(stored) {
-                    try { 
-                        codeData = JSON.parse(stored); 
+                    try {
+                        codeData = JSON.parse(stored);
                         if(codeData && codeData.compressed) {
                             codeData.content = LZString.decompressFromUTF16(codeData.content);
                         }
                     } catch(e) {}
                 }
             }
-            // 4. Try URL encoded
+            // 4. URL encoded (direct sharing)
             if(!codeData && encodedCode) {
-                try { 
-                    var decoded = LZString.decompressFromEncodedURIComponent(encodedCode); 
+                try {
+                    var decoded = LZString.decompressFromEncodedURIComponent(encodedCode);
                     if(decoded) {
-                        codeData = { 
-                            name: decodeURIComponent(codeName), 
-                            content: decoded, 
-                            language: (codeType === 'note') ? 'NOTE' : codeType.toUpperCase() 
-                        }; 
+                        codeData = {
+                            name: decodeURIComponent(codeName),
+                            content: decoded,
+                            language: (codeType === 'note') ? 'NOTE' : codeType.toUpperCase()
+                        };
                     }
                 } catch(e) {}
             }
-            // 5. Fallback: sessionStorage
-            if(!codeData) { 
-                try { codeData = JSON.parse(sessionStorage.getItem('codeorbit_run_code') || 'null'); } catch(e) {} 
+            // 5. sessionStorage (only for editor preview, NOT for shared links)
+            if(!codeData && !shareId) {
+                try {
+                    codeData = JSON.parse(sessionStorage.getItem('codeorbit_run_code') || 'null');
+                } catch(e) {}
             }
 
-            // No data found
+            // No data
             if(!codeData || !codeData.content) {
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('error-msg').style.display = 'block';
@@ -331,30 +363,44 @@
                 return;
             }
 
-            // 🔒 CHECK PASSWORD (only if shareId exists)
+            // 🔒 PASSWORD HANDLING (only for shareId)
             if(shareId) {
-                var pw = null;
-                // 1. Check localStorage passwords
+                // Retrieve password from dedicated storage
                 var passwords = {};
                 try { passwords = JSON.parse(localStorage.getItem('codeorbit_passwords') || '{}'); } catch(e) {}
-                pw = passwords[shareId];
-                // 2. Check inside the stored data
+                var pw = passwords[shareId];
+                
+                // If data itself has _password, use that (from OPFS/IndexedDB)
                 if (!pw && codeData && codeData._password) {
                     pw = codeData._password;
                 }
                 
+                // If password exists but not in current codeData, add it for consistency
+                if(pw && pw.length > 0 && !codeData._password) {
+                    codeData._password = pw;
+                    // Try to update all storages for next time
+                    await storeInOPFS('codeorbit_shared_' + shareId, codeData);
+                    await storeInDB('codeorbit_shared_' + shareId, codeData);
+                    // Also update localStorage if exists
+                    if(localStorage.getItem('codeorbit_shared_' + shareId)) {
+                        var lsCopy = JSON.parse(localStorage.getItem('codeorbit_shared_' + shareId) || '{}');
+                        lsCopy._password = pw;
+                        localStorage.setItem('codeorbit_shared_' + shareId, JSON.stringify(lsCopy));
+                    }
+                }
+                
                 if (pw && pw.length > 0) {
-                    // This link requires password -> show gate
+                    // Show password gate
                     document.getElementById('loading').style.display = 'none';
                     document.getElementById('password-gate').style.display = 'flex';
                     document.getElementById('pw-input').focus();
                     window._codeorbit_pw = pw;
                     window._codeorbit_data = codeData;
-                    return;  // Stop here until password is entered
+                    return;
                 }
             }
             
-            // ✅ No password required (or no shareId) -> render immediately
+            // No password or no shareId -> render immediately
             document.getElementById('loading').style.display = 'none';
             renderCode(codeData);
         }
