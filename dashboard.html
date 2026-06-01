@@ -2,10 +2,11 @@
 <html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <!-- CodeOrbit Favicon -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><defs><linearGradient id='grad1' x1='0%25' y1='0%25' x2='100%25' y2='100%25'><stop offset='0%25' style='stop-color:%2300ff41;stop-opacity:1'/><stop offset='50%25' style='stop-color:%2300cc33;stop-opacity:1'/><stop offset='100%25' style='stop-color:%23006600;stop-opacity:1'/></linearGradient><linearGradient id='grad2' x1='100%25' y1='0%25' x2='0%25' y2='100%25'><stop offset='0%25' style='stop-color:%2366ff66;stop-opacity:1'/><stop offset='100%25' style='stop-color:%2300ff41;stop-opacity:0.3'/></linearGradient><filter id='glow'><feGaussianBlur stdDeviation='6' result='blur'/><feMerge><feMergeNode in='blur'/><feMergeNode in='SourceGraphic'/></feMerge></filter><filter id='glowStrong'><feGaussianBlur stdDeviation='12' result='blur'/><feMerge><feMergeNode in='blur'/><feMergeNode in='SourceGraphic'/></feMerge></filter></defs><rect width='512' height='512' rx='120' fill='%23050505'/><rect width='512' height='512' rx='120' fill='none' stroke='%2300ff41' stroke-width='3' opacity='0.3'/><circle cx='256' cy='240' r='110' fill='url(%23grad1)' filter='url(%23glowStrong)' opacity='0.95'/><circle cx='256' cy='240' r='80' fill='%23050505'/><circle cx='256' cy='240' r='80' fill='none' stroke='%2300ff41' stroke-width='2' opacity='0.5'/><ellipse cx='256' cy='240' rx='170' ry='35' fill='none' stroke='url(%23grad2)' stroke-width='4' transform='rotate(-25,256,240)' filter='url(%23glow)'/><ellipse cx='256' cy='240' rx='140' ry='25' fill='none' stroke='%2300ff41' stroke-width='2' transform='rotate(55,256,240)' opacity='0.6'/><ellipse cx='256' cy='240' rx='150' ry='22' fill='none' stroke='%2300ff41' stroke-width='1.5' transform='rotate(-65,256,240)' opacity='0.4'/><circle cx='170' cy='170' r='6' fill='%23ffffff' filter='url(%23glow)' opacity='0.95'/><circle cx='340' cy='310' r='4' fill='%23ffffff' filter='url(%23glow)' opacity='0.8'/><circle cx='300' cy='150' r='3' fill='%23ffffff' opacity='0.6'/><polygon points='256,100 280,160 340,170 290,210 300,270 256,240 212,270 222,210 172,170 232,160' fill='%23ffffff' filter='url(%23glow)' opacity='0.4' transform='scale(0.3) translate(600,600)'/></svg>">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CODEORBIT | پنل فرماندهی</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><defs><linearGradient id='g1' x1='0%25' y1='0%25' x2='100%25' y2='100%25'><stop offset='0%25' style='stop-color:%2300ff41;stop-opacity:1'/><stop offset='50%25' style='stop-color:%2300cc33'/><stop offset='100%25' style='stop-color:%23006600'/></linearGradient><filter id='glow'><feGaussianBlur stdDeviation='6'/><feMerge><feMergeNode in='blur'/><feMergeNode in='SourceGraphic'/></feMerge></filter></defs><rect width='512' height='512' rx='120' fill='%23050505'/><rect width='512' height='512' rx='120' fill='none' stroke='%2300ff41' stroke-width='3' opacity='0.3'/><circle cx='256' cy='240' r='110' fill='url(%23g1)' filter='url(%23glow)' opacity='0.9'/><circle cx='256' cy='240' r='80' fill='%23050505' stroke='%2300ff41' stroke-width='2' opacity='0.5'/><ellipse cx='256' cy='240' rx='170' ry='35' fill='none' stroke='%2300ff41' stroke-width='3' transform='rotate(-25,256,240)' opacity='0.6'/><ellipse cx='256' cy='240' rx='140' ry='25' fill='none' stroke='%2300ff41' stroke-width='2' transform='rotate(55,256,240)' opacity='0.4'/><circle cx='170' cy='170' r='5' fill='%23fff' filter='url(%23glow)'/><circle cx='340' cy='310' r='4' fill='%23fff' opacity='0.7'/></svg>">
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
@@ -17,21 +18,9 @@
         @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=swap');
 
         :root {
-            --neon: #00ff41;
-            --neon-glow: rgba(0, 255, 65, 0.8);
-            --neon-soft: rgba(0, 255, 65, 0.08);
-            --bg: #010101;
-            --panel: rgba(0, 0, 0, 0.82);
-            --border: rgba(0, 255, 65, 0.2);
-            --border-bright: rgba(0, 255, 65, 0.5);
-            --text: #e8ffe8;
-            --dim: rgba(0, 255, 65, 0.5);
-            --danger: #ff1744;
-            --danger-glow: rgba(255, 23, 68, 0.6);
-            --success: #00e676;
-            --success-glow: rgba(0, 230, 118, 0.6);
-            --info: #00b0ff;
-            --warning: #ffab00;
+            --neon: #00ff41; --neon-glow: rgba(0, 255, 65, 0.8); --neon-soft: rgba(0, 255, 65, 0.08);
+            --bg: #010101; --panel: rgba(0, 0, 0, 0.82); --border: rgba(0, 255, 65, 0.2);
+            --text: #e8ffe8; --dim: rgba(0, 255, 65, 0.5); --danger: #ff1744; --success: #00e676; --info: #00b0ff; --warning: #ffab00;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -53,93 +42,86 @@
 
         .app { position: relative; z-index: 10; max-width: 1300px; margin: 0 auto; padding: 25px; }
 
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; flex-wrap: wrap; gap: 18px; background: var(--panel); backdrop-filter: blur(40px); border: 1px solid var(--border); border-radius: 20px; padding: 22px 28px; box-shadow: 0 8px 35px rgba(0,0,0,0.5); position: relative; overflow: hidden; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 15px; background: var(--panel); backdrop-filter: blur(40px); border: 1px solid var(--border); border-radius: 20px; padding: 20px 26px; box-shadow: 0 8px 35px rgba(0,0,0,0.5); position: relative; overflow: hidden; }
         .header::before { content: ''; position: absolute; top: -40px; right: -40px; width: 140px; height: 140px; background: var(--neon); border-radius: 50%; filter: blur(80px); opacity: 0.04; }
-        .header h1 { font-family: 'Orbitron', sans-serif; font-size: 1.8em; font-weight: 900; background: linear-gradient(180deg, #fff 0%, #b8ffb8 25%, #00ff41 50%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; filter: drop-shadow(0 0 20px var(--neon-glow)); letter-spacing: 3px; }
-        .header .subtitle { color: var(--dim); font-size: 0.75em; margin-top: 4px; letter-spacing: 2px; }
+        .header h1 { font-family: 'Orbitron', sans-serif; font-size: 1.7em; font-weight: 900; background: linear-gradient(180deg, #fff 0%, #b8ffb8 25%, #00ff41 50%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; filter: drop-shadow(0 0 20px var(--neon-glow)); letter-spacing: 3px; }
+        .header .subtitle { color: var(--dim); font-size: 0.72em; margin-top: 4px; letter-spacing: 2px; }
 
-        .btn { padding: 11px 22px; border-radius: 13px; border: 1px solid var(--border); background: rgba(0,0,0,0.7); backdrop-filter: blur(20px); color: var(--text); cursor: pointer; font-family: 'Vazirmatn', sans-serif; font-size: 0.82em; font-weight: 500; transition: all 0.35s cubic-bezier(0.4,0,0.2,1); display: inline-flex; align-items: center; gap: 7px; }
-        .btn:hover { border-color: var(--neon); box-shadow: 0 0 25px var(--neon-soft); transform: translateY(-2px); }
-        .btn-primary { background: linear-gradient(135deg, #001a00 0%, #004d00 40%, #00cc33 100%); border-color: var(--neon); font-weight: 700; box-shadow: 0 0 20px rgba(0,255,65,0.15); animation: btnGlow 3s ease-in-out infinite; }
-        @keyframes btnGlow { 0%, 100% { box-shadow: 0 0 20px rgba(0,255,65,0.15); } 50% { box-shadow: 0 0 45px rgba(0,255,65,0.4); } }
+        .btn { padding: 10px 18px; border-radius: 12px; border: 1px solid var(--border); background: rgba(0,0,0,0.7); backdrop-filter: blur(20px); color: var(--text); cursor: pointer; font-family: 'Vazirmatn', sans-serif; font-size: 0.78em; font-weight: 500; transition: all 0.35s; display: inline-flex; align-items: center; gap: 6px; }
+        .btn:hover { border-color: var(--neon); box-shadow: 0 0 20px var(--neon-soft); transform: translateY(-2px); }
+        .btn-primary { background: linear-gradient(135deg, #001a00 0%, #004d00 40%, #00cc33 100%); border-color: var(--neon); font-weight: 700; box-shadow: 0 0 18px rgba(0,255,65,0.12); animation: btnGlow 3s ease-in-out infinite; }
+        @keyframes btnGlow { 0%, 100% { box-shadow: 0 0 18px rgba(0,255,65,0.12); } 50% { box-shadow: 0 0 40px rgba(0,255,65,0.35); } }
         .btn-danger { border-color: var(--danger); color: var(--danger); }
-        .btn-danger:hover { background: rgba(255,23,68,0.1); box-shadow: 0 0 25px var(--danger-glow); }
+        .btn-danger:hover { background: rgba(255,23,68,0.1); box-shadow: 0 0 20px rgba(255,23,68,0.4); }
 
-        .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin-bottom: 28px; }
-        .stat-card { background: var(--panel); backdrop-filter: blur(40px); border: 1px solid var(--border); border-radius: 18px; padding: 22px; text-align: center; position: relative; overflow: hidden; transition: all 0.4s; cursor: pointer; }
-        .stat-card:hover { transform: translateY(-8px); border-color: var(--neon); box-shadow: 0 18px 45px rgba(0,0,0,0.5), 0 0 50px var(--neon-soft); }
-        .stat-card::before { content: ''; position: absolute; top: -35px; right: -35px; width: 100px; height: 100px; background: var(--neon); border-radius: 50%; filter: blur(60px); opacity: 0; transition: opacity 0.4s; }
-        .stat-card:hover::before { opacity: 0.06; }
-        .stat-icon { font-size: 1.8em; margin-bottom: 8px; position: relative; z-index: 1; }
-        .stat-value { font-family: 'Orbitron', sans-serif; font-size: 2.3em; font-weight: 900; color: var(--neon); text-shadow: 0 0 30px var(--neon-glow); position: relative; z-index: 1; }
-        .stat-label { color: var(--dim); font-size: 0.7em; margin-top: 4px; position: relative; z-index: 1; letter-spacing: 1px; }
-
-        .panels { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 22px; }
-        .panel { background: var(--panel); backdrop-filter: blur(40px); border: 1px solid var(--border); border-radius: 20px; padding: 25px; position: relative; overflow: hidden; box-shadow: 0 8px 35px rgba(0,0,0,0.4); }
+        .panels { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+        .panel { background: var(--panel); backdrop-filter: blur(40px); border: 1px solid var(--border); border-radius: 18px; padding: 22px; position: relative; overflow: hidden; box-shadow: 0 6px 30px rgba(0,0,0,0.4); }
         .panel::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--neon), transparent); opacity: 0.4; }
-        .panel-title { font-family: 'Orbitron', sans-serif; font-size: 0.95em; font-weight: 700; letter-spacing: 1.5px; margin-bottom: 18px; }
-        .panel-title span { color: var(--neon); text-shadow: 0 0 12px var(--neon-glow); }
+        .panel-title { font-family: 'Orbitron', sans-serif; font-size: 0.9em; font-weight: 700; letter-spacing: 1.5px; margin-bottom: 16px; }
+        .panel-title span { color: var(--neon); text-shadow: 0 0 10px var(--neon-glow); }
 
-        .upload-zone { border: 2px dashed var(--border); border-radius: 16px; padding: 38px 28px; text-align: center; transition: all 0.4s; cursor: pointer; background: var(--neon-soft); position: relative; overflow: hidden; }
-        .upload-zone:hover { border-color: var(--neon); background: rgba(0,255,65,0.05); box-shadow: inset 0 0 80px rgba(0,255,65,0.03); }
+        .upload-zone { border: 2px dashed var(--border); border-radius: 14px; padding: 30px 22px; text-align: center; transition: all 0.4s; cursor: pointer; background: var(--neon-soft); position: relative; overflow: hidden; }
+        .upload-zone:hover { border-color: var(--neon); background: rgba(0,255,65,0.05); }
         .upload-zone.drag-over { border-color: var(--neon); border-style: solid; background: rgba(0,255,65,0.07); transform: scale(1.02); }
-        .upload-icon { font-size: 3.5em; position: relative; z-index: 1; animation: floatIcon 3s ease-in-out infinite; }
-        @keyframes floatIcon { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-18px); } }
-        .upload-text { font-family: 'Orbitron', sans-serif; font-size: 1.15em; color: var(--neon); margin: 10px 0; letter-spacing: 2px; position: relative; z-index: 1; }
-        .upload-hint { color: var(--dim); font-size: 0.75em; position: relative; z-index: 1; }
-        .tags { display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; margin-top: 16px; position: relative; z-index: 1; }
-        .tag { padding: 5px 12px; border-radius: 16px; background: rgba(0,255,65,0.03); border: 1px solid var(--border); font-size: 0.62em; font-family: 'JetBrains Mono', monospace; color: var(--dim); }
+        .upload-icon { font-size: 3em; position: relative; z-index: 1; animation: floatIcon 3s ease-in-out infinite; }
+        @keyframes floatIcon { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+        .upload-text { font-family: 'Orbitron', sans-serif; font-size: 1em; color: var(--neon); margin: 8px 0; letter-spacing: 1px; }
+        .upload-hint { color: var(--dim); font-size: 0.7em; }
+        .tags { display: flex; justify-content: center; gap: 5px; flex-wrap: wrap; margin-top: 12px; }
+        .tag { padding: 4px 10px; border-radius: 14px; background: rgba(0,255,65,0.03); border: 1px solid var(--border); font-size: 0.6em; font-family: 'JetBrains Mono', monospace; color: var(--dim); }
         .tag.exe { background: var(--neon-soft); border-color: var(--neon); color: var(--neon); font-weight: 700; }
-        .limit-badge { display: inline-block; padding: 4px 10px; border-radius: 10px; background: rgba(255,171,0,0.1); border: 1px solid rgba(255,171,0,0.3); color: var(--warning); font-size: 0.65em; margin-top: 10px; font-family: 'Orbitron', sans-serif; letter-spacing: 1px; }
+        .limit-badge { display: inline-block; padding: 3px 8px; border-radius: 8px; background: rgba(255,171,0,0.08); border: 1px solid rgba(255,171,0,0.25); color: var(--warning); font-size: 0.6em; margin-top: 8px; font-family: 'Orbitron', sans-serif; }
 
-        .list { max-height: 420px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-left: 3px; }
-        .list::-webkit-scrollbar { width: 4px; }
-        .list::-webkit-scrollbar-track { background: transparent; }
-        .list::-webkit-scrollbar-thumb { background: var(--neon); border-radius: 8px; }
+        .note-area { width: 100%; min-height: 100px; background: rgba(0,0,0,0.5); border: 1px solid var(--border); border-radius: 12px; padding: 14px; color: var(--text); font-family: 'Vazirmatn', 'JetBrains Mono', sans-serif; font-size: 0.82em; resize: vertical; outline: none; transition: all 0.3s; }
+        .note-area:focus { border-color: var(--neon); box-shadow: 0 0 20px var(--neon-soft); }
+        .note-actions { display: flex; gap: 6px; margin-top: 8px; }
 
-        .item { display: flex; align-items: center; gap: 12px; padding: 14px; border-radius: 14px; background: rgba(0,255,65,0.01); border: 1px solid transparent; transition: all 0.35s; }
-        .item:hover { background: var(--neon-soft); border-color: var(--border); box-shadow: 0 6px 25px rgba(0,0,0,0.3); transform: translateX(-3px); }
-        .item-icon { width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2em; flex-shrink: 0; }
+        .list { max-height: 380px; overflow-y: auto; display: flex; flex-direction: column; gap: 7px; padding-left: 2px; }
+        .list::-webkit-scrollbar { width: 3px; }
+        .list::-webkit-scrollbar-thumb { background: var(--neon); border-radius: 6px; }
+
+        .item { display: flex; align-items: center; gap: 10px; padding: 12px; border-radius: 12px; background: rgba(0,255,65,0.01); border: 1px solid transparent; transition: all 0.3s; }
+        .item:hover { background: var(--neon-soft); border-color: var(--border); box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+        .item-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1em; flex-shrink: 0; }
         .item-icon.html { background: linear-gradient(135deg, #2d1513, #4a1a1a); border: 1px solid #e44d26; }
         .item-icon.py { background: linear-gradient(135deg, #1a3d5c, #306998); }
         .item-icon.js { background: #2d2d1a; border: 1px solid #f7df1e; }
+        .item-icon.note { background: linear-gradient(135deg, #1a2d1a, #2a4a2a); border: 1px solid var(--neon); }
         .item-icon.other { background: #1a1a1a; border: 1px solid #555; }
         .item-info { flex: 1; min-width: 0; }
-        .item-name { font-weight: 600; font-size: 0.82em; margin-bottom: 3px; }
-        .item-meta { font-size: 0.62em; color: var(--dim); font-family: 'Orbitron', sans-serif; display: flex; gap: 10px; }
-        .item-actions { display: flex; gap: 5px; }
+        .item-name { font-weight: 600; font-size: 0.78em; margin-bottom: 2px; }
+        .item-meta { font-size: 0.6em; color: var(--dim); font-family: 'Orbitron', sans-serif; display: flex; gap: 8px; }
+        .item-actions { display: flex; gap: 4px; }
 
-        .act-btn { width: 34px; height: 34px; border-radius: 9px; border: 1px solid var(--border); background: transparent; color: var(--dim); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s; font-size: 0.95em; }
+        .act-btn { width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--dim); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s; font-size: 0.85em; }
         .act-btn:hover { background: var(--neon-soft); border-color: var(--neon); color: var(--neon); }
         .act-btn.del:hover { color: var(--danger); border-color: var(--danger); background: rgba(255,23,68,0.1); }
 
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 200; display: flex; align-items: center; justify-content: center; animation: fadeIn 0.3s ease; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .modal { background: var(--panel); border: 1px solid var(--neon); border-radius: 20px; padding: 30px; max-width: 520px; width: 92%; box-shadow: 0 0 80px rgba(0,255,65,0.12); animation: modalPop 0.4s cubic-bezier(0.4,0,0.2,1); }
-        @keyframes modalPop { from { transform: scale(0.85) translateY(50px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
-        .modal h3 { font-family: 'Orbitron', sans-serif; color: var(--neon); font-size: 1.1em; margin-bottom: 16px; }
-        .link-box { background: rgba(0,0,0,0.6); border: 1px solid var(--neon); border-radius: 12px; padding: 14px; font-family: 'JetBrains Mono', monospace; color: var(--neon); font-size: 0.68em; word-break: break-all; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-        .copy-btn { padding: 9px 18px; border-radius: 9px; background: var(--neon); color: #000; border: none; cursor: pointer; font-weight: 700; font-size: 0.82em; white-space: nowrap; box-shadow: 0 0 15px var(--neon-glow); }
+        .modal { background: var(--panel); border: 1px solid var(--neon); border-radius: 18px; padding: 26px; max-width: 500px; width: 90%; box-shadow: 0 0 70px rgba(0,255,65,0.1); animation: modalPop 0.4s ease; }
+        @keyframes modalPop { from { transform: scale(0.85) translateY(40px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
+        .modal h3 { font-family: 'Orbitron', sans-serif; color: var(--neon); font-size: 1em; margin-bottom: 14px; }
+        .link-box { background: rgba(0,0,0,0.6); border: 1px solid var(--neon); border-radius: 10px; padding: 12px; font-family: 'JetBrains Mono', monospace; color: var(--neon); font-size: 0.65em; word-break: break-all; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+        .copy-btn { padding: 7px 14px; border-radius: 8px; background: var(--neon); color: #000; border: none; cursor: pointer; font-weight: 700; font-size: 0.78em; white-space: nowrap; }
 
-        .toast-container { position: fixed; top: 22px; left: 50%; transform: translateX(-50%); z-index: 300; pointer-events: none; }
-        .toast { padding: 12px 24px; border-radius: 12px; font-weight: 600; font-size: 0.82em; text-align: center; margin-bottom: 6px; backdrop-filter: blur(30px); animation: tIn 0.35s ease, tOut 0.35s ease 2.2s forwards; }
+        .toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 300; pointer-events: none; }
+        .toast { padding: 10px 20px; border-radius: 10px; font-weight: 600; font-size: 0.78em; text-align: center; margin-bottom: 5px; backdrop-filter: blur(30px); animation: tIn 0.3s ease, tOut 0.3s ease 2s forwards; }
         .toast.success { background: rgba(0,230,118,0.15); border: 1px solid var(--success); color: var(--success); }
         .toast.error { background: rgba(255,23,68,0.15); border: 1px solid var(--danger); color: var(--danger); }
         .toast.info { background: rgba(0,176,255,0.15); border: 1px solid var(--info); color: var(--info); }
-        @keyframes tIn { from { transform: translateY(-60px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        @keyframes tOut { from { opacity: 1; } to { opacity: 0; transform: translateY(-25px); } }
+        @keyframes tIn { from { transform: translateY(-50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes tOut { from { opacity: 1; } to { opacity: 0; transform: translateY(-20px); } }
 
-        .empty-state { text-align: center; padding: 40px; }
-        .empty-icon { font-size: 3em; opacity: 0.2; margin-bottom: 8px; }
-        .empty-text { color: var(--dim); font-size: 0.85em; }
+        .empty-state { text-align: center; padding: 30px; }
+        .empty-icon { font-size: 2.5em; opacity: 0.2; margin-bottom: 6px; }
+        .empty-text { color: var(--dim); font-size: 0.8em; }
 
-        .storage-bar { margin-top: 18px; padding: 10px 14px; background: rgba(0,0,0,0.4); border-radius: 10px; border: 1px solid var(--border); }
-        .storage-bar-label { display: flex; justify-content: space-between; font-size: 0.6em; color: var(--dim); font-family: 'Orbitron', sans-serif; letter-spacing: 1px; margin-bottom: 5px; }
-        .storage-bar-track { height: 4px; background: rgba(255,255,255,0.05); border-radius: 2px; overflow: hidden; }
-        .storage-bar-fill { height: 100%; background: linear-gradient(90deg, var(--neon), #66ff66); border-radius: 2px; transition: width 0.5s; box-shadow: 0 0 8px var(--neon-glow); }
-
-        @media (max-width: 1100px) { .panels { grid-template-columns: 1fr; } .stats { grid-template-columns: repeat(2, 1fr); } }
-        @media (max-width: 650px) { .app { padding: 10px; } .header { padding: 16px; } .header h1 { font-size: 1.3em; } .stats { grid-template-columns: 1fr 1fr; gap: 10px; } .stat-card { padding: 16px; } .stat-value { font-size: 1.6em; } .cursor-outer, .cursor-inner { display: none; } body { cursor: auto; } }
+        @media (max-width: 1100px) { .panels { grid-template-columns: 1fr; } }
+        @media (max-width: 650px) {
+            .app { padding: 8px; } .header { padding: 14px; } .header h1 { font-size: 1.2em; }
+            .cursor-outer, .cursor-inner { display: none; } body { cursor: auto; }
+        }
     </style>
 </head>
 <body>
@@ -157,9 +139,9 @@
         <div class="header">
             <div>
                 <h1>CODEORBIT</h1>
-                <div class="subtitle">▸ COMMAND CENTER · IndexedDB · تا ۲۵۰MB</div>
+                <div class="subtitle">▸ Commander Raibod · OPFS + Notes</div>
             </div>
-            <div style="display:flex;gap:7px;">
+            <div style="display:flex;gap:6px;">
                 <button class="btn" onclick="refreshData()">⟳</button>
                 <button class="btn btn-primary" onclick="document.getElementById('file-input').click()">⬆ آپلود</button>
                 <button class="btn btn-danger" onclick="logout()">⏻</button>
@@ -167,30 +149,8 @@
             </div>
         </div>
 
-        <div class="stats">
-            <div class="stat-card">
-                <div class="stat-icon">⊡</div>
-                <div class="stat-value" id="stat-total">0</div>
-                <div class="stat-label">فایل‌ها</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">🔗</div>
-                <div class="stat-value" id="stat-links">0</div>
-                <div class="stat-label">لینک‌ها</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">💾</div>
-                <div class="stat-value" id="stat-storage">0</div>
-                <div class="stat-label">فضای IndexedDB</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">⚡</div>
-                <div class="stat-value">∞</div>
-                <div class="stat-label">قابل اشتراک</div>
-            </div>
-        </div>
-
         <div class="panels">
+            <!-- Upload -->
             <div class="panel">
                 <div class="panel-title">⬆ <span>آپلود فایل</span> · لینک عمومی</div>
                 <div class="upload-zone" id="upload-zone">
@@ -198,29 +158,28 @@
                     <div class="upload-text">DROP FILES HERE</div>
                     <div class="upload-hint">فایل رو بکش اینجا · لینک عمومی بگیر 🚀</div>
                     <div class="tags">
-                        <span class="tag exe">.html</span>
-                        <span class="tag exe">.py</span>
-                        <span class="tag exe">.js</span>
-                        <span class="tag exe">.css</span>
-                        <span class="tag">.txt</span>
-                        <span class="tag">.json</span>
+                        <span class="tag exe">.html</span><span class="tag exe">.py</span><span class="tag exe">.js</span><span class="tag exe">.css</span><span class="tag">.txt</span>
                     </div>
-                    <div class="limit-badge">📏 حداکثر ۲۰ مگابایت · ذخیره در IndexedDB</div>
-                </div>
-                <div class="storage-bar">
-                    <div class="storage-bar-label"><span>💾 فضای IndexedDB</span><span id="storage-percent">0%</span></div>
-                    <div class="storage-bar-track"><div class="storage-bar-fill" id="storage-fill" style="width:0%"></div></div>
+                    <div class="limit-badge">📏 ۲۰MB · OPFS ∞</div>
                 </div>
             </div>
 
+            <!-- Quick Note -->
             <div class="panel">
-                <div class="panel-title">🔗 <span>لینک‌های</span> عمومی</div>
-                <div class="list" id="links-list">
-                    <div class="empty-state">
-                        <div class="empty-icon">⊡</div>
-                        <div class="empty-text">هنوز لینکی ساخته نشده</div>
-                    </div>
+                <div class="panel-title">📝 <span>یادداشت سریع</span> · اشتراک متن</div>
+                <textarea class="note-area" id="quick-note" placeholder="متن خود را اینجا بنویسید..."></textarea>
+                <div class="note-actions">
+                    <button class="btn btn-primary" onclick="shareNote()" style="flex:1;justify-content:center;">🚀 اشتراک‌گذاری</button>
+                    <button class="btn" onclick="document.getElementById('quick-note').value=''" style="justify-content:center;">✕ پاک کردن</button>
                 </div>
+            </div>
+        </div>
+
+        <!-- Links List -->
+        <div class="panel">
+            <div class="panel-title">🔗 <span>لینک‌های</span> عمومی</div>
+            <div class="list" id="links-list">
+                <div class="empty-state"><div class="empty-icon">⊡</div><div class="empty-text">هنوز لینکی ساخته نشده</div></div>
             </div>
         </div>
     </div>
@@ -228,9 +187,8 @@
     <div class="modal-overlay" id="link-modal" style="display:none">
         <div class="modal">
             <h3>🎉 لینک عمومی آماده است!</h3>
-            <p style="color:var(--dim);font-size:0.78em;margin-bottom:14px;">🚀 این لینک رو هرکی باز کنه اجرا میشه:</p>
             <div class="link-box"><span id="modal-link"></span><button class="copy-btn" onclick="copyModalLink()">📋 کپی</button></div>
-            <div style="margin-top:14px;display:flex;gap:7px;">
+            <div style="margin-top:12px;display:flex;gap:6px;">
                 <button class="btn btn-primary" onclick="window.open(document.getElementById('modal-link').textContent,'_blank')" style="flex:1;justify-content:center;">🌐 باز کردن</button>
                 <button class="btn" onclick="closeModal()" style="flex:1;justify-content:center;">✕ بستن</button>
             </div>
@@ -245,30 +203,27 @@
         if (sessionStorage.getItem('codeorbit_just_logged')) { localStorage.setItem('codeorbit_auth', 'true'); sessionStorage.removeItem('codeorbit_just_logged'); }
 
         // ==========================================
-        // CUSTOM CURSOR
+        // CURSOR
         // ==========================================
         const cOuter = document.getElementById('cursor-outer'), cInner = document.getElementById('cursor-inner');
         let mouseX = 0, mouseY = 0;
         document.addEventListener('mousemove', e => { mouseX = e.clientX; mouseY = e.clientY; cOuter.style.left = mouseX+'px'; cOuter.style.top = mouseY+'px'; cInner.style.left = mouseX+'px'; cInner.style.top = mouseY+'px'; });
         document.addEventListener('mousedown', () => cOuter.classList.add('click'));
         document.addEventListener('mouseup', () => cOuter.classList.remove('click'));
-        document.querySelectorAll('button, a, .upload-zone, .stat-card, .item, .act-btn').forEach(el => { el.addEventListener('mouseenter', () => cOuter.classList.add('hover')); el.addEventListener('mouseleave', () => cOuter.classList.remove('hover')); });
+        document.querySelectorAll('button, a, .upload-zone, .item, .act-btn, .note-area').forEach(el => { el.addEventListener('mouseenter', () => cOuter.classList.add('hover')); el.addEventListener('mouseleave', () => cOuter.classList.remove('hover')); });
 
         // ==========================================
         // THREE.JS
         // ==========================================
         const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(75, innerWidth/innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('three-bg'), alpha: true, antialias: true });
-        renderer.setSize(innerWidth, innerHeight); renderer.setPixelRatio(Math.min(devicePixelRatio, 2)); camera.position.z = 28;
-        const sGeo = new THREE.BufferGeometry(), sPos = new Float32Array(2500*3);
-        for(let i=0; i<7500; i+=3) { sPos[i]=(Math.random()-0.5)*90; sPos[i+1]=(Math.random()-0.5)*90; sPos[i+2]=(Math.random()-0.5)*50; }
+        renderer.setSize(innerWidth, innerHeight); camera.position.z = 28;
+        const sGeo = new THREE.BufferGeometry(), sPos = new Float32Array(2000*3);
+        for(let i=0; i<6000; i+=3) { sPos[i]=(Math.random()-0.5)*80; sPos[i+1]=(Math.random()-0.5)*80; sPos[i+2]=(Math.random()-0.5)*40; }
         sGeo.setAttribute('position', new THREE.BufferAttribute(sPos,3));
-        const stars = new THREE.Points(sGeo, new THREE.PointsMaterial({ size:0.1, color:0x00ff41, blending:THREE.AdditiveBlending, depthWrite:false, transparent:true, opacity:0.7 }));
+        const stars = new THREE.Points(sGeo, new THREE.PointsMaterial({ size:0.1, color:0x00ff41, blending:THREE.AdditiveBlending, depthWrite:false, transparent:true, opacity:0.6 }));
         scene.add(stars);
-        const rings = new THREE.Group();
-        for(let i=0; i<5; i++) { const r = new THREE.Mesh(new THREE.TorusGeometry(6+i*3, 0.015, 16, 150), new THREE.MeshBasicMaterial({ color:0x00ff41, transparent:true, opacity:0.1-i*0.015, blending:THREE.AdditiveBlending })); r.rotation.x=Math.PI/2+i*0.3; r.rotation.y=i*0.5; rings.add(r); }
-        scene.add(rings);
-        (function anim(){ requestAnimationFrame(anim); stars.rotation.x+=0.00006+(mouseY/innerHeight-0.5)*0.0003; stars.rotation.y+=0.0001+(mouseX/innerWidth-0.5)*0.0003; rings.rotation.x+=0.0005; rings.rotation.y+=0.0006; renderer.render(scene,camera); })();
+        (function anim(){ requestAnimationFrame(anim); stars.rotation.x+=0.00006+(mouseY/innerHeight-0.5)*0.0003; stars.rotation.y+=0.0001+(mouseX/innerWidth-0.5)*0.0003; renderer.render(scene,camera); })();
 
         // ==========================================
         // PARTICLES
@@ -276,72 +231,65 @@
         const pCanvas = document.getElementById('particles-canvas'), pCtx = pCanvas.getContext('2d');
         pCanvas.width=innerWidth; pCanvas.height=innerHeight;
         const particles = [];
-        for(let i=0; i<70; i++) particles.push({ x:Math.random()*innerWidth, y:Math.random()*innerHeight, vx:(Math.random()-0.5)*0.5, vy:(Math.random()-0.5)*0.5, size:Math.random()*2+0.5, opacity:Math.random()*0.35+0.08 });
-        function drawP() { pCtx.clearRect(0,0,pCanvas.width,pCanvas.height); particles.forEach(p=>{ const dx=mouseX-p.x, dy=mouseY-p.y, dist=Math.sqrt(dx*dx+dy*dy); if(dist<180){ p.vx+=dx/dist*0.04; p.vy+=dy/dist*0.04; } p.x+=p.vx; p.y+=p.vy; p.vx*=0.99; p.vy*=0.99; if(p.x<0)p.x=pCanvas.width; if(p.x>pCanvas.width)p.x=0; if(p.y<0)p.y=pCanvas.height; if(p.y>pCanvas.height)p.y=0; pCtx.beginPath(); pCtx.arc(p.x,p.y,p.size,0,Math.PI*2); pCtx.fillStyle=`rgba(0,255,65,${p.opacity})`; pCtx.fill(); }); requestAnimationFrame(drawP); }
+        for(let i=0; i<60; i++) particles.push({ x:Math.random()*innerWidth, y:Math.random()*innerHeight, vx:(Math.random()-0.5)*0.4, vy:(Math.random()-0.5)*0.4, size:Math.random()*2+0.5, opacity:Math.random()*0.3+0.06 });
+        function drawP() { pCtx.clearRect(0,0,pCanvas.width,pCanvas.height); particles.forEach(p=>{ const dx=mouseX-p.x, dy=mouseY-p.y, dist=Math.sqrt(dx*dx+dy*dy); if(dist<150){ p.vx+=dx/dist*0.03; p.vy+=dy/dist*0.03; } p.x+=p.vx; p.y+=p.vy; p.vx*=0.99; p.vy*=0.99; if(p.x<0)p.x=pCanvas.width; if(p.x>pCanvas.width)p.x=0; if(p.y<0)p.y=pCanvas.height; if(p.y>pCanvas.height)p.y=0; pCtx.beginPath(); pCtx.arc(p.x,p.y,p.size,0,Math.PI*2); pCtx.fillStyle=`rgba(0,255,65,${p.opacity})`; pCtx.fill(); }); requestAnimationFrame(drawP); }
         drawP();
 
         // ==========================================
         // ORBS
         // ==========================================
         const orbsLayer = document.getElementById('orbs-layer');
-        for(let i=0; i<6; i++) { const orb=document.createElement('div'); orb.className='orb'; orb.style.cssText=`width:${80+Math.random()*140}px;height:${80+Math.random()*140}px;left:${Math.random()*90}%;top:${Math.random()*90}%;--dur:${8+Math.random()*10}s;--del:${Math.random()*5}s;`; orbsLayer.appendChild(orb); }
+        for(let i=0; i<5; i++) { const orb=document.createElement('div'); orb.className='orb'; orb.style.cssText=`width:${70+Math.random()*120}px;height:${70+Math.random()*120}px;left:${Math.random()*90}%;top:${Math.random()*90}%;--dur:${7+Math.random()*8}s;--del:${Math.random()*4}s;`; orbsLayer.appendChild(orb); }
 
         // ==========================================
-        // INDEXEDDB
+        // OPFS - فضای نامحدود
         // ==========================================
-        function openDB() {
-            return new Promise((resolve, reject) => {
-                const req = indexedDB.open('CodeOrbitDB', 1);
-                req.onupgradeneeded = e => { if(!e.target.result.objectStoreNames.contains('files')) e.target.result.createObjectStore('files', { keyPath: 'id' }); };
-                req.onsuccess = e => resolve(e.target.result);
-                req.onerror = e => reject(e.target.error);
-            });
+        async function getOPFSRoot() { try { return await navigator.storage.getDirectory(); } catch(e) { return null; } }
+        
+        async function storeInOPFS(id, data) {
+            try {
+                const root = await getOPFSRoot();
+                if (!root) return false;
+                const handle = await root.getFileHandle(id + '.json', { create: true });
+                const writable = await handle.createWritable();
+                await writable.write(JSON.stringify(data));
+                await writable.close();
+                return true;
+            } catch(e) { return false; }
         }
 
+        async function getFromOPFS(id) {
+            try {
+                const root = await getOPFSRoot();
+                if (!root) return null;
+                const handle = await root.getFileHandle(id + '.json');
+                const file = await handle.getFile();
+                return JSON.parse(await file.text());
+            } catch(e) { return null; }
+        }
+
+        async function deleteFromOPFS(id) {
+            try { const root = await getOPFSRoot(); if (root) await root.removeEntry(id + '.json'); } catch(e) {}
+        }
+
+        // ==========================================
+        // INDEXEDDB - Fallback
+        // ==========================================
+        function openDB() { return new Promise((resolve, reject) => { const req=indexedDB.open('CodeOrbitDB',1); req.onupgradeneeded=e=>{ if(!e.target.result.objectStoreNames.contains('files')) e.target.result.createObjectStore('files',{keyPath:'id'}); }; req.onsuccess=e=>resolve(e.target.result); req.onerror=e=>reject(e.target.error); }); }
+        
         function storeInDB(id, data) {
-            return new Promise((resolve) => {
-                openDB().then(db => {
-                    const tx = db.transaction('files', 'readwrite');
-                    tx.objectStore('files').put({ id, data, timestamp: Date.now() });
-                    tx.oncomplete = () => { db.close(); resolve(true); };
-                    tx.onerror = () => { db.close(); resolve(false); };
-                }).catch(() => resolve(false));
+            return new Promise(resolve => {
+                openDB().then(db => { const tx=db.transaction('files','readwrite'); tx.objectStore('files').put({id,data,timestamp:Date.now()}); tx.oncomplete=()=>{ db.close(); resolve(true); }; tx.onerror=()=>{ db.close(); resolve(false); }; }).catch(()=>resolve(false));
             });
         }
 
         function getFromDB(id) {
-            return new Promise((resolve) => {
-                openDB().then(db => {
-                    if(!db.objectStoreNames.contains('files')) { resolve(null); return; }
-                    const tx = db.transaction('files', 'readonly');
-                    const req = tx.objectStore('files').get(id);
-                    req.onsuccess = () => resolve(req.result ? req.result.data : null);
-                    req.onerror = () => resolve(null);
-                    tx.oncomplete = () => db.close();
-                }).catch(() => resolve(null));
+            return new Promise(resolve => {
+                openDB().then(db => { if(!db.objectStoreNames.contains('files')){resolve(null);return;} const tx=db.transaction('files','readonly'); const req=tx.objectStore('files').get(id); req.onsuccess=()=>resolve(req.result?req.result.data:null); req.onerror=()=>resolve(null); tx.oncomplete=()=>db.close(); }).catch(()=>resolve(null));
             });
         }
 
-        function deleteFromDB(id) {
-            openDB().then(db => {
-                const tx = db.transaction('files', 'readwrite');
-                tx.objectStore('files').delete(id);
-                tx.oncomplete = () => db.close();
-            }).catch(() => {});
-        }
-
-        async function getDBStorageSize() {
-            try {
-                const db = await openDB();
-                const tx = db.transaction('files', 'readonly');
-                const store = tx.objectStore('files');
-                const all = await new Promise(r => { const req = store.getAll(); req.onsuccess = () => r(req.result); });
-                db.close();
-                let total = 0;
-                all.forEach(item => { if(item.data && item.data.content) total += item.data.content.length * 2; });
-                return total;
-            } catch(e) { return 0; }
-        }
+        function deleteFromDB(id) { openDB().then(db=>{ const tx=db.transaction('files','readwrite'); tx.objectStore('files').delete(id); tx.oncomplete=()=>db.close(); }).catch(()=>{}); }
 
         // ==========================================
         // DATA
@@ -351,33 +299,40 @@
         try { codes = JSON.parse(localStorage.getItem('codeorbit_codes')||'[]'); } catch(e) { codes = []; }
 
         function save() {
-            try { localStorage.setItem('codeorbit_links', JSON.stringify(shareLinks)); localStorage.setItem('codeorbit_codes', JSON.stringify(codes.map(c=>({id:c.id,name:c.name,size:c.size,date:c.date,language:c.language})))); } catch(e) {}
+            try { localStorage.setItem('codeorbit_links', JSON.stringify(shareLinks)); localStorage.setItem('codeorbit_codes', JSON.stringify(codes)); } catch(e) {}
             updateUI();
         }
 
         function formatSize(b) { if(!b||b===0) return '0 B'; if(b<1024) return b+' B'; if(b<1048576) return (b/1024).toFixed(1)+' KB'; return (b/1048576).toFixed(1)+' MB'; }
 
-        async function updateUI() {
-            document.getElementById('stat-total').textContent = codes.length;
-            document.getElementById('stat-links').textContent = shareLinks.length;
-            
-            const used = await getDBStorageSize();
-            const usedMB = (used/(1024*1024)).toFixed(1);
-            document.getElementById('stat-storage').textContent = usedMB + ' MB';
-            const percent = Math.min(100, Math.round((used/(250*1024*1024))*100));
-            document.getElementById('storage-percent').textContent = percent + '%';
-            document.getElementById('storage-fill').style.width = percent + '%';
-
+        function updateUI() {
             const list = document.getElementById('links-list');
             if(shareLinks.length===0) {
                 list.innerHTML = '<div class="empty-state"><div class="empty-icon">⊡</div><div class="empty-text">هنوز لینکی ساخته نشده</div></div>';
             } else {
                 list.innerHTML = shareLinks.slice().reverse().map(l => {
-                    const ic = l.type==='python'?'py':l.type==='html'?'html':l.type==='js'?'js':'other';
-                    const em = l.type==='python'?'🐍':l.type==='html'?'🌐':l.type==='js'?'JS':'📄';
-                    return `<div class="item"><div class="item-icon ${ic}">${em}</div><div class="item-info"><div class="item-name">${l.name}</div><div class="item-meta"><span>${new Date(l.date).toLocaleString('fa-IR')}</span><span>${l.size}</span></div></div><div class="item-actions"><button class="act-btn" onclick="navigator.clipboard.writeText('${l.url.replace(/'/g,"\\'")}');showToast('✅ کپی شد','success')">📋</button><button class="act-btn" onclick="window.open('${l.url.replace(/'/g,"\\'")}','_blank')">🔗</button><button class="act-btn del" onclick="deleteLink('${l.id}')">🗑</button></div></div>`;
+                    const ic = l.type==='python'?'py':l.type==='html'?'html':l.type==='js'?'js':l.type==='note'?'note':'other';
+                    const em = l.type==='python'?'🐍':l.type==='html'?'🌐':l.type==='js'?'JS':l.type==='note'?'📝':'📄';
+                    const name = l.type==='note' ? (l.name.substring(0,50)+'...') : l.name;
+                    return `<div class="item"><div class="item-icon ${ic}">${em}</div><div class="item-info"><div class="item-name">${name}</div><div class="item-meta"><span>${new Date(l.date).toLocaleString('fa-IR')}</span><span>${l.size}</span></div></div><div class="item-actions"><button class="act-btn" onclick="navigator.clipboard.writeText('${l.url.replace(/'/g,"\\'")}');showToast('✅ کپی شد','success')">📋</button><button class="act-btn" onclick="window.open('${l.url.replace(/'/g,"\\'")}','_blank')">🔗</button><button class="act-btn del" onclick="deleteLink('${l.id}')">🗑</button></div></div>`;
                 }).join('');
             }
+        }
+
+        // ==========================================
+        // SMART STORAGE (OPFS > IndexedDB > localStorage)
+        // ==========================================
+        async function smartStore(key, data) {
+            // 1. OPFS
+            if (await storeInOPFS(key, data)) return true;
+            // 2. IndexedDB
+            if (await storeInDB(key, data)) return true;
+            // 3. localStorage
+            try {
+                const compressed = LZString.compressToUTF16(data.content);
+                localStorage.setItem(key, JSON.stringify({...data, content:compressed, compressed:true}));
+                return true;
+            } catch(e) { return false; }
         }
 
         // ==========================================
@@ -393,7 +348,7 @@
             if(!files||files.length===0) { showToast('❌ فایلی انتخاب نشد','error'); return; }
             let ok=0, err=0;
             const total=files.length, base=location.origin+location.pathname.replace('dashboard.html','');
-            showToast(`⏳ ${total} فایل در حال پردازش...`,'info');
+            showToast(`⏳ ${total} فایل...`,'info');
 
             Array.from(files).forEach(file => {
                 if(file.size>20*1024*1024) { err++; showToast(`⚠️ ${file.name} > ۲۰MB`,'error'); if(ok+err===total&&ok===0) finish(); return; }
@@ -403,6 +358,7 @@
                     if(!content||content.length===0) { err++; if(ok+err===total) finish(); return; }
                     const id = 'c_'+Date.now()+'_'+Math.random().toString(36).substr(2,9);
                     const ext = file.name.split('.').pop()?.toLowerCase()||'txt';
+                    const key = 'codeorbit_shared_'+id;
                     let url;
 
                     codes.push({ id, name:file.name, size:formatSize(file.size), date:new Date().toISOString(), language:ext.toUpperCase() });
@@ -410,13 +366,9 @@
                     if(content.length<1500) {
                         url = base+'runner.html?code='+LZString.compressToEncodedURIComponent(content)+'&type='+ext+'&name='+encodeURIComponent(file.name);
                     } else {
-                        const stored = await storeInDB('codeorbit_shared_'+id, { name:file.name, content, language:ext.toUpperCase(), date:new Date().toISOString() });
-                        if(stored) {
-                            url = base+'runner.html?share='+id;
-                        } else {
-                            err++; showToast(`❌ ${file.name} - خطا در ذخیره`,'error');
-                            if(ok+err===total) finish(); return;
-                        }
+                        const stored = await smartStore(key, { name:file.name, content, language:ext.toUpperCase(), date:new Date().toISOString() });
+                        if(stored) { url = base+'runner.html?share='+id; }
+                        else { err++; showToast(`❌ ${file.name} - خطا`,'error'); if(ok+err===total) finish(); return; }
                     }
 
                     shareLinks.push({ id, name:file.name, url, type:ext==='py'?'python':ext==='html'?'html':ext==='js'?'js':'other', size:formatSize(file.size), date:new Date().toISOString() });
@@ -429,11 +381,42 @@
 
             function finish() {
                 save();
-                if(ok>0) {
-                    showToast(`✅ ${ok} فایل آپلود شد!`,'success');
-                    if(shareLinks.length>0) { const last=shareLinks[shareLinks.length-1]; document.getElementById('modal-link').textContent=last.url; document.getElementById('link-modal').style.display='flex'; }
-                } else showToast('❌ هیچ فایلی آپلود نشد','error');
+                if(ok>0) { showToast(`✅ ${ok} فایل آپلود شد!`,'success'); if(shareLinks.length>0) showLinkModal(shareLinks[shareLinks.length-1]); }
+                else showToast('❌ هیچ فایلی آپلود نشد','error');
             }
+        }
+
+        // ==========================================
+        // QUICK NOTE
+        // ==========================================
+        async function shareNote() {
+            const text = document.getElementById('quick-note').value.trim();
+            if (!text) { showToast('❌ متنی نوشته نشده','error'); return; }
+            
+            const id = 'n_'+Date.now()+'_'+Math.random().toString(36).substr(2,9);
+            const key = 'codeorbit_shared_'+id;
+            const base = location.origin+location.pathname.replace('dashboard.html','');
+            let url;
+
+            if (text.length < 1500) {
+                url = base+'runner.html?code='+LZString.compressToEncodedURIComponent(text)+'&type=note&name='+encodeURIComponent('یادداشت '+new Date().toLocaleString('fa-IR'));
+            } else {
+                const stored = await smartStore(key, { name:text.substring(0,50), content:text, language:'NOTE', date:new Date().toISOString() });
+                if (stored) { url = base+'runner.html?share='+id; }
+                else { showToast('❌ خطا در ذخیره','error'); return; }
+            }
+
+            shareLinks.push({ id, name:text.substring(0,50), url, type:'note', size:formatSize(text.length), date:new Date().toISOString() });
+            codes.push({ id, name:'Note: '+text.substring(0,30), size:formatSize(text.length), date:new Date().toISOString(), language:'NOTE' });
+            save();
+            showLinkModal(shareLinks[shareLinks.length-1]);
+            document.getElementById('quick-note').value = '';
+            showToast('✅ یادداشت اشتراک‌گذاری شد!','success');
+        }
+
+        function showLinkModal(link) {
+            document.getElementById('modal-link').textContent = link.url;
+            document.getElementById('link-modal').style.display = 'flex';
         }
 
         // ==========================================
@@ -443,11 +426,10 @@
             if(!confirm('⚠️ حذف شود؟')) return;
             shareLinks = shareLinks.filter(l=>l.id!==id);
             codes = codes.filter(c=>c.id!==id);
-            deleteFromDB('codeorbit_shared_'+id);
             const key = 'codeorbit_shared_'+id;
+            deleteFromOPFS(key); deleteFromDB(key);
             if(localStorage.getItem(key)) localStorage.removeItem(key);
-            save();
-            showToast('🗑️ حذف شد','error');
+            save(); showToast('🗑️ حذف شد','error');
         }
 
         function copyModalLink() { navigator.clipboard.writeText(document.getElementById('modal-link').textContent).then(()=>showToast('✅ کپی شد','success')); closeModal(); }
@@ -461,7 +443,7 @@
         window.addEventListener('resize', () => { camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth,innerHeight); pCanvas.width=innerWidth; pCanvas.height=innerHeight; });
 
         updateUI();
-        console.log('🌍 CODEORBIT v10 · IndexedDB · 250MB');
+        console.log('🌍 CODEORBIT v11 · Commander: Raibod · OPFS + Notes');
     </script>
 </body>
 </html>
