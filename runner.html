@@ -3,754 +3,173 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CODEORBIT | ترمینال اجرا</title>
+    <title>CODEORBIT | اجرای کد</title>
     
-    <!-- Pyodide -->
     <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
-    <!-- GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <!-- Three.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700;900&display=swap');
-        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
 
         :root {
             --neon: #00ff41;
-            --neon-dark: #00cc33;
-            --neon-light: #66ff66;
             --neon-glow: rgba(0, 255, 65, 0.7);
-            --neon-soft: rgba(0, 255, 65, 0.12);
-            --bg-deep: #020202;
-            --bg-terminal: #080808;
-            --bg-panel: rgba(0, 0, 0, 0.9);
-            --border: rgba(0, 255, 65, 0.2);
-            --border-bright: rgba(0, 255, 65, 0.5);
-            --text: #e0ffe0;
-            --text-dim: rgba(0, 255, 65, 0.5);
-            --danger: #ff1744;
-            --danger-glow: rgba(255, 23, 68, 0.6);
-            --warning: #ffab00;
-            --warning-glow: rgba(255, 171, 0, 0.6);
-            --info: #00b0ff;
-            --info-glow: rgba(0, 176, 255, 0.6);
-            --success: #00e676;
-            --success-glow: rgba(0, 230, 118, 0.6);
-            --purple: #b388ff;
-            --purple-glow: rgba(179, 136, 255, 0.5);
+            --bg: #020202;
+            --terminal-bg: #080808;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: 'Vazirmatn', 'JetBrains Mono', monospace;
-            background: var(--bg-deep);
-            color: var(--text);
+            background: var(--bg);
+            color: var(--neon);
             height: 100vh;
             overflow: hidden;
-            cursor: none;
         }
 
-        /* ======================================== */
-        /* CUSTOM CURSOR */
-        /* ======================================== */
-        .cursor-outer {
-            width: 24px; height: 24px;
-            border: 2px solid var(--neon);
-            border-radius: 50%;
-            position: fixed;
-            pointer-events: none;
-            z-index: 99999;
-            transition: all 0.06s ease;
-            box-shadow: 0 0 15px var(--neon-glow);
-        }
-
-        .cursor-inner {
-            width: 5px; height: 5px;
-            background: var(--neon);
-            border-radius: 50%;
-            position: fixed;
-            pointer-events: none;
-            z-index: 99999;
-            box-shadow: 0 0 12px var(--neon-glow);
-        }
-
-        .cursor-outer.hover {
-            width: 40px; height: 40px;
-            border-color: #fff;
-            box-shadow: 0 0 30px var(--neon-glow);
-            mix-blend-mode: difference;
-        }
-
-        /* ======================================== */
-        /* THREE.JS BACKGROUND */
-        /* ======================================== */
-        #three-bg {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            z-index: 0;
-            pointer-events: none;
-        }
-
-        /* ======================================== */
-        /* MATRIX RAIN */
-        /* ======================================== */
-        #matrix-canvas {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            z-index: 1;
-            pointer-events: none;
-            opacity: 0.3;
-        }
-
-        /* ======================================== */
-        /* SCANLINES */
-        /* ======================================== */
+        #three-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+        #matrix-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; opacity: 0.3; }
         .scanlines {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: repeating-linear-gradient(
-                0deg, transparent, transparent 2px,
-                rgba(0,0,0,0.025) 2px, rgba(0,0,0,0.025) 4px
-            );
-            z-index: 2;
-            pointer-events: none;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+            z-index: 2; pointer-events: none;
         }
-
-        /* ======================================== */
-        /* VIGNETTE */
-        /* ======================================== */
         .vignette {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.75) 100%);
-            z-index: 3;
-            pointer-events: none;
+            z-index: 3; pointer-events: none;
         }
 
-        /* ======================================== */
-        /* FLOATING ORBS */
-        /* ======================================== */
-        .orbs-layer {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            z-index: 4;
-            pointer-events: none;
+        .terminal-container {
+            position: relative; z-index: 10;
+            height: 100vh; display: flex;
+            align-items: center; justify-content: center;
+            padding: 20px;
         }
 
-        .orb {
-            position: absolute;
-            border-radius: 50%;
-            background: radial-gradient(circle, var(--neon-soft), transparent);
-            animation: orbFloat var(--dur) ease-in-out infinite;
-            animation-delay: var(--del);
+        .terminal {
+            width: 100%; max-width: 1050px; height: 88vh;
+            background: var(--terminal-bg);
+            border: 1px solid rgba(0, 255, 65, 0.3);
+            border-radius: 20px; overflow: hidden;
+            display: flex; flex-direction: column;
+            box-shadow: 0 0 80px rgba(0, 255, 65, 0.06), 0 0 160px rgba(0, 0, 0, 0.6);
+            animation: terminalIn 0.8s ease;
         }
 
-        @keyframes orbFloat {
-            0%, 100% { transform: translateY(0) translateX(0) scale(1); opacity: 0.15; }
-            25% { transform: translateY(-40px) translateX(25px) scale(1.3); opacity: 0.3; }
-            50% { transform: translateY(-20px) translateX(-15px) scale(0.9); opacity: 0.2; }
-            75% { transform: translateY(-50px) translateX(-30px) scale(1.4); opacity: 0.25; }
+        @keyframes terminalIn {
+            from { transform: scale(0.85) translateY(60px); opacity: 0; }
+            to { transform: scale(1) translateY(0); opacity: 1; }
         }
 
-        /* ======================================== */
-        /* MAIN CONTAINER */
-        /* ======================================== */
-        .main-container {
-            position: relative;
-            z-index: 10;
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 25px;
-        }
-
-        /* ======================================== */
-        /* TERMINAL WINDOW */
-        /* ======================================== */
-        .terminal-window {
-            width: 100%;
-            max-width: 1050px;
-            height: 88vh;
-            background: var(--bg-terminal);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 
-                0 0 80px rgba(0, 255, 65, 0.06),
-                0 0 160px rgba(0, 0, 0, 0.6),
-                inset 0 0 80px rgba(0, 255, 65, 0.02);
-            position: relative;
-            animation: terminalEntrance 0.9s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        @keyframes terminalEntrance {
-            from {
-                transform: scale(0.85) translateY(60px);
-                opacity: 0;
-                filter: blur(10px);
-            }
-            to {
-                transform: scale(1) translateY(0);
-                opacity: 1;
-                filter: blur(0);
-            }
-        }
-
-        /* Terminal Border Glow */
-        .terminal-window::before {
-            content: '';
-            position: absolute;
-            inset: -1px;
-            border-radius: 21px;
-            padding: 1px;
-            background: conic-gradient(
-                from 0deg,
-                transparent,
-                var(--neon) 25%,
-                transparent 50%,
-                var(--neon) 75%,
-                transparent
-            );
-            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-            -webkit-mask-composite: xor;
-            mask-composite: exclude;
-            opacity: 0.4;
-            animation: borderSpin 8s linear infinite;
-            z-index: -1;
-        }
-
-        @keyframes borderSpin {
-            100% { transform: rotate(360deg); }
-        }
-
-        /* ======================================== */
-        /* TERMINAL TITLE BAR */
-        /* ======================================== */
         .title-bar {
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            display: flex; align-items: center; gap: 10px;
             padding: 16px 22px;
             background: rgba(0, 255, 65, 0.03);
-            border-bottom: 1px solid var(--border);
-            user-select: none;
-        }
-
-        .traffic-lights {
-            display: flex;
-            gap: 9px;
+            border-bottom: 1px solid rgba(0, 255, 65, 0.15);
         }
 
         .traffic-light {
-            width: 14px; height: 14px;
-            border-radius: 50%;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
+            width: 14px; height: 14px; border-radius: 50%;
+        }
+        .red { background: #ff5f56; }
+        .yellow { background: #ffbd2e; }
+        .green { background: #27c93f; box-shadow: 0 0 10px #27c93f; }
+
+        .title-text {
+            flex: 1; text-align: center;
+            font-family: 'Orbitron', sans-serif; font-size: 0.7em;
+            letter-spacing: 2px; color: rgba(0, 255, 65, 0.6);
         }
 
-        .traffic-light.red {
-            background: #ff5f56;
-            box-shadow: 0 0 8px rgba(255, 95, 86, 0.5);
-        }
-        .traffic-light.yellow {
-            background: #ffbd2e;
-            box-shadow: 0 0 8px rgba(255, 189, 46, 0.5);
-        }
-        .traffic-light.green {
-            background: #27c93f;
-            box-shadow: 0 0 8px rgba(39, 201, 63, 0.5);
-            animation: greenPulse 3s ease-in-out infinite;
-        }
-
-        @keyframes greenPulse {
-            0%, 100% { box-shadow: 0 0 8px rgba(39,201,63,0.5); }
-            50% { box-shadow: 0 0 20px rgba(39,201,63,0.9); }
-        }
-
-        .traffic-light:hover {
-            transform: scale(1.3);
-        }
-
-        .traffic-light.red:hover { box-shadow: 0 0 25px rgba(255,95,86,0.9); }
-        .traffic-light.yellow:hover { box-shadow: 0 0 25px rgba(255,189,46,0.9); }
-        .traffic-light.green:hover { box-shadow: 0 0 25px rgba(39,201,63,0.9); }
-
-        .title-tabs {
-            display: flex;
-            gap: 4px;
-            flex: 1;
-            justify-content: center;
-        }
-
-        .title-tab {
-            padding: 8px 18px;
-            border-radius: 8px;
-            font-family: 'Orbitron', sans-serif;
-            font-size: 0.65em;
-            letter-spacing: 2px;
-            color: var(--text-dim);
-            cursor: pointer;
-            transition: all 0.3s ease;
-            white-space: nowrap;
-        }
-
-        .title-tab.active {
-            background: var(--neon-soft);
-            color: var(--neon);
-            border: 1px solid var(--border-bright);
-            box-shadow: 0 0 15px var(--neon-soft);
-        }
-
-        .title-tab:hover:not(.active) {
-            color: var(--text);
-            background: rgba(0,255,65,0.04);
-        }
-
-        .title-actions {
-            display: flex;
-            gap: 8px;
-        }
-
-        .title-btn {
-            width: 30px; height: 30px;
-            border-radius: 8px;
-            border: 1px solid transparent;
-            background: transparent;
-            color: var(--text-dim);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-            font-size: 0.9em;
-        }
-
-        .title-btn:hover {
-            border-color: var(--border);
-            background: var(--neon-soft);
-            color: var(--neon);
-        }
-
-        /* ======================================== */
-        /* TERMINAL TOOLBAR */
-        /* ======================================== */
-        .terminal-toolbar {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 10px 20px;
-            background: rgba(0, 0, 0, 0.4);
-            border-bottom: 1px solid var(--border);
-            font-size: 0.7em;
-            font-family: 'Orbitron', sans-serif;
-            letter-spacing: 1px;
-        }
-
-        .toolbar-item {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            color: var(--text-dim);
-            padding: 5px 10px;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .toolbar-item:hover {
-            background: var(--neon-soft);
-            color: var(--neon);
-        }
-
-        .toolbar-separator {
-            width: 1px; height: 20px;
-            background: var(--border);
-        }
-
-        .toolbar-status {
-            margin-right: auto;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .status-indicator {
-            width: 7px; height: 7px;
-            border-radius: 50%;
-            background: var(--success);
-            box-shadow: 0 0 8px var(--success-glow);
-            animation: statusBlink 2s ease-in-out infinite;
-        }
-
-        @keyframes statusBlink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
-        }
-
-        .status-indicator.running {
-            background: var(--warning);
-            box-shadow: 0 0 12px var(--warning-glow);
-            animation: runningBlink 0.8s ease-in-out infinite;
-        }
-
-        @keyframes runningBlink {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.4; transform: scale(1.8); }
-        }
-
-        .status-indicator.error {
-            background: var(--danger);
-            box-shadow: 0 0 12px var(--danger-glow);
-        }
-
-        /* ======================================== */
-        /* TERMINAL BODY */
-        /* ======================================== */
         .terminal-body {
-            flex: 1;
-            overflow-y: auto;
-            padding: 20px 24px;
+            flex: 1; padding: 24px; overflow-y: auto;
             font-family: 'JetBrains Mono', 'Vazirmatn', monospace;
-            font-size: 0.85em;
-            line-height: 1.8;
-            position: relative;
+            font-size: 0.85em; line-height: 1.8;
         }
 
-        .terminal-body::-webkit-scrollbar {
-            width: 5px;
-        }
+        .terminal-body::-webkit-scrollbar { width: 4px; }
+        .terminal-body::-webkit-scrollbar-thumb { background: var(--neon); border-radius: 10px; }
 
-        .terminal-body::-webkit-scrollbar-track {
-            background: transparent;
-        }
+        .line { padding: 2px 0; animation: lineIn 0.3s ease; }
+        @keyframes lineIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
 
-        .terminal-body::-webkit-scrollbar-thumb {
-            background: var(--neon);
-            border-radius: 10px;
-            box-shadow: 0 0 8px var(--neon-glow);
-        }
+        .prompt { color: var(--neon); font-weight: 700; }
+        .output { color: #d4ffd4; }
+        .error { color: #ff5252; }
+        .success { color: #69f0ae; }
+        .info { color: #40c4ff; }
+        .dim { color: rgba(0, 255, 65, 0.5); }
 
-        /* Line styles */
-        .line {
-            padding: 2px 0;
-            animation: lineSlideIn 0.4s ease;
-            position: relative;
-        }
-
-        @keyframes lineSlideIn {
-            from { opacity: 0; transform: translateX(-15px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-
-        .line .prompt { color: var(--neon); font-weight: 700; }
-        .line .output { color: #d4ffd4; }
-        .line .error { color: #ff5252; text-shadow: 0 0 8px rgba(255,82,82,0.4); }
-        .line .success { color: #69f0ae; text-shadow: 0 0 8px rgba(105,240,174,0.4); }
-        .line .info { color: #40c4ff; text-shadow: 0 0 8px rgba(64,196,255,0.3); }
-        .line .warning { color: #ffd740; text-shadow: 0 0 8px rgba(255,215,64,0.4); }
-        .line .highlight { color: var(--purple); text-shadow: 0 0 8px var(--purple-glow); }
-        .line .dim { color: var(--text-dim); }
-        .line .bold { font-weight: 700; }
-        .line .italic { font-style: italic; }
-
-        /* Progress bar */
-        .progress-container {
-            width: 100%;
-            height: 4px;
-            background: rgba(255,255,255,0.05);
-            border-radius: 4px;
-            margin: 10px 0;
-            overflow: hidden;
-        }
-
-        .progress-bar {
-            height: 100%;
-            background: linear-gradient(90deg, var(--neon-dark), var(--neon), var(--neon-light));
-            border-radius: 4px;
-            box-shadow: 0 0 15px var(--neon-glow);
-            animation: progressShine 2s linear infinite;
-            transition: width 0.5s ease;
-        }
-
-        @keyframes progressShine {
-            0% { filter: brightness(1); }
-            50% { filter: brightness(1.5); }
-            100% { filter: brightness(1); }
-        }
-
-        /* Spinner */
         .spinner {
-            display: inline-block;
-            width: 16px; height: 16px;
-            border: 2px solid var(--border);
-            border-top-color: var(--neon);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            vertical-align: middle;
-            margin: 0 6px;
-            box-shadow: 0 0 10px var(--neon-soft);
+            display: inline-block; width: 16px; height: 16px;
+            border: 2px solid rgba(0,255,65,0.2); border-top-color: var(--neon);
+            border-radius: 50%; animation: spin 0.8s linear infinite;
+            vertical-align: middle; margin: 0 6px;
         }
-
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
-        /* ASCII Art Box */
-        .ascii-box {
-            display: inline-block;
-            border: 1px solid var(--border-bright);
-            padding: 10px 16px;
-            border-radius: 8px;
-            background: var(--neon-soft);
-            margin: 8px 0;
-            box-shadow: 0 0 20px var(--neon-soft);
-        }
-
-        /* Code block */
-        .code-block {
-            background: rgba(0,0,0,0.5);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 16px;
-            margin: 10px 0;
-            overflow-x: auto;
-            position: relative;
-        }
-
-        .code-block::before {
-            content: attr(data-lang);
-            position: absolute;
-            top: -10px;
-            left: 15px;
-            background: var(--bg-terminal);
-            padding: 2px 12px;
-            border-radius: 6px;
-            font-size: 0.7em;
-            color: var(--neon);
-            font-family: 'Orbitron', sans-serif;
-            letter-spacing: 2px;
-            border: 1px solid var(--border);
-        }
-
-        /* ======================================== */
-        /* TERMINAL FOOTER */
-        /* ======================================== */
         .terminal-footer {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 12px 20px;
-            background: rgba(0, 0, 0, 0.5);
-            border-top: 1px solid var(--border);
-            font-family: 'Orbitron', sans-serif;
-            font-size: 0.6em;
-            letter-spacing: 2px;
-            color: var(--text-dim);
+            padding: 12px 20px; border-top: 1px solid rgba(0, 255, 65, 0.1);
+            display: flex; justify-content: space-between;
+            font-size: 0.65em; color: rgba(0, 255, 65, 0.4);
+            font-family: 'Orbitron', sans-serif; letter-spacing: 1px;
         }
 
-        .footer-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
+        .status-dot {
+            width: 6px; height: 6px; background: var(--neon);
+            border-radius: 50%; box-shadow: 0 0 8px var(--neon);
+            animation: blink 2s infinite; display: inline-block; margin-left: 8px;
         }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
-        .footer-dot {
-            width: 5px; height: 5px;
-            border-radius: 50%;
-            background: var(--neon);
-            box-shadow: 0 0 6px var(--neon-glow);
-        }
-
-        /* ======================================== */
-        /* EXECUTION OVERLAY */
-        /* ======================================== */
-        .execution-overlay {
-            position: absolute;
-            inset: 0;
-            background: rgba(0,0,0,0.7);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            gap: 20px;
-            z-index: 20;
-            backdrop-filter: blur(5px);
-            animation: overlayIn 0.5s ease;
-        }
-
-        @keyframes overlayIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        .execution-ring {
-            width: 80px; height: 80px;
-            border: 3px solid transparent;
-            border-top-color: var(--neon);
-            border-radius: 50%;
-            animation: ringSpin 1s linear infinite;
-            box-shadow: 0 0 30px var(--neon-glow);
-        }
-
-        @keyframes ringSpin { 100% { transform: rotate(360deg); } }
-
-        .execution-text {
-            font-family: 'Orbitron', sans-serif;
-            color: var(--neon);
-            letter-spacing: 3px;
-            font-size: 0.9em;
-            text-shadow: 0 0 20px var(--neon-glow);
-        }
-
-        /* ======================================== */
-        /* RESPONSIVE */
-        /* ======================================== */
         @media (max-width: 768px) {
-            .terminal-window {
-                height: 92vh;
-                border-radius: 12px;
-            }
-            .title-tabs { gap: 1px; }
-            .title-tab {
-                padding: 6px 10px;
-                font-size: 0.55em;
-                letter-spacing: 1px;
-            }
-            .terminal-body {
-                padding: 14px 16px;
-                font-size: 0.75em;
-            }
-            .cursor-outer, .cursor-inner { display: none; }
-            body { cursor: auto; }
-            .terminal-toolbar { flex-wrap: wrap; gap: 6px; }
-        }
-
-        @media (max-width: 480px) {
-            .main-container { padding: 10px; }
-            .title-bar { padding: 10px 14px; }
-            .title-tab { display: none; }
-            .title-tab.active { display: block; }
-            .terminal-footer { font-size: 0.5em; letter-spacing: 1px; }
+            .terminal { height: 95vh; border-radius: 12px; }
+            .terminal-body { padding: 14px; font-size: 0.75em; }
         }
     </style>
 </head>
 <body>
-    <!-- Custom Cursor -->
-    <div class="cursor-outer" id="cursor-outer"></div>
-    <div class="cursor-inner" id="cursor-inner"></div>
-
-    <!-- Three.js -->
     <canvas id="three-bg"></canvas>
-    
-    <!-- Matrix -->
     <canvas id="matrix-canvas"></canvas>
-    
-    <!-- Scanlines -->
     <div class="scanlines"></div>
-    
-    <!-- Vignette -->
     <div class="vignette"></div>
-    
-    <!-- Orbs -->
-    <div class="orbs-layer" id="orbs-layer"></div>
 
-    <!-- Main -->
-    <div class="main-container">
-        <div class="terminal-window" id="terminal-window">
-            <!-- Title Bar -->
+    <div class="terminal-container">
+        <div class="terminal" id="terminal">
             <div class="title-bar">
-                <div class="traffic-lights">
-                    <div class="traffic-light red" onclick="window.close()" title="Close"></div>
-                    <div class="traffic-light yellow" onclick="minimizeTerminal()" title="Minimize"></div>
-                    <div class="traffic-light green" onclick="maximizeTerminal()" title="Maximize"></div>
-                </div>
-                <div class="title-tabs">
-                    <div class="title-tab active">▶ EXECUTION</div>
-                    <div class="title-tab">📄 OUTPUT</div>
-                    <div class="title-tab">📊 LOGS</div>
-                </div>
-                <div class="title-actions">
-                    <button class="title-btn" title="Settings">⚙</button>
-                    <button class="title-btn" title="Split">◫</button>
-                </div>
+                <div class="traffic-light red"></div>
+                <div class="traffic-light yellow"></div>
+                <div class="traffic-light green"></div>
+                <div class="title-text">CODEORBIT TERMINAL</div>
             </div>
-
-            <!-- Toolbar -->
-            <div class="terminal-toolbar">
-                <div class="toolbar-item">📁 File</div>
-                <div class="toolbar-separator"></div>
-                <div class="toolbar-item">✂ Edit</div>
-                <div class="toolbar-separator"></div>
-                <div class="toolbar-item">↻ Rerun</div>
-                <div class="toolbar-status">
-                    <div class="status-indicator" id="status-dot"></div>
-                    <span id="status-text">IDLE</span>
-                </div>
-            </div>
-
-            <!-- Terminal Body -->
             <div class="terminal-body" id="terminal-body">
-                <!-- Content generated dynamically -->
+                <div class="line"><span class="prompt">codeorbit@root:~$</span> <span class="output">Initializing...</span></div>
             </div>
-
-            <!-- Footer -->
             <div class="terminal-footer">
-                <div class="footer-item">
-                    <div class="footer-dot"></div>
-                    <span>ORBIT STABLE</span>
-                </div>
-                <div class="footer-item">
-                    <span id="footer-time">00:00:00</span>
-                </div>
-                <div class="footer-item">
-                    <span>CODEORBIT v3.7.2</span>
-                </div>
+                <span><span class="status-dot"></span> ORBIT ACTIVE</span>
+                <span id="footer-time">00:00:00</span>
+                <span>CODEORBIT v7.0</span>
             </div>
         </div>
     </div>
 
     <script>
         // ==========================================
-        // CUSTOM CURSOR
-        // ==========================================
-        const curOuter = document.getElementById('cursor-outer');
-        const curInner = document.getElementById('cursor-inner');
-        
-        document.addEventListener('mousemove', (e) => {
-            curOuter.style.left = (e.clientX - 12) + 'px';
-            curOuter.style.top = (e.clientY - 12) + 'px';
-            curInner.style.left = (e.clientX - 2.5) + 'px';
-            curInner.style.top = (e.clientY - 2.5) + 'px';
-        });
-
-        document.querySelectorAll('button, .traffic-light, .title-tab, .toolbar-item').forEach(el => {
-            el.addEventListener('mouseenter', () => curOuter.classList.add('hover'));
-            el.addEventListener('mouseleave', () => curOuter.classList.remove('hover'));
-        });
-
-        // ==========================================
         // THREE.JS
         // ==========================================
         const scene3 = new THREE.Scene();
         const cam3 = new THREE.PerspectiveCamera(75, innerWidth/innerHeight, 0.1, 1000);
         const renderer3 = new THREE.WebGLRenderer({ canvas: document.getElementById('three-bg'), alpha: true, antialias: true });
-        
         renderer3.setSize(innerWidth, innerHeight);
         renderer3.setPixelRatio(Math.min(devicePixelRatio, 2));
         cam3.position.z = 28;
 
-        // Stars
         const sGeo = new THREE.BufferGeometry();
         const sCount = 2000;
         const sPos = new Float32Array(sCount * 3);
@@ -764,24 +183,10 @@
         const stars = new THREE.Points(sGeo, sMat);
         scene3.add(stars);
 
-        // Rings
-        const ringGrp = new THREE.Group();
-        for(let i=0; i<4; i++) {
-            const rGeo = new THREE.TorusGeometry(7+i*3, 0.015, 16, 160);
-            const rMat = new THREE.MeshBasicMaterial({ color:0x00ff41, transparent:true, opacity:0.1-i*0.02, blending:THREE.AdditiveBlending });
-            const ring = new THREE.Mesh(rGeo, rMat);
-            ring.rotation.x = Math.PI/2 + i*0.3;
-            ring.rotation.y = i*0.5;
-            ringGrp.add(ring);
-        }
-        scene3.add(ringGrp);
-
         function anim3() {
             requestAnimationFrame(anim3);
             stars.rotation.x += 0.0001;
             stars.rotation.y += 0.00015;
-            ringGrp.rotation.x += 0.0007;
-            ringGrp.rotation.y += 0.001;
             renderer3.render(scene3, cam3);
         }
         anim3();
@@ -793,131 +198,24 @@
         const mtxCtx = mtxCanvas.getContext('2d');
         mtxCanvas.width = innerWidth;
         mtxCanvas.height = innerHeight;
-        
-        const mtxChars = 'ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃ01';
+        const mtxChars = '01アイウエオカキクケコサシスセソタチツテト';
         const mtxArr = mtxChars.split('');
         const fs = 14;
         const cols = Math.floor(mtxCanvas.width/fs);
         const drops = Array(cols).fill(1);
-        
         function drawMtx() {
             mtxCtx.fillStyle = 'rgba(0,0,0,0.04)';
             mtxCtx.fillRect(0,0,mtxCanvas.width,mtxCanvas.height);
             mtxCtx.font = fs+'px monospace';
             for(let i=0; i<drops.length; i++) {
                 const t = mtxArr[Math.floor(Math.random()*mtxArr.length)];
-                const x = i*fs;
-                const y = drops[i]*fs;
                 mtxCtx.fillStyle = `rgba(0,255,65,${Math.random()*0.35+0.15})`;
-                mtxCtx.fillText(t,x,y);
-                if(y>mtxCanvas.height && Math.random()>0.975) drops[i]=0;
+                mtxCtx.fillText(t, i*fs, drops[i]*fs);
+                if(drops[i]*fs > mtxCanvas.height && Math.random()>0.975) drops[i]=0;
                 drops[i]++;
             }
         }
         setInterval(drawMtx, 50);
-
-        // ==========================================
-        // FLOATING ORBS
-        // ==========================================
-        const orbsLayer = document.getElementById('orbs-layer');
-        for(let i=0; i<8; i++) {
-            const orb = document.createElement('div');
-            orb.className = 'orb';
-            const size = 80 + Math.random()*120;
-            orb.style.cssText = `
-                width:${size}px; height:${size}px;
-                left:${Math.random()*90}%;
-                top:${Math.random()*90}%;
-                --dur:${6+Math.random()*10}s;
-                --del:${Math.random()*5}s;
-            `;
-            orbsLayer.appendChild(orb);
-        }
-
-        // ==========================================
-        // TERMINAL FUNCTIONS
-        // ==========================================
-        const terminalBody = document.getElementById('terminal-body');
-        const statusDot = document.getElementById('status-dot');
-        const statusText = document.getElementById('status-text');
-        
-        function addLine(text, type='output') {
-            const line = document.createElement('div');
-            line.className = `line ${type}`;
-            line.innerHTML = text;
-            terminalBody.appendChild(line);
-            terminalBody.scrollTop = terminalBody.scrollHeight;
-            return line;
-        }
-
-        function addSpinner(text) {
-            const line = document.createElement('div');
-            line.className = 'line info';
-            line.innerHTML = `<span class="spinner"></span> ${text}`;
-            terminalBody.appendChild(line);
-            terminalBody.scrollTop = terminalBody.scrollHeight;
-            return line;
-        }
-
-        function addProgress(duration = 2000) {
-            const container = document.createElement('div');
-            container.className = 'progress-container';
-            const bar = document.createElement('div');
-            bar.className = 'progress-bar';
-            bar.style.width = '0%';
-            container.appendChild(bar);
-            terminalBody.appendChild(container);
-            terminalBody.scrollTop = terminalBody.scrollHeight;
-            
-            let width = 0;
-            const interval = setInterval(() => {
-                width += Math.random() * 25;
-                if(width >= 100) {
-                    width = 100;
-                    clearInterval(interval);
-                }
-                bar.style.width = width + '%';
-            }, duration / 20);
-            
-            return { container, bar, interval };
-        }
-
-        function setStatus(state) {
-            statusDot.className = 'status-indicator';
-            if(state === 'running') {
-                statusDot.classList.add('running');
-                statusText.textContent = 'EXECUTING';
-            } else if(state === 'error') {
-                statusDot.classList.add('error');
-                statusText.textContent = 'ERROR';
-            } else if(state === 'done') {
-                statusText.textContent = 'COMPLETED';
-            } else {
-                statusText.textContent = 'IDLE';
-            }
-        }
-
-        function minimizeTerminal() {
-            const window = document.getElementById('terminal-window');
-            window.style.transform = 'scale(0.95) translateY(30px)';
-            window.style.opacity = '0.8';
-            setTimeout(() => {
-                window.style.transform = '';
-                window.style.opacity = '';
-            }, 300);
-        }
-
-        function maximizeTerminal() {
-            const window = document.getElementById('terminal-window');
-            window.style.maxWidth = '100%';
-            window.style.height = '100vh';
-            window.style.borderRadius = '0';
-            setTimeout(() => {
-                window.style.maxWidth = '1050px';
-                window.style.height = '88vh';
-                window.style.borderRadius = '20px';
-            }, 2000);
-        }
 
         // ==========================================
         // CLOCK
@@ -930,8 +228,37 @@
         setInterval(updateClock, 1000);
         updateClock();
 
-         // ==========================================
-        // EXECUTION ENGINE (UPDATED - Read from URL)
+        // ==========================================
+        // TERMINAL
+        // ==========================================
+        const terminalBody = document.getElementById('terminal-body');
+        
+        function addLine(text, type='output') {
+            const line = document.createElement('div');
+            line.className = `line ${type}`;
+            line.innerHTML = text;
+            terminalBody.appendChild(line);
+            terminalBody.scrollTop = terminalBody.scrollHeight;
+        }
+
+        function addSpinner(text) {
+            const line = document.createElement('div');
+            line.className = 'line info';
+            line.innerHTML = `<span class="spinner"></span> ${text}`;
+            terminalBody.appendChild(line);
+            terminalBody.scrollTop = terminalBody.scrollHeight;
+            return line;
+        }
+
+        function formatSize(bytes) {
+            if (!bytes || bytes === 0) return '0 B';
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / 1048576).toFixed(1) + ' MB';
+        }
+
+        // ==========================================
+        // EXECUTION ENGINE
         // ==========================================
         async function executeCode() {
             const urlParams = new URLSearchParams(location.search);
@@ -940,155 +267,131 @@
             const codeType = urlParams.get('type') || 'txt';
             const codeName = urlParams.get('name') || 'unnamed';
             
-            let codeData;
+            let codeData = null;
             
+            // Try share ID first
             if (shareId) {
-                // Large file: get from localStorage
                 const tempKey = 'codeorbit_shared_' + shareId;
                 const stored = localStorage.getItem(tempKey);
                 
                 if (stored) {
-                    codeData = JSON.parse(stored);
+                    try {
+                        codeData = JSON.parse(stored);
+                    } catch(e) {
+                        addLine('❌ داده ذخیره شده خراب است', 'error');
+                    }
                 } else {
                     addLine('╔══════════════════════════════╗', 'error');
                     addLine('║  ❌ لینک منقضی شده یا وجود ندارد ║', 'error');
                     addLine('║  لینک‌ها ۲۴ ساعت اعتبار دارند    ║', 'error');
                     addLine('╚══════════════════════════════╝', 'error');
-                    setStatus('error');
                     return;
                 }
-            } else if (encodedCode) {
-                // Small file: decode from URL
+            }
+            
+            // Try encoded URL
+            if (!codeData && encodedCode) {
                 try {
                     const decoded = LZString.decompressFromEncodedURIComponent(encodedCode);
-                    codeData = {
-                        name: codeName,
-                        content: decoded,
-                        language: codeType.toUpperCase(),
-                        size: formatSize(new Blob([decoded]).size)
-                    };
+                    if (decoded) {
+                        codeData = {
+                            name: decodeURIComponent(codeName),
+                            content: decoded,
+                            language: codeType.toUpperCase(),
+                            size: formatSize(new Blob([decoded]).size)
+                        };
+                    }
                 } catch(e) {
-                    addLine('❌ خطا در decode کد', 'error');
-                    setStatus('error');
-                    return;
+                    console.log('Decode error:', e);
                 }
-            } else {
-                // Fallback: get from sessionStorage
-                codeData = JSON.parse(sessionStorage.getItem('codeorbit_run_code') || 'null');
+            }
+            
+            // Fallback: sessionStorage
+            if (!codeData) {
+                try {
+                    codeData = JSON.parse(sessionStorage.getItem('codeorbit_run_code') || 'null');
+                } catch(e) {}
             }
 
-            if(!codeData) {
+            if (!codeData || !codeData.content) {
                 addLine('╔══════════════════════════════╗', 'error');
-                addLine('║  ❌ No code to execute       ║', 'error');
+                addLine('║  ❌ کدی برای اجرا پیدا نشد      ║', 'error');
+                addLine('║  از داشبورد فایل آپلود کنید      ║', 'error');
                 addLine('╚══════════════════════════════╝', 'error');
-                setStatus('error');
                 return;
             }
 
-            
-
-            // Header
-            addLine('', 'output');
-            addLine('╔══════════════════════════════════════════════╗', 'highlight');
-            addLine('║  🌍 CODEORBIT EXECUTION ENGINE v3.7.2        ║', 'highlight');
-            addLine('╚══════════════════════════════════════════════╝', 'highlight');
-            addLine('', 'output');
-            
-            addLine(`▸ <span class="bold">File:</span> ${codeData.name}`, 'info');
-            addLine(`▸ <span class="bold">Size:</span> ${codeData.size || 'Unknown'}`, 'info');
-            addLine(`▸ <span class="bold">Date:</span> ${new Date(codeData.date).toLocaleString('fa-IR')}`, 'info');
-            addLine(`▸ <span class="bold">Language:</span> ${codeData.language || 'Detecting...'}`, 'info');
-            addLine('', 'output');
+            // Show header
+            addLine('');
+            addLine('╔══════════════════════════════╗', 'info');
+            addLine('║  🌍 CODEORBIT EXECUTION      ║', 'info');
+            addLine('╚══════════════════════════════╝', 'info');
+            addLine('');
+            addLine(`▸ File: ${codeData.name || 'unknown'}`, 'info');
+            addLine(`▸ Size: ${codeData.size || 'N/A'}`, 'info');
+            addLine(`▸ Language: ${codeData.language || 'Unknown'}`, 'info');
+            addLine('');
             addLine('━'.repeat(50), 'dim');
+            addLine('');
 
-            // Progress
-            const progress = addProgress(1500);
-            
-            setStatus('running');
-            
             const code = codeData.content;
-            const ext = codeData.name.split('.').pop().toLowerCase();
-            
-            setTimeout(async () => {
-                progress.bar.style.width = '100%';
-                progress.container.remove();
-                addLine('', 'output');
-                
-                if(ext === 'py') {
-                    await executePython(code);
-                } else if(ext === 'html') {
-                    executeHTML(code);
-                } else if(ext === 'js') {
-                    executeJavaScript(code);
-                } else if(ext === 'css') {
-                    displayCode(code, 'CSS');
-                } else {
-                    displayCode(code, codeData.language || 'TEXT');
-                }
-                
-                updateClock();
-            }, 1600);
+            const ext = (codeData.name || '').split('.').pop()?.toLowerCase() || 'txt';
+
+            if (ext === 'py') {
+                await executePython(code);
+            } else if (ext === 'html') {
+                executeHTML(code);
+            } else if (ext === 'js') {
+                executeJavaScript(code);
+            } else {
+                displayCode(code, codeData.language || 'TEXT');
+            }
         }
 
         async function executePython(code) {
-            addLine('', 'output');
-            addLine('🐍 <span class="bold">Initializing Python Environment...</span>', 'info');
-            const spinnerLine = addSpinner('Loading Pyodide engine...');
+            addLine('🐍 Initializing Python engine...', 'info');
+            const sp = addSpinner('Loading Pyodide...');
             
             try {
                 const pyodide = await loadPyodide();
-                spinnerLine.remove();
-                addLine('✅ Python engine loaded successfully', 'success');
-                addLine('', 'output');
-                addLine('━ <span class="bold">Execution Output</span> ━'.repeat(1), 'highlight');
-                addLine('', 'output');
+                sp.remove();
+                addLine('✅ Python engine ready', 'success');
+                addLine('');
+                addLine('━ Output ━', 'info');
+                addLine('');
                 
                 let outputText = '';
                 pyodide.setStdout({
                     batched: (text) => {
                         outputText += text;
-                        const lines = text.split('\n');
-                        lines.forEach(l => {
-                            if(l.trim()) addLine(l, 'output');
-                        });
+                        text.split('\n').forEach(l => { if(l.trim()) addLine(l, 'output'); });
                     }
                 });
                 
                 await pyodide.runPythonAsync(code);
                 
-                if(!outputText.trim()) {
-                    addLine('<span class="dim italic">(Code executed - no stdout output)</span>', 'dim');
+                if (!outputText.trim()) {
+                    addLine('(No output)', 'dim');
                 }
                 
-                addLine('', 'output');
+                addLine('');
                 addLine('━'.repeat(50), 'success');
-                addLine('✅ <span class="bold success">Execution completed successfully</span>', 'success');
-                addLine(`⏱ <span class="dim">Execution time: ${(Math.random()*0.5+0.1).toFixed(3)}s</span>`, 'dim');
-                setStatus('done');
+                addLine('✅ Execution completed', 'success');
                 
             } catch(err) {
-                spinnerLine.remove();
-                addLine('', 'output');
-                addLine('━ <span class="bold">Error Traceback</span> ━'.repeat(1), 'error');
-                addLine('', 'output');
-                err.message.split('\n').forEach(l => addLine(l, 'error'));
-                addLine('', 'output');
+                sp?.remove();
+                addLine('');
+                addLine('━ Error ━', 'error');
+                addLine(err.message, 'error');
                 addLine('━'.repeat(50), 'error');
-                addLine('❌ <span class="bold error">Execution failed</span>', 'error');
-                setStatus('error');
             }
         }
 
         function executeHTML(code) {
-            addLine('', 'output');
-            addLine('🌐 <span class="bold">Rendering HTML content...</span>', 'info');
+            addLine('🌐 Rendering HTML...', 'info');
             
             const iframe = document.createElement('iframe');
-            iframe.style.cssText = `
-                width:100%; height:450px; border:1px solid var(--border-bright);
-                border-radius:12px; background:#fff; margin:12px 0;
-                box-shadow: 0 0 30px rgba(0,255,65,0.1);
-            `;
+            iframe.style.cssText = 'width:100%;height:450px;border:1px solid rgba(0,255,65,0.3);border-radius:12px;background:#fff;margin:12px 0;';
             
             const wrapper = document.createElement('div');
             wrapper.className = 'line';
@@ -1097,14 +400,12 @@
             
             iframe.srcdoc = code;
             
-            addLine('✅ HTML rendered in frame above', 'success');
-            setStatus('done');
+            addLine('✅ HTML rendered above', 'success');
         }
 
         function executeJavaScript(code) {
-            addLine('', 'output');
-            addLine('🟨 <span class="bold">Executing JavaScript...</span>', 'info');
-            addLine('', 'output');
+            addLine('🟨 Executing JavaScript...', 'info');
+            addLine('');
             
             const logs = [];
             const origLog = console.log;
@@ -1116,58 +417,30 @@
             try {
                 eval(code);
                 console.log = origLog;
-                
-                if(logs.length === 0) {
-                    addLine('<span class="dim italic">(Code executed - no console output)</span>', 'dim');
-                }
-                
-                addLine('', 'output');
-                addLine('✅ JavaScript executed successfully', 'success');
-                setStatus('done');
+                if (logs.length === 0) addLine('(No output)', 'dim');
+                addLine('');
+                addLine('✅ Done', 'success');
             } catch(err) {
                 console.log = origLog;
                 addLine(err.message, 'error');
-                setStatus('error');
             }
         }
 
         function displayCode(code, lang) {
-            addLine('', 'output');
-            addLine(`📝 <span class="bold">Displaying ${lang} source:</span>`, 'info');
-            addLine('', 'output');
-            
-            const codeBlock = document.createElement('div');
-            codeBlock.className = 'code-block';
-            codeBlock.setAttribute('data-lang', lang);
-            
-            const lines = code.split('\n');
-            lines.forEach((l, i) => {
-                const lineDiv = document.createElement('div');
-                lineDiv.style.cssText = 'font-family:"JetBrains Mono",monospace;font-size:0.85em;padding:1px 0;';
-                lineDiv.innerHTML = `<span style="color:var(--text-dim);margin-right:12px;">${String(i+1).padStart(3,' ')}</span><span style="color:#c0ffc0;">${escapeHtml(l)}</span>`;
-                codeBlock.appendChild(lineDiv);
+            addLine(`📝 ${lang} source:`, 'info');
+            addLine('');
+            code.split('\n').forEach((l, i) => {
+                addLine(`${String(i+1).padStart(3,' ')} | ${l}`, 'output');
             });
-            
-            terminalBody.appendChild(codeBlock);
-            addLine('', 'output');
-            addLine(`ℹ️ <span class="dim">${lang} files are displayed for reference (not executed)</span>`, 'dim');
-            setStatus('done');
-        }
-
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
+            addLine('');
+            addLine('ℹ️ Display only - not executed', 'dim');
         }
 
         // ==========================================
         // START
         // ==========================================
-        setTimeout(() => {
-            executeCode();
-        }, 800);
+        setTimeout(executeCode, 600);
 
-        // Resize
         window.addEventListener('resize', () => {
             cam3.aspect = innerWidth/innerHeight;
             cam3.updateProjectionMatrix();
@@ -1175,14 +448,6 @@
             mtxCanvas.width = innerWidth;
             mtxCanvas.height = innerHeight;
         });
-
-        console.log(`
-        ╔══════════════════════════════╗
-        ║  🌍 CODEORBIT RUNNER       ║
-        ║  Terminal Active            ║
-        ║  Ready for Execution        ║
-        ╚══════════════════════════════╝
-        `);
     </script>
 </body>
 </html>
