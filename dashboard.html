@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CODEORBIT | پنل فرماندهی + Deploy خودکار</title>
+    <title>CODEORBIT | پنل فرماندهی</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100;300;400;500;700;900&display=swap');
@@ -18,7 +17,6 @@
         :root {
             --neon: #00ff41;
             --neon-dark: #00cc33;
-            --neon-light: #66ff66;
             --neon-glow: rgba(0, 255, 65, 0.8);
             --neon-soft: rgba(0, 255, 65, 0.12);
             --bg-deep: #020202;
@@ -30,11 +28,10 @@
             --text-dim: rgba(0, 255, 65, 0.4);
             --danger: #ff1744;
             --danger-glow: rgba(255, 23, 68, 0.6);
-            --warning: #ffab00;
             --info: #00b0ff;
-            --info-glow: rgba(0, 176, 255, 0.6);
             --success: #00e676;
             --success-glow: rgba(0, 230, 118, 0.6);
+            --warning: #ffab00;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -45,38 +42,8 @@
             color: var(--text-primary);
             overflow-x: hidden;
             min-height: 100vh;
-            cursor: none;
         }
 
-        /* Custom Cursor */
-        .cursor-outer {
-            width: 28px; height: 28px;
-            border: 2px solid var(--neon);
-            border-radius: 50%;
-            position: fixed; pointer-events: none; z-index: 99999;
-            transition: all 0.07s ease;
-            box-shadow: 0 0 20px var(--neon-glow);
-        }
-        .cursor-inner {
-            width: 5px; height: 5px;
-            background: var(--neon);
-            border-radius: 50%;
-            position: fixed; pointer-events: none; z-index: 99999;
-            box-shadow: 0 0 15px var(--neon-glow);
-        }
-        .cursor-outer.hover {
-            width: 50px; height: 50px;
-            border-color: #fff;
-            box-shadow: 0 0 40px var(--neon-glow);
-            mix-blend-mode: difference;
-        }
-        .cursor-outer.click {
-            width: 18px; height: 18px;
-            border-color: #fff;
-            box-shadow: 0 0 30px #fff, 0 0 60px var(--neon-glow);
-        }
-
-        /* Background Layers */
         #three-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
         #matrix-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; opacity: 0.3; }
         .grid-overlay {
@@ -112,16 +79,13 @@
             100% { transform: translateY(-10vh) translateX(var(--drift)) scale(1.5); opacity: 0; }
         }
 
-        /* App Layout */
         .app { position: relative; z-index: 10; display: flex; min-height: 100vh; }
 
-        /* Sidebar */
         .sidebar {
             width: 280px; background: var(--bg-panel); backdrop-filter: blur(40px);
             border-left: 1px solid var(--border-neon); padding: 25px 20px;
             display: flex; flex-direction: column;
             position: fixed; right: 0; top: 0; height: 100vh; z-index: 50;
-            transition: all 0.5s cubic-bezier(0.4,0,0.2,1);
             box-shadow: -10px 0 60px rgba(0,0,0,0.5);
         }
         .sidebar::before {
@@ -130,45 +94,31 @@
                         radial-gradient(ellipse at bottom right, var(--neon-soft), transparent 50%);
             pointer-events: none;
         }
-        .sidebar-logo { text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid var(--border-neon); position: relative; }
+        .sidebar-logo { text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid var(--border-neon); }
         .logo-glitch {
             font-family: 'Orbitron', sans-serif; font-size: 1.6em; font-weight: 900;
             color: var(--neon); letter-spacing: 3px;
             text-shadow: 0 0 20px var(--neon-glow), 0 0 40px var(--neon-glow);
-            position: relative; display: inline-block;
         }
-        .logo-subtitle { font-family: 'Vazirmatn', sans-serif; font-size: 0.65em; color: var(--text-secondary); letter-spacing: 5px; display: block; margin-top: 5px; }
+        .logo-subtitle { font-family: 'Vazirmatn', sans-serif; font-size: 0.65em; color: var(--text-secondary); letter-spacing: 5px; }
 
-        .nav-menu { flex: 1; display: flex; flex-direction: column; gap: 3px; position: relative; }
+        .nav-menu { flex: 1; display: flex; flex-direction: column; gap: 3px; }
         .nav-item {
             display: flex; align-items: center; gap: 14px; padding: 15px 18px;
             border-radius: 14px; cursor: pointer; transition: all 0.4s;
-            color: var(--text-secondary); position: relative; overflow: hidden;
-            text-decoration: none; font-weight: 500;
+            color: var(--text-secondary); font-weight: 500;
         }
-        .nav-item:hover { background: var(--neon-soft); color: var(--neon); transform: translateX(-5px); }
-        .nav-item.active {
-            background: var(--neon-soft); color: var(--neon);
-            box-shadow: inset 0 0 30px var(--neon-soft), 0 0 20px var(--neon-soft);
-            border: 1px solid var(--border-bright);
-        }
-        .nav-item.active::before {
-            content: ''; position: absolute; right: 0; top: 50%;
-            transform: translateY(-50%); width: 4px; height: 60%;
-            background: var(--neon); border-radius: 4px;
-            box-shadow: 0 0 15px var(--neon-glow);
-        }
-        .nav-icon { font-size: 1.3em; width: 28px; text-align: center; position: relative; z-index: 1; }
-        .nav-label { font-size: 0.9em; position: relative; z-index: 1; }
+        .nav-item:hover { background: var(--neon-soft); color: var(--neon); }
+        .nav-item.active { background: var(--neon-soft); color: var(--neon); border: 1px solid var(--border-bright); }
+        .nav-icon { font-size: 1.3em; width: 28px; text-align: center; }
+        .nav-label { font-size: 0.9em; }
         .nav-badge {
             margin-right: auto; background: var(--neon); color: #000;
             font-size: 0.65em; font-weight: 900; padding: 4px 10px;
             border-radius: 20px; font-family: 'Orbitron', sans-serif;
-            letter-spacing: 1px; box-shadow: 0 0 15px var(--neon-glow);
-            position: relative; z-index: 1;
         }
 
-        .sidebar-footer { margin-top: auto; padding-top: 20px; border-top: 1px solid var(--border-neon); position: relative; }
+        .sidebar-footer { margin-top: auto; padding-top: 20px; border-top: 1px solid var(--border-neon); }
         .user-card {
             display: flex; align-items: center; gap: 14px; padding: 14px;
             border-radius: 16px; background: var(--neon-soft); border: 1px solid var(--border-neon);
@@ -178,14 +128,12 @@
             background: linear-gradient(135deg, #003d0f, #00ff41, #003d0f);
             display: flex; align-items: center; justify-content: center;
             font-weight: 900; font-size: 1.3em;
-            box-shadow: 0 0 25px var(--neon-glow), inset 0 0 15px rgba(0,0,0,0.3);
-            position: relative;
+            box-shadow: 0 0 25px var(--neon-glow);
         }
         .user-avatar::after {
             content: ''; position: absolute; bottom: -2px; right: -2px;
             width: 14px; height: 14px; background: var(--success);
             border-radius: 50%; border: 2px solid #000;
-            box-shadow: 0 0 10px var(--success-glow);
         }
         .user-info { flex: 1; }
         .user-name { font-weight: 700; font-size: 0.95em; }
@@ -194,22 +142,20 @@
         .logout-btn {
             display: flex; align-items: center; gap: 10px; padding: 14px 18px;
             border-radius: 14px; cursor: pointer; color: var(--danger);
-            margin-top: 12px; transition: all 0.3s; font-weight: 500;
-            border: 1px solid transparent;
+            margin-top: 12px; transition: all 0.3s;
         }
-        .logout-btn:hover { background: rgba(255,23,68,0.1); border-color: var(--danger); box-shadow: 0 0 30px var(--danger-glow); }
+        .logout-btn:hover { background: rgba(255,23,68,0.1); border-color: var(--danger); }
 
-        /* Main Content */
-        .main { flex: 1; margin-right: 280px; padding: 30px; position: relative; z-index: 10; }
+        .main { flex: 1; margin-right: 280px; padding: 30px; }
 
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 35px; flex-wrap: wrap; gap: 20px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 20px; }
         .header-greeting h1 {
-            font-family: 'Orbitron', sans-serif; font-size: 2.2em; font-weight: 900; letter-spacing: 2px;
+            font-family: 'Orbitron', sans-serif; font-size: 2.2em; font-weight: 900;
             background: linear-gradient(180deg, #fff 0%, #b8ffb8 30%, #00ff41 100%);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
             background-clip: text; filter: drop-shadow(0 0 20px var(--neon-soft));
         }
-        .header-greeting p { color: var(--text-secondary); font-size: 0.9em; margin-top: 5px; letter-spacing: 1px; }
+        .header-greeting p { color: var(--text-secondary); font-size: 0.9em; margin-top: 5px; }
 
         .header-btn {
             padding: 12px 22px; border-radius: 14px; border: 1px solid var(--border-neon);
@@ -229,40 +175,33 @@
             50% { box-shadow: 0 0 40px var(--neon-glow), 0 0 80px var(--neon-soft); }
         }
 
-        /* Stats */
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 30px; }
         .stat-card {
             background: var(--bg-panel); backdrop-filter: blur(30px);
             border: 1px solid var(--border-neon); border-radius: 22px;
-            padding: 28px; position: relative; overflow: hidden;
+            padding: 25px; position: relative; overflow: hidden;
             transition: all 0.4s; cursor: pointer;
         }
         .stat-card:hover { transform: translateY(-8px); border-color: var(--neon); box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 50px var(--neon-soft); }
         .stat-card::before {
             content: ''; position: absolute; top: -40px; right: -40px;
             width: 120px; height: 120px; background: var(--neon);
-            border-radius: 50%; filter: blur(80px); opacity: 0.08; transition: all 0.4s;
+            border-radius: 50%; filter: blur(80px); opacity: 0.08;
         }
-        .stat-card:hover::before { opacity: 0.15; width: 150px; height: 150px; }
-        .stat-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 18px; }
+        .stat-card:hover::before { opacity: 0.15; }
         .stat-icon {
-            width: 55px; height: 55px; border-radius: 16px;
+            width: 50px; height: 50px; border-radius: 14px;
             display: flex; align-items: center; justify-content: center;
-            font-size: 1.6em; background: var(--neon-soft); border: 1px solid var(--border-neon);
+            font-size: 1.4em; background: var(--neon-soft); border: 1px solid var(--border-neon);
+            margin-bottom: 15px;
         }
-        .stat-trend {
-            font-family: 'Orbitron', sans-serif; font-size: 0.7em;
-            padding: 6px 12px; border-radius: 20px; font-weight: 700;
-        }
-        .stat-trend.up { background: rgba(0,230,118,0.15); color: var(--success); border: 1px solid rgba(0,230,118,0.3); }
         .stat-value {
-            font-family: 'Orbitron', sans-serif; font-size: 3em; font-weight: 900;
+            font-family: 'Orbitron', sans-serif; font-size: 2.8em; font-weight: 900;
             color: var(--neon); text-shadow: 0 0 40px var(--neon-glow);
             line-height: 1; margin-bottom: 5px;
         }
-        .stat-label { color: var(--text-secondary); font-size: 0.85em; font-weight: 500; }
+        .stat-label { color: var(--text-secondary); font-size: 0.8em; }
 
-        /* Panels */
         .panels { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
         .panel {
             background: var(--bg-panel); backdrop-filter: blur(30px);
@@ -277,76 +216,59 @@
         .panel-title { font-family: 'Orbitron', sans-serif; font-size: 1.05em; font-weight: 700; letter-spacing: 2px; }
         .panel-title .highlight { color: var(--neon); text-shadow: 0 0 15px var(--neon-glow); }
 
-        /* Upload Zone */
         .upload-zone {
             border: 2px dashed var(--border-neon); border-radius: 20px;
-            padding: 45px 30px; text-align: center; transition: all 0.5s;
-            cursor: pointer; position: relative; overflow: hidden; background: var(--neon-soft);
+            padding: 40px 30px; text-align: center; transition: all 0.5s;
+            cursor: pointer; background: var(--neon-soft);
         }
         .upload-zone:hover { border-color: var(--neon); background: rgba(0,255,65,0.05); box-shadow: inset 0 0 80px var(--neon-soft), 0 0 60px var(--neon-soft); }
         .upload-zone.drag-over { border-color: var(--neon); background: rgba(0,255,65,0.08); box-shadow: inset 0 0 120px var(--neon-soft), 0 0 100px var(--neon-glow); transform: scale(1.03); border-style: solid; }
-        .upload-zone .upload-pulse {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 0; height: 0; border-radius: 50%; background: var(--neon);
-            opacity: 0; pointer-events: none;
-        }
-        .upload-zone.drag-over .upload-pulse { animation: uploadPulse 1.5s ease-out infinite; }
-        @keyframes uploadPulse {
-            0% { width: 0; height: 0; opacity: 0.6; }
-            100% { width: 500px; height: 500px; opacity: 0; }
-        }
-
-        .upload-icon-animated { font-size: 4em; position: relative; z-index: 1; animation: uploadBounce 2s ease-in-out infinite; }
+        .upload-icon-animated { font-size: 4em; animation: uploadBounce 2s ease-in-out infinite; }
         @keyframes uploadBounce {
             0%, 100% { transform: translateY(0) scale(1); }
             30% { transform: translateY(-25px) scale(1.1); }
             60% { transform: translateY(-8px) scale(0.95); }
         }
-
         .upload-text-main {
             font-family: 'Orbitron', sans-serif; font-size: 1.3em;
             color: var(--neon); margin: 15px 0; letter-spacing: 2px;
-            position: relative; z-index: 1; text-shadow: 0 0 20px var(--neon-glow);
+            text-shadow: 0 0 20px var(--neon-glow);
         }
-        .upload-hint-text { color: var(--text-dim); font-size: 0.85em; position: relative; z-index: 1; }
+        .upload-hint-text { color: var(--text-dim); font-size: 0.85em; }
 
-        .format-tags { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-top: 20px; position: relative; z-index: 1; }
+        .format-tags { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-top: 20px; }
         .format-tag {
             padding: 7px 16px; border-radius: 20px;
             background: rgba(0,255,65,0.05); border: 1px solid var(--border-neon);
             font-size: 0.7em; font-family: 'JetBrains Mono', monospace;
-            color: var(--text-secondary); letter-spacing: 1px; transition: all 0.3s;
+            color: var(--text-secondary);
         }
         .format-tag.executable { background: var(--neon-soft); border-color: var(--neon); color: var(--neon); box-shadow: 0 0 10px var(--neon-soft); font-weight: 700; }
 
-        /* Code List */
-        .code-list { max-height: 450px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 5px; }
+        .code-list { max-height: 450px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
         .code-list::-webkit-scrollbar { width: 5px; }
         .code-list::-webkit-scrollbar-track { background: transparent; }
-        .code-list::-webkit-scrollbar-thumb { background: var(--neon); border-radius: 10px; box-shadow: 0 0 10px var(--neon-glow); }
+        .code-list::-webkit-scrollbar-thumb { background: var(--neon); border-radius: 10px; }
 
         .code-item {
             display: flex; align-items: center; gap: 16px; padding: 18px;
             border-radius: 16px; background: rgba(0,255,65,0.02);
             border: 1px solid transparent; transition: all 0.4s;
         }
-        .code-item:hover { background: var(--neon-soft); border-color: var(--border-neon); box-shadow: 0 5px 25px rgba(0,0,0,0.3); transform: translateX(-3px); }
-
+        .code-item:hover { background: var(--neon-soft); border-color: var(--border-neon); box-shadow: 0 5px 25px rgba(0,0,0,0.3); }
         .code-icon-box {
-            width: 52px; height: 52px; border-radius: 14px;
+            width: 50px; height: 50px; border-radius: 14px;
             display: flex; align-items: center; justify-content: center;
-            font-size: 1.5em; flex-shrink: 0; position: relative; overflow: hidden;
+            font-size: 1.4em; flex-shrink: 0;
         }
-        .code-icon-box::after { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, transparent, rgba(255,255,255,0.1)); }
         .code-icon-box.python { background: linear-gradient(135deg, #1a3d5c, #306998); }
-        .code-icon-box.js { background: #2d2d1a; border: 1px solid #f7df1e; }
         .code-icon-box.html { background: #2d1513; border: 1px solid #e44d26; }
+        .code-icon-box.js { background: #2d2d1a; border: 1px solid #f7df1e; }
         .code-icon-box.css { background: #151a2d; border: 1px solid #2965f1; }
         .code-icon-box.other { background: #1a1a1a; border: 1px solid #555; }
-
         .code-info { flex: 1; min-width: 0; }
         .code-filename { font-weight: 700; font-size: 0.9em; color: var(--text-primary); margin-bottom: 4px; }
-        .code-meta { font-size: 0.7em; color: var(--text-dim); font-family: 'Orbitron', sans-serif; letter-spacing: 1px; display: flex; gap: 12px; }
+        .code-meta { font-size: 0.7em; color: var(--text-dim); font-family: 'Orbitron', sans-serif; letter-spacing: 1px; }
         .code-actions-group { display: flex; gap: 6px; }
 
         .action-btn {
@@ -354,32 +276,13 @@
             border: 1px solid var(--border-neon); background: transparent;
             color: var(--text-secondary); cursor: pointer;
             display: flex; align-items: center; justify-content: center;
-            transition: all 0.3s; font-size: 1.1em; position: relative; overflow: hidden;
+            transition: all 0.3s; font-size: 1.1em;
         }
-        .action-btn:hover { background: var(--neon-soft); border-color: var(--neon); box-shadow: 0 0 20px var(--neon-soft); color: var(--neon); }
-        .action-btn.run:hover { background: rgba(0,230,118,0.15); border-color: var(--success); color: var(--success); box-shadow: 0 0 20px var(--success-glow); }
-        .action-btn.deploy:hover { background: rgba(0,176,255,0.15); border-color: var(--info); color: var(--info); box-shadow: 0 0 20px var(--info-glow); }
-        .action-btn.delete:hover { background: rgba(255,23,68,0.15); border-color: var(--danger); color: var(--danger); box-shadow: 0 0 20px var(--danger-glow); }
+        .action-btn:hover { background: var(--neon-soft); border-color: var(--neon); color: var(--neon); box-shadow: 0 0 20px var(--neon-soft); }
+        .action-btn.run:hover { background: rgba(0,230,118,0.15); border-color: var(--success); color: var(--success); }
+        .action-btn.link:hover { background: rgba(0,176,255,0.15); border-color: var(--info); color: var(--info); }
+        .action-btn.delete:hover { background: rgba(255,23,68,0.15); border-color: var(--danger); color: var(--danger); }
 
-        /* Deploy Status */
-        .deploy-badge {
-            display: inline-block; padding: 4px 10px; border-radius: 12px;
-            font-size: 0.65em; font-family: 'Orbitron', sans-serif; letter-spacing: 1px;
-        }
-        .deploy-badge.live { background: rgba(0,230,118,0.15); color: var(--success); border: 1px solid rgba(0,230,118,0.3); }
-        .deploy-badge.deploying { background: rgba(255,171,0,0.15); color: var(--warning); border: 1px solid rgba(255,171,0,0.3); animation: pulse 1s infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-
-        /* Live Link */
-        .live-link {
-            color: var(--info); text-decoration: underline;
-            cursor: pointer; word-break: break-all;
-            font-family: 'JetBrains Mono', monospace; font-size: 0.8em;
-            transition: all 0.3s;
-        }
-        .live-link:hover { color: #fff; text-shadow: 0 0 10px var(--info-glow); }
-
-        /* Modal */
         .modal-overlay {
             position: fixed; inset: 0; background: rgba(0,0,0,0.85);
             backdrop-filter: blur(10px); z-index: 200;
@@ -387,63 +290,62 @@
             animation: fadeIn 0.3s ease;
         }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
         .modal {
             background: var(--bg-panel); border: 1px solid var(--neon);
             border-radius: 24px; padding: 40px; max-width: 650px; width: 95%;
-            backdrop-filter: blur(40px);
             box-shadow: 0 0 100px var(--neon-soft);
             animation: modalIn 0.5s cubic-bezier(0.4,0,0.2,1);
         }
         @keyframes modalIn { from { transform: scale(0.8) translateY(60px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
-
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
-        .modal-title { font-family: 'Orbitron', sans-serif; font-size: 1.2em; color: var(--neon); letter-spacing: 2px; text-shadow: 0 0 20px var(--neon-glow); }
+        .modal-title { font-family: 'Orbitron', sans-serif; font-size: 1.2em; color: var(--neon); letter-spacing: 2px; }
         .modal-close {
             width: 44px; height: 44px; border-radius: 14px;
             border: 1px solid var(--border-neon); background: transparent;
             color: var(--text-primary); cursor: pointer; font-size: 1.2em;
-            transition: all 0.3s; display: flex; align-items: center; justify-content: center;
+            display: flex; align-items: center; justify-content: center;
         }
         .modal-close:hover { background: rgba(255,23,68,0.2); border-color: var(--danger); color: var(--danger); }
-
         .link-display-box {
             background: rgba(0,0,0,0.6); border: 1px solid var(--neon);
             border-radius: 14px; padding: 18px;
             font-family: 'JetBrains Mono', monospace; color: var(--neon);
-            font-size: 0.85em; word-break: break-all;
+            font-size: 0.8em; word-break: break-all;
             display: flex; align-items: center; justify-content: space-between; gap: 15px;
         }
         .copy-link-btn {
             padding: 12px 24px; border-radius: 12px;
             background: var(--neon); color: #000; border: none;
-            cursor: pointer; font-weight: 700;
-            font-family: 'Vazirmatn', sans-serif; transition: all 0.3s;
-            white-space: nowrap; font-size: 0.9em; box-shadow: 0 0 20px var(--neon-soft);
+            cursor: pointer; font-weight: 700; font-size: 0.9em;
+            white-space: nowrap; box-shadow: 0 0 20px var(--neon-soft);
         }
-        .copy-link-btn:hover { box-shadow: 0 0 40px var(--neon-glow); transform: scale(1.05); }
+        .copy-link-btn:hover { box-shadow: 0 0 40px var(--neon-glow); }
 
-        /* Toast */
         .toast-container {
             position: fixed; top: 30px; left: 50%; transform: translateX(-50%);
             z-index: 300; display: flex; flex-direction: column; gap: 10px; pointer-events: none;
         }
         .toast {
             padding: 16px 28px; border-radius: 16px; font-weight: 600;
-            font-family: 'Vazirmatn', sans-serif; text-align: center;
-            min-width: 320px; pointer-events: all;
+            text-align: center; min-width: 320px;
             animation: toastIn 0.5s ease, toastOut 0.5s ease 3s forwards;
             backdrop-filter: blur(20px); font-size: 0.9em;
         }
-        .toast.success { background: rgba(0,230,118,0.15); border: 1px solid var(--success); color: var(--success); box-shadow: 0 10px 40px var(--success-glow); }
-        .toast.error { background: rgba(255,23,68,0.15); border: 1px solid var(--danger); color: var(--danger); box-shadow: 0 10px 40px var(--danger-glow); }
+        .toast.success { background: rgba(0,230,118,0.15); border: 1px solid var(--success); color: var(--success); }
+        .toast.error { background: rgba(255,23,68,0.15); border: 1px solid var(--danger); color: var(--danger); }
         .toast.info { background: rgba(0,176,255,0.15); border: 1px solid var(--info); color: var(--info); }
         @keyframes toastIn { from { transform: translateY(-120px) scale(0.8); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
         @keyframes toastOut { from { opacity: 1; } to { opacity: 0; transform: scale(0.9) translateY(-30px); } }
 
-        .empty-state { text-align: center; padding: 60px 20px; }
-        .empty-icon { font-size: 5em; opacity: 0.25; animation: uploadBounce 3s ease-in-out infinite; }
-        .empty-text { color: var(--text-dim); font-size: 1em; margin-top: 15px; font-weight: 300; }
+        .empty-state { text-align: center; padding: 50px 20px; }
+        .empty-icon { font-size: 4em; opacity: 0.25; }
+        .empty-text { color: var(--text-dim); font-size: 1em; margin-top: 15px; }
+
+        .warning-box {
+            background: rgba(255,171,0,0.1); border: 1px solid rgba(255,171,0,0.3);
+            border-radius: 12px; padding: 14px; margin-top: 15px;
+            font-size: 0.75em; color: var(--warning);
+        }
 
         @media (max-width: 1200px) { .panels { grid-template-columns: 1fr; } }
         @media (max-width: 1024px) {
@@ -457,15 +359,10 @@
             .stats-grid { grid-template-columns: 1fr; }
             .header-greeting h1 { font-size: 1.5em; }
             .stat-value { font-size: 2em; }
-            .cursor-outer, .cursor-inner { display: none; }
-            body { cursor: auto; }
         }
     </style>
 </head>
 <body>
-    <div class="cursor-outer" id="cursor-outer"></div>
-    <div class="cursor-inner" id="cursor-inner"></div>
-
     <canvas id="three-bg"></canvas>
     <canvas id="matrix-canvas"></canvas>
     <div class="grid-overlay"></div>
@@ -486,8 +383,9 @@
                     <span class="nav-label">نمای کلی</span>
                 </div>
                 <div class="nav-item">
-                    <span class="nav-icon">🚀</span>
-                    <span class="nav-label">Deploy خودکار</span>
+                    <span class="nav-icon">🔗</span>
+                    <span class="nav-label">لینک‌های اشتراکی</span>
+                    <span class="nav-badge" id="nav-link-count">0</span>
                 </div>
             </nav>
             <div class="sidebar-footer">
@@ -509,78 +407,67 @@
             <header class="header">
                 <div class="header-greeting">
                     <h1>Commander Rayan</h1>
-                    <p>▸ Tiiny.host Deploy Active · لینک واقعی اتوماتیک</p>
+                    <p>▸ URL Encode System · لینک‌های عمومی و قابل اشتراک</p>
                 </div>
                 <div class="header-actions">
                     <button class="header-btn" onclick="refreshData()">⟳ بروزرسانی</button>
                     <button class="header-btn primary" onclick="document.getElementById('file-input-main').click()">+ آپلود فایل</button>
-                    <input type="file" id="file-input-main" multiple style="display:none" onchange="handleFiles(this.files)" accept=".html,.css,.js,.py,.txt,.json,.xml,.md,.zip">
+                    <input type="file" id="file-input-main" multiple style="display:none" onchange="handleFiles(this.files)" accept=".py,.html,.css,.js,.txt,.json,.xml,.md">
                 </div>
             </header>
 
             <div class="stats-grid">
                 <div class="stat-card">
-                    <div class="stat-header">
-                        <div class="stat-icon">⊡</div>
-                        <span class="stat-trend up">▲ ACTIVE</span>
-                    </div>
+                    <div class="stat-icon">⊡</div>
                     <div class="stat-value" id="stat-total">0</div>
                     <div class="stat-label">مجموع فایل‌ها</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-header">
-                        <div class="stat-icon">🚀</div>
-                        <span class="stat-trend up">▲ LIVE</span>
-                    </div>
-                    <div class="stat-value" id="stat-deployed">0</div>
-                    <div class="stat-label">Deploy شده</div>
+                    <div class="stat-icon">🔗</div>
+                    <div class="stat-value" id="stat-links">0</div>
+                    <div class="stat-label">لینک‌های ساخته شده</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-header">
-                        <div class="stat-icon">▶</div>
-                        <span class="stat-trend up">▲ RUNS</span>
-                    </div>
+                    <div class="stat-icon">▶</div>
                     <div class="stat-value" id="stat-runs">0</div>
                     <div class="stat-label">اجراها</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-header">
-                        <div class="stat-icon">⌬</div>
-                        <span class="stat-trend up">● PYTHON</span>
-                    </div>
-                    <div class="stat-value" id="stat-python">0</div>
-                    <div class="stat-label">فایل‌های Python</div>
+                    <div class="stat-icon">⚡</div>
+                    <div class="stat-value">∞</div>
+                    <div class="stat-label">عمومی و قابل اشتراک</div>
                 </div>
             </div>
 
             <div class="panels">
                 <div class="panel">
                     <div class="panel-header">
-                        <h3 class="panel-title">⬆ <span class="highlight">آپلود</span> و Deploy</h3>
+                        <h3 class="panel-title">⬆ <span class="highlight">آپلود</span> فایل و ساخت لینک</h3>
                     </div>
                     <div class="upload-zone" id="upload-zone-main">
-                        <div class="upload-pulse"></div>
                         <div class="upload-icon-animated">☁</div>
-                        <div class="upload-text-main">DROP & AUTO DEPLOY</div>
-                        <div class="upload-hint-text">فایل رو بکش اینجا تا اتوماتیک لینک واقعی بگیری 🚀</div>
+                        <div class="upload-text-main">UPLOAD & GET PUBLIC LINK</div>
+                        <div class="upload-hint-text">فایل رو بکش اینجا · لینک عمومی و قابل اشتراک بگیر 🚀</div>
                         <div class="format-tags">
                             <span class="format-tag executable">.html</span>
-                            <span class="format-tag executable">.css</span>
+                            <span class="format-tag executable">.py</span>
                             <span class="format-tag executable">.js</span>
-                            <span class="format-tag">.py</span>
-                            <span class="format-tag">.zip</span>
+                            <span class="format-tag executable">.css</span>
+                            <span class="format-tag">.txt</span>
+                            <span class="format-tag">.json</span>
+                            <span class="format-tag">.md</span>
                         </div>
                     </div>
                 </div>
 
                 <div class="panel">
                     <div class="panel-header">
-                        <h3 class="panel-title">🌐 <span class="highlight">پروژه‌های</span> آنلاین</h3>
+                        <h3 class="panel-title">🔗 <span class="highlight">لینک‌های</span> عمومی</h3>
                     </div>
-                    <div class="code-list" id="projects-list">
+                    <div class="code-list" id="links-list">
                         <div class="empty-state">
                             <div class="empty-icon">⊡</div>
-                            <div class="empty-text">هنوز پروژه‌ای Deploy نشده</div>
+                            <div class="empty-text">هنوز لینکی ساخته نشده</div>
                         </div>
                     </div>
                 </div>
@@ -592,24 +479,26 @@
     <div class="modal-overlay" id="link-modal" style="display:none">
         <div class="modal">
             <div class="modal-header">
-                <h3 class="modal-title">🎉 سایت شما آماده است!</h3>
+                <h3 class="modal-title">🎉 لینک عمومی آماده است!</h3>
                 <button class="modal-close" onclick="closeLinkModal()">✕</button>
             </div>
-            <p style="color:var(--text-dim);margin-bottom:18px">🚀 پروژه با موفقیت Deploy شد! لینک واقعی:</p>
+            <p style="color:var(--text-dim);margin-bottom:18px">🚀 این لینک رو هرکی باز کنه، کد اجرا میشه:</p>
             <div class="link-display-box">
-                <span id="deployed-link-text"></span>
-                <button class="copy-link-btn" onclick="copyDeployedLink()">📋 کپی</button>
+                <span id="share-link-text" style="font-size:0.7em;"></span>
+                <button class="copy-link-btn" onclick="copyShareLink()">📋 کپی</button>
             </div>
-            <p style="color:var(--text-dim);margin-top:15px;font-size:0.75em;">⚠️ ممکنه چند ثانیه طول بکشه تا لینک فعال بشه</p>
-            <button class="header-btn primary" onclick="window.open(document.getElementById('deployed-link-text').textContent, '_blank')" style="margin-top:15px;width:100%;justify-content:center;">
-                🌐 باز کردن سایت
+            <button class="header-btn primary" onclick="window.open(document.getElementById('share-link-text').textContent, '_blank')" style="margin-top:15px;width:100%;justify-content:center;">
+                🌐 تست لینک
             </button>
+            <div class="warning-box">
+                ⚠️ طول URL محدود است (~۲۰۰۰ کاراکتر). برای فایل‌های بزرگ، کد به صورت خودکار فشرده می‌شود.
+            </div>
         </div>
     </div>
 
     <script>
         // ==========================================
-        // AUTH CHECK
+        // AUTH
         // ==========================================
         const cameFromLogin = sessionStorage.getItem('codeorbit_just_logged');
         if (!localStorage.getItem('codeorbit_auth') && !cameFromLogin) {
@@ -619,24 +508,6 @@
             localStorage.setItem('codeorbit_auth', 'true');
             sessionStorage.removeItem('codeorbit_just_logged');
         }
-
-        // ==========================================
-        // CUSTOM CURSOR
-        // ==========================================
-        const cOuter = document.getElementById('cursor-outer');
-        const cInner = document.getElementById('cursor-inner');
-        document.addEventListener('mousemove', (e) => {
-            cOuter.style.left = (e.clientX - 14) + 'px';
-            cOuter.style.top = (e.clientY - 14) + 'px';
-            cInner.style.left = (e.clientX - 2.5) + 'px';
-            cInner.style.top = (e.clientY - 2.5) + 'px';
-        });
-        document.addEventListener('mousedown', () => cOuter.classList.add('click'));
-        document.addEventListener('mouseup', () => cOuter.classList.remove('click'));
-        document.querySelectorAll('button, a, .nav-item, .stat-card, .upload-zone, .action-btn').forEach(el => {
-            el.addEventListener('mouseenter', () => cOuter.classList.add('hover'));
-            el.addEventListener('mouseleave', () => cOuter.classList.remove('hover'));
-        });
 
         // ==========================================
         // THREE.JS
@@ -719,7 +590,7 @@
         setInterval(drawMtx, 45);
 
         // ==========================================
-        // FLOATING PARTICLES
+        // PARTICLES
         // ==========================================
         const particlesLayer = document.getElementById('particles-layer');
         for(let i = 0; i < 50; i++) {
@@ -734,40 +605,37 @@
         // DATA
         // ==========================================
         let codes = JSON.parse(localStorage.getItem('codeorbit_codes') || '[]');
-        let deployedProjects = JSON.parse(localStorage.getItem('codeorbit_deployed') || '[]');
+        let shareLinks = JSON.parse(localStorage.getItem('codeorbit_links') || '[]');
         let totalRuns = parseInt(localStorage.getItem('codeorbit_runs') || '0');
 
         function saveData() {
             localStorage.setItem('codeorbit_codes', JSON.stringify(codes));
-            localStorage.setItem('codeorbit_deployed', JSON.stringify(deployedProjects));
+            localStorage.setItem('codeorbit_links', JSON.stringify(shareLinks));
             localStorage.setItem('codeorbit_runs', totalRuns.toString());
             updateUI();
         }
 
         function updateUI() {
             document.getElementById('stat-total').textContent = codes.length;
-            document.getElementById('stat-deployed').textContent = deployedProjects.length;
+            document.getElementById('stat-links').textContent = shareLinks.length;
             document.getElementById('stat-runs').textContent = totalRuns;
-            document.getElementById('stat-python').textContent = codes.filter(c => c.name && c.name.endsWith('.py')).length;
+            document.getElementById('nav-link-count').textContent = shareLinks.length;
 
-            const list = document.getElementById('projects-list');
-            if(deployedProjects.length === 0) {
-                list.innerHTML = '<div class="empty-state"><div class="empty-icon">⊡</div><div class="empty-text">هنوز پروژه‌ای Deploy نشده</div></div>';
+            const list = document.getElementById('links-list');
+            if(shareLinks.length === 0) {
+                list.innerHTML = '<div class="empty-state"><div class="empty-icon">⊡</div><div class="empty-text">هنوز لینکی ساخته نشده</div></div>';
             } else {
-                list.innerHTML = deployedProjects.slice().reverse().map(p => `
+                list.innerHTML = shareLinks.slice().reverse().map(link => `
                     <div class="code-item">
-                        <div class="code-icon-box ${p.type || 'other'}">${p.type === 'python' ? '🐍' : p.type === 'html' ? '🌐' : p.type === 'js' ? 'JS' : '📄'}</div>
+                        <div class="code-icon-box ${link.type || 'other'}">${link.type === 'python' ? '🐍' : link.type === 'html' ? '🌐' : link.type === 'js' ? 'JS' : '📄'}</div>
                         <div class="code-info">
-                            <div class="code-filename">${p.name}</div>
-                            <div class="code-meta">
-                                <span>${new Date(p.date).toLocaleString('fa-IR')}</span>
-                                <span class="deploy-badge live">● LIVE</span>
-                            </div>
-                            <a href="${p.url}" target="_blank" class="live-link">${p.url}</a>
+                            <div class="code-filename">${link.name}</div>
+                            <div class="code-meta">${new Date(link.date).toLocaleString('fa-IR')} · ${link.size || 'N/A'}</div>
                         </div>
                         <div class="code-actions-group">
-                            <button class="action-btn deploy" onclick="window.open('${p.url}','_blank')" title="باز کردن">🔗</button>
-                            <button class="action-btn delete" onclick="deleteProject('${p.id}')" title="حذف">🗑</button>
+                            <button class="action-btn link" onclick="copyLink('${link.id}')" title="کپی لینک">📋</button>
+                            <button class="action-btn run" onclick="window.open('${link.url}','_blank')" title="باز کردن">🔗</button>
+                            <button class="action-btn delete" onclick="deleteLink('${link.id}')" title="حذف">🗑</button>
                         </div>
                     </div>
                 `).join('');
@@ -775,7 +643,7 @@
         }
 
         // ==========================================
-        // UPLOAD + AUTO DEPLOY TO TIINY.HOST
+        // FILE UPLOAD + ENCODE URL
         // ==========================================
         const uploadZone = document.getElementById('upload-zone-main');
         uploadZone.addEventListener('click', () => document.getElementById('file-input-main').click());
@@ -792,9 +660,10 @@
             
             Array.from(files).forEach(file => {
                 const reader = new FileReader();
-                reader.onload = async function(e) {
+                reader.onload = function(e) {
                     const content = e.target.result;
                     const codeId = 'c_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                    const ext = file.name.split('.').pop().toLowerCase();
                     
                     // Save locally
                     codes.push({
@@ -803,63 +672,33 @@
                         content: content,
                         size: formatSize(file.size),
                         date: new Date().toISOString(),
-                        language: file.name.split('.').pop().toUpperCase()
+                        language: ext.toUpperCase()
                     });
                     
-                    // Auto deploy to Tiiny.host
-                    if (file.name.endsWith('.html') || file.name.endsWith('.css') || file.name.endsWith('.js') || file.name.endsWith('.zip')) {
-                        showToast('🚀 در حال Deploy به Tiiny.host...', 'info');
-                        
-                        const deployed = await deployToTiiny(file);
-                        
-                        if (deployed) {
-                            deployedProjects.push({
-                                id: codeId,
-                                name: file.name,
-                                url: deployed.url,
-                                type: file.name.endsWith('.py') ? 'python' : file.name.endsWith('.html') ? 'html' : file.name.endsWith('.js') ? 'js' : 'other',
-                                date: new Date().toISOString()
-                            });
-                            
-                            document.getElementById('deployed-link-text').textContent = deployed.url;
-                            document.getElementById('link-modal').style.display = 'flex';
-                            showToast('✅ Deploy موفق! لینک واقعی آماده است 🎉', 'success');
-                        }
-                    }
+                    // Encode and create public link
+                    const encoded = btoa(unescape(encodeURIComponent(content)));
+                    const base = window.location.origin + window.location.pathname.replace('dashboard.html','');
+                    const publicUrl = `${base}runner.html?code=${encoded}&type=${ext}&name=${encodeURIComponent(file.name)}`;
+                    
+                    shareLinks.push({
+                        id: codeId,
+                        name: file.name,
+                        url: publicUrl,
+                        type: ext === 'py' ? 'python' : ext === 'html' ? 'html' : ext === 'js' ? 'js' : 'other',
+                        size: formatSize(file.size),
+                        date: new Date().toISOString()
+                    });
                     
                     saveData();
+                    
+                    // Show modal with link
+                    document.getElementById('share-link-text').textContent = publicUrl;
+                    document.getElementById('link-modal').style.display = 'flex';
+                    
+                    showToast('✅ لینک عمومی ساخته شد! 🚀', 'success');
                 };
                 reader.readAsText(file);
             });
-        }
-
-        async function deployToTiiny(file) {
-            try {
-                const formData = new FormData();
-                formData.append('file', file);
-                
-                const response = await fetch('https://api.tiiny.host/v1/upload', {
-                    method: 'POST',
-                    body: formData
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    return { url: data.url || data.link || `https://${data.subdomain}.tiiny.site` };
-                } else {
-                    // Try alternative: return a preview URL
-                    const blob = new Blob([await file.text()], { type: 'text/html' });
-                    const blobUrl = URL.createObjectURL(blob);
-                    return { url: blobUrl };
-                }
-            } catch (err) {
-                console.log('Tiiny API error, using blob URL:', err);
-                // Fallback: create blob URL for preview
-                const text = await file.text();
-                const blob = new Blob([text], { type: 'text/html' });
-                const blobUrl = URL.createObjectURL(blob);
-                return { url: blobUrl };
-            }
         }
 
         function formatSize(bytes) {
@@ -873,27 +712,27 @@
         // MODAL
         // ==========================================
         function closeLinkModal() { document.getElementById('link-modal').style.display = 'none'; }
-        function copyDeployedLink() {
-            const link = document.getElementById('deployed-link-text').textContent;
+        function copyShareLink() {
+            const link = document.getElementById('share-link-text').textContent;
             navigator.clipboard.writeText(link).then(() => showToast('✅ لینک کپی شد!', 'success'));
             closeLinkModal();
         }
 
-        // ==========================================
-        // DELETE
-        // ==========================================
-        function deleteProject(id) {
-            if(confirm('⚠️ از حذف این پروژه اطمینان دارید؟')) {
-                deployedProjects = deployedProjects.filter(p => p.id !== id);
-                codes = codes.filter(c => c.id !== id);
-                saveData();
-                showToast('پروژه حذف شد 🗑', 'error');
+        function copyLink(id) {
+            const link = shareLinks.find(l => l.id === id);
+            if(link) {
+                navigator.clipboard.writeText(link.url).then(() => showToast('✅ لینک کپی شد!', 'success'));
             }
         }
 
-        // ==========================================
-        // TOAST
-        // ==========================================
+        function deleteLink(id) {
+            if(confirm('⚠️ از حذف این لینک اطمینان دارید؟')) {
+                shareLinks = shareLinks.filter(l => l.id !== id);
+                saveData();
+                showToast('لینک حذف شد 🗑', 'error');
+            }
+        }
+
         function showToast(msg, type = 'success') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
@@ -905,7 +744,7 @@
 
         function refreshData() {
             codes = JSON.parse(localStorage.getItem('codeorbit_codes') || '[]');
-            deployedProjects = JSON.parse(localStorage.getItem('codeorbit_deployed') || '[]');
+            shareLinks = JSON.parse(localStorage.getItem('codeorbit_links') || '[]');
             totalRuns = parseInt(localStorage.getItem('codeorbit_runs') || '0');
             updateUI();
             showToast('⟳ بروزرسانی شد', 'info');
@@ -917,10 +756,6 @@
             window.location.href = 'index.html';
         }
 
-        // ==========================================
-        // INIT
-        // ==========================================
-        updateUI();
         document.getElementById('link-modal').addEventListener('click', function(e) { if(e.target === this) closeLinkModal(); });
         document.addEventListener('keydown', (e) => { if(e.key === 'Escape') closeLinkModal(); });
         window.addEventListener('resize', () => {
@@ -931,11 +766,13 @@
             mtxCanvas.height = innerHeight;
         });
 
+        updateUI();
+
         console.log(`
         ╔══════════════════════════════════╗
-        ║  🌍 CODEORBIT v6.0              ║
+        ║  🌍 CODEORBIT v7.0 FINAL        ║
         ║  Commander: Rayan               ║
-        ║  Auto Deploy: Tiiny.host        ║
+        ║  Public URL Encode System       ║
         ╚══════════════════════════════════╝
         `);
     </script>
