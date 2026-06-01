@@ -5,12 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CODEORBIT | پنل فرماندهی</title>
     
-    <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><defs><linearGradient id='g1' x1='0%25' y1='0%25' x2='100%25' y2='100%25'><stop offset='0%25' style='stop-color:%2300ff41;stop-opacity:1'/><stop offset='50%25' style='stop-color:%2300cc33'/><stop offset='100%25' style='stop-color:%23006600'/></linearGradient><filter id='glow'><feGaussianBlur stdDeviation='6'/><feMerge><feMergeNode in='blur'/><feMergeNode in='SourceGraphic'/></feMerge></filter></defs><rect width='512' height='512' rx='120' fill='%23050505'/><rect width='512' height='512' rx='120' fill='none' stroke='%2300ff41' stroke-width='3' opacity='0.3'/><circle cx='256' cy='240' r='110' fill='url(%23g1)' filter='url(%23glow)' opacity='0.9'/><circle cx='256' cy='240' r='80' fill='%23050505' stroke='%2300ff41' stroke-width='2' opacity='0.5'/><ellipse cx='256' cy='240' rx='170' ry='35' fill='none' stroke='%2300ff41' stroke-width='3' transform='rotate(-25,256,240)' opacity='0.6'/><ellipse cx='256' cy='240' rx='140' ry='25' fill='none' stroke='%2300ff41' stroke-width='2' transform='rotate(55,256,240)' opacity='0.4'/><circle cx='170' cy='170' r='5' fill='%23fff' filter='url(%23glow)'/><circle cx='340' cy='310' r='4' fill='%23fff' opacity='0.7'/></svg>">
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100;300;400;500;700;900&display=swap');
@@ -18,110 +18,131 @@
         @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=swap');
 
         :root {
-            --neon: #00ff41; --neon-glow: rgba(0, 255, 65, 0.8); --neon-soft: rgba(0, 255, 65, 0.08);
-            --bg: #010101; --panel: rgba(0, 0, 0, 0.82); --border: rgba(0, 255, 65, 0.2);
-            --text: #e8ffe8; --dim: rgba(0, 255, 65, 0.5); --danger: #ff1744; --success: #00e676; --info: #00b0ff; --warning: #ffab00;
+            --neon: #00ff41; --neon-glow: rgba(0,255,65,0.8); --neon-soft: rgba(0,255,65,0.08);
+            --bg: #010101; --panel: rgba(0,0,0,0.82); --border: rgba(0,255,65,0.2); --border-bright: rgba(0,255,65,0.5);
+            --text: #e8ffe8; --dim: rgba(0,255,65,0.5); --danger: #ff1744; --success: #00e676; --info: #00b0ff; --warning: #ffab00;
+            --dark-bg: #0a0a0a; --light-bg: #f5f5f5; --light-text: #1a1a1a;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Vazirmatn', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; min-height: 100vh; cursor: none; }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Vazirmatn',sans-serif; background:var(--bg); color:var(--text); overflow-x:hidden; min-height:100vh; cursor:none; transition:all 0.5s; }
+        body.light-mode { background:#e8e8e8; color:#1a1a1a; --bg:#e8e8e8; --panel:rgba(255,255,255,0.9); --border:rgba(0,0,0,0.15); --text:#1a1a1a; --dim:rgba(0,0,0,0.5); --neon-soft:rgba(0,150,50,0.08); }
 
-        .cursor-outer { width: 30px; height: 30px; border: 2px solid var(--neon); border-radius: 50%; position: fixed; pointer-events: none; z-index: 99999; transition: width 0.2s, height 0.2s; box-shadow: 0 0 25px var(--neon-glow); transform: translate(-50%, -50%); mix-blend-mode: screen; }
-        .cursor-inner { width: 5px; height: 5px; background: var(--neon); border-radius: 50%; position: fixed; pointer-events: none; z-index: 99999; box-shadow: 0 0 12px var(--neon-glow); transform: translate(-50%, -50%); }
-        .cursor-outer.hover { width: 55px; height: 55px; border-color: #fff; box-shadow: 0 0 40px var(--neon-glow); mix-blend-mode: difference; }
-        .cursor-outer.click { width: 18px; height: 18px; border-color: #fff; box-shadow: 0 0 25px #fff, 0 0 50px var(--neon-glow); }
+        .cursor-outer { width:30px;height:30px;border:2px solid var(--neon);border-radius:50%;position:fixed;pointer-events:none;z-index:99999;transition:all 0.2s;box-shadow:0 0 25px var(--neon-glow);transform:translate(-50%,-50%);mix-blend-mode:screen; }
+        .cursor-inner { width:5px;height:5px;background:var(--neon);border-radius:50%;position:fixed;pointer-events:none;z-index:99999;box-shadow:0 0 12px var(--neon-glow);transform:translate(-50%,-50%); }
+        .cursor-outer.hover { width:55px;height:55px;border-color:#fff;box-shadow:0 0 40px var(--neon-glow);mix-blend-mode:difference; }
+        .cursor-outer.click { width:18px;height:18px;border-color:#fff;box-shadow:0 0 25px #fff; }
 
-        #three-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
-        #particles-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
-        .grid-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-image: linear-gradient(rgba(0,255,65,0.015) 1px, transparent 1px), linear-gradient(90deg, rgba(0,255,65,0.015) 1px, transparent 1px); background-size: 50px 50px; z-index: 2; pointer-events: none; }
-        .scanlines { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.02) 2px, rgba(0,0,0,0.02) 4px); z-index: 3; pointer-events: none; }
-        .vignette { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.7) 100%); z-index: 4; pointer-events: none; }
-        .orbs-layer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 5; pointer-events: none; }
-        .orb { position: absolute; border-radius: 50%; background: radial-gradient(circle, rgba(0,255,65,0.1), transparent 70%); animation: orbFloat var(--dur) ease-in-out infinite; animation-delay: var(--del); filter: blur(30px); }
-        @keyframes orbFloat { 0%, 100% { transform: translateY(0) translateX(0) scale(1); opacity: 0.06; } 50% { transform: translateY(-60px) translateX(30px) scale(1.5); opacity: 0.15; } }
+        #three-bg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;}
+        #particles-canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:1;pointer-events:none;}
+        .grid-bg{position:fixed;top:0;left:0;width:100%;height:100%;background-image:linear-gradient(rgba(0,255,65,0.015) 1px,transparent 1px),linear-gradient(90deg,rgba(0,255,65,0.015) 1px,transparent 1px);background-size:50px 50px;z-index:2;pointer-events:none;}
+        .scanlines{position:fixed;top:0;left:0;width:100%;height:100%;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.02) 2px,rgba(0,0,0,0.02) 4px);z-index:3;pointer-events:none;}
+        .vignette{position:fixed;top:0;left:0;width:100%;height:100%;background:radial-gradient(ellipse at center,transparent 40%,rgba(0,0,0,0.7) 100%);z-index:4;pointer-events:none;}
+        .orbs-layer{position:fixed;top:0;left:0;width:100%;height:100%;z-index:5;pointer-events:none;}
+        .orb{position:absolute;border-radius:50%;background:radial-gradient(circle,rgba(0,255,65,0.1),transparent 70%);animation:orbFloat var(--dur) ease-in-out infinite;animation-delay:var(--del);filter:blur(30px);}
+        @keyframes orbFloat{0%,100%{transform:translateY(0) translateX(0) scale(1);opacity:0.06;}50%{transform:translateY(-60px) translateX(30px) scale(1.5);opacity:0.15;}}
 
-        .app { position: relative; z-index: 10; max-width: 1300px; margin: 0 auto; padding: 25px; }
+        .app{position:relative;z-index:10;max-width:1400px;margin:0 auto;padding:20px;}
 
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 15px; background: var(--panel); backdrop-filter: blur(40px); border: 1px solid var(--border); border-radius: 20px; padding: 20px 26px; box-shadow: 0 8px 35px rgba(0,0,0,0.5); position: relative; overflow: hidden; }
-        .header::before { content: ''; position: absolute; top: -40px; right: -40px; width: 140px; height: 140px; background: var(--neon); border-radius: 50%; filter: blur(80px); opacity: 0.04; }
-        .header h1 { font-family: 'Orbitron', sans-serif; font-size: 1.7em; font-weight: 900; background: linear-gradient(180deg, #fff 0%, #b8ffb8 25%, #00ff41 50%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; filter: drop-shadow(0 0 20px var(--neon-glow)); letter-spacing: 3px; }
-        .header .subtitle { color: var(--dim); font-size: 0.72em; margin-top: 4px; letter-spacing: 2px; }
+        /* Header */
+        .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px;flex-wrap:wrap;gap:12px;background:var(--panel);backdrop-filter:blur(40px);border:1px solid var(--border);border-radius:20px;padding:18px 24px;box-shadow:0 8px 35px rgba(0,0,0,0.5);}
+        .header h1{font-family:'Orbitron',sans-serif;font-size:1.6em;font-weight:900;background:linear-gradient(180deg,#fff 0%,#b8ffb8 25%,#00ff41 50%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 20px var(--neon-glow));letter-spacing:3px;}
+        .header .sub{color:var(--dim);font-size:0.7em;letter-spacing:2px;}
 
-        .btn { padding: 10px 18px; border-radius: 12px; border: 1px solid var(--border); background: rgba(0,0,0,0.7); backdrop-filter: blur(20px); color: var(--text); cursor: pointer; font-family: 'Vazirmatn', sans-serif; font-size: 0.78em; font-weight: 500; transition: all 0.35s; display: inline-flex; align-items: center; gap: 6px; }
-        .btn:hover { border-color: var(--neon); box-shadow: 0 0 20px var(--neon-soft); transform: translateY(-2px); }
-        .btn-primary { background: linear-gradient(135deg, #001a00 0%, #004d00 40%, #00cc33 100%); border-color: var(--neon); font-weight: 700; box-shadow: 0 0 18px rgba(0,255,65,0.12); animation: btnGlow 3s ease-in-out infinite; }
-        @keyframes btnGlow { 0%, 100% { box-shadow: 0 0 18px rgba(0,255,65,0.12); } 50% { box-shadow: 0 0 40px rgba(0,255,65,0.35); } }
-        .btn-danger { border-color: var(--danger); color: var(--danger); }
-        .btn-danger:hover { background: rgba(255,23,68,0.1); box-shadow: 0 0 20px rgba(255,23,68,0.4); }
+        .btn{padding:9px 16px;border-radius:11px;border:1px solid var(--border);background:rgba(0,0,0,0.7);backdrop-filter:blur(20px);color:var(--text);cursor:pointer;font-family:'Vazirmatn',sans-serif;font-size:0.75em;font-weight:500;transition:all 0.35s;display:inline-flex;align-items:center;gap:5px;}
+        .btn:hover{border-color:var(--neon);box-shadow:0 0 20px var(--neon-soft);transform:translateY(-2px);}
+        .btn-primary{background:linear-gradient(135deg,#001a00 0%,#004d00 40%,#00cc33 100%);border-color:var(--neon);font-weight:700;box-shadow:0 0 18px rgba(0,255,65,0.12);animation:btnGlow 3s infinite;}
+        @keyframes btnGlow{0%,100%{box-shadow:0 0 18px rgba(0,255,65,0.12);}50%{box-shadow:0 0 40px rgba(0,255,65,0.35);}}
+        .btn-danger{border-color:var(--danger);color:var(--danger);}
+        .btn-danger:hover{background:rgba(255,23,68,0.1);box-shadow:0 0 20px rgba(255,23,68,0.4);}
+        .btn-sm{padding:6px 12px;font-size:0.7em;}
 
-        .panels { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
-        .panel { background: var(--panel); backdrop-filter: blur(40px); border: 1px solid var(--border); border-radius: 18px; padding: 22px; position: relative; overflow: hidden; box-shadow: 0 6px 30px rgba(0,0,0,0.4); }
-        .panel::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--neon), transparent); opacity: 0.4; }
-        .panel-title { font-family: 'Orbitron', sans-serif; font-size: 0.9em; font-weight: 700; letter-spacing: 1.5px; margin-bottom: 16px; }
-        .panel-title span { color: var(--neon); text-shadow: 0 0 10px var(--neon-glow); }
+        /* Tabs */
+        .tabs{display:flex;gap:4px;margin-bottom:18px;flex-wrap:wrap;background:var(--panel);backdrop-filter:blur(40px);border:1px solid var(--border);border-radius:16px;padding:6px;}
+        .tab{padding:10px 16px;border-radius:12px;cursor:pointer;transition:all 0.3s;color:var(--dim);font-size:0.75em;font-weight:500;white-space:nowrap;}
+        .tab:hover{background:var(--neon-soft);color:var(--neon);}
+        .tab.active{background:var(--neon-soft);color:var(--neon);border:1px solid var(--border-bright);}
 
-        .upload-zone { border: 2px dashed var(--border); border-radius: 14px; padding: 30px 22px; text-align: center; transition: all 0.4s; cursor: pointer; background: var(--neon-soft); position: relative; overflow: hidden; }
-        .upload-zone:hover { border-color: var(--neon); background: rgba(0,255,65,0.05); }
-        .upload-zone.drag-over { border-color: var(--neon); border-style: solid; background: rgba(0,255,65,0.07); transform: scale(1.02); }
-        .upload-icon { font-size: 3em; position: relative; z-index: 1; animation: floatIcon 3s ease-in-out infinite; }
-        @keyframes floatIcon { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
-        .upload-text { font-family: 'Orbitron', sans-serif; font-size: 1em; color: var(--neon); margin: 8px 0; letter-spacing: 1px; }
-        .upload-hint { color: var(--dim); font-size: 0.7em; }
-        .tags { display: flex; justify-content: center; gap: 5px; flex-wrap: wrap; margin-top: 12px; }
-        .tag { padding: 4px 10px; border-radius: 14px; background: rgba(0,255,65,0.03); border: 1px solid var(--border); font-size: 0.6em; font-family: 'JetBrains Mono', monospace; color: var(--dim); }
-        .tag.exe { background: var(--neon-soft); border-color: var(--neon); color: var(--neon); font-weight: 700; }
-        .limit-badge { display: inline-block; padding: 3px 8px; border-radius: 8px; background: rgba(255,171,0,0.08); border: 1px solid rgba(255,171,0,0.25); color: var(--warning); font-size: 0.6em; margin-top: 8px; font-family: 'Orbitron', sans-serif; }
+        /* Panels */
+        .panels{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+        .panel{background:var(--panel);backdrop-filter:blur(40px);border:1px solid var(--border);border-radius:18px;padding:20px;position:relative;overflow:hidden;box-shadow:0 6px 30px rgba(0,0,0,0.4);}
+        .panel::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--neon),transparent);opacity:0.4;}
+        .panel-title{font-family:'Orbitron',sans-serif;font-size:0.85em;font-weight:700;letter-spacing:1.5px;margin-bottom:14px;}
+        .panel-title span{color:var(--neon);text-shadow:0 0 10px var(--neon-glow);}
 
-        .note-area { width: 100%; min-height: 100px; background: rgba(0,0,0,0.5); border: 1px solid var(--border); border-radius: 12px; padding: 14px; color: var(--text); font-family: 'Vazirmatn', 'JetBrains Mono', sans-serif; font-size: 0.82em; resize: vertical; outline: none; transition: all 0.3s; }
-        .note-area:focus { border-color: var(--neon); box-shadow: 0 0 20px var(--neon-soft); }
-        .note-actions { display: flex; gap: 6px; margin-top: 8px; }
+        /* Upload */
+        .upload-zone{border:2px dashed var(--border);border-radius:14px;padding:28px 20px;text-align:center;transition:all 0.4s;cursor:pointer;background:var(--neon-soft);}
+        .upload-zone:hover{border-color:var(--neon);background:rgba(0,255,65,0.05);}
+        .upload-zone.drag-over{border-color:var(--neon);border-style:solid;background:rgba(0,255,65,0.07);transform:scale(1.02);}
+        .upload-icon{font-size:2.8em;animation:floatIcon 3s infinite;}
+        @keyframes floatIcon{0%,100%{transform:translateY(0);}50%{transform:translateY(-12px);}}
+        .upload-text{font-family:'Orbitron',sans-serif;font-size:1em;color:var(--neon);margin:6px 0;letter-spacing:1px;}
+        .upload-hint{color:var(--dim);font-size:0.68em;}
+        .tags{display:flex;justify-content:center;gap:4px;flex-wrap:wrap;margin-top:10px;}
+        .tag{padding:3px 9px;border-radius:12px;background:rgba(0,255,65,0.03);border:1px solid var(--border);font-size:0.58em;font-family:'JetBrains Mono',monospace;color:var(--dim);}
+        .tag.exe{background:var(--neon-soft);border-color:var(--neon);color:var(--neon);font-weight:700;}
 
-        .list { max-height: 380px; overflow-y: auto; display: flex; flex-direction: column; gap: 7px; padding-left: 2px; }
-        .list::-webkit-scrollbar { width: 3px; }
-        .list::-webkit-scrollbar-thumb { background: var(--neon); border-radius: 6px; }
+        /* Note */
+        .note-area{width:100%;min-height:90px;background:rgba(0,0,0,0.5);border:1px solid var(--border);border-radius:12px;padding:12px;color:var(--text);font-family:'Vazirmatn','JetBrains Mono',sans-serif;font-size:0.78em;resize:vertical;outline:none;transition:all 0.3s;}
+        .note-area:focus{border-color:var(--neon);box-shadow:0 0 20px var(--neon-soft);}
 
-        .item { display: flex; align-items: center; gap: 10px; padding: 12px; border-radius: 12px; background: rgba(0,255,65,0.01); border: 1px solid transparent; transition: all 0.3s; }
-        .item:hover { background: var(--neon-soft); border-color: var(--border); box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
-        .item-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1em; flex-shrink: 0; }
-        .item-icon.html { background: linear-gradient(135deg, #2d1513, #4a1a1a); border: 1px solid #e44d26; }
-        .item-icon.py { background: linear-gradient(135deg, #1a3d5c, #306998); }
-        .item-icon.js { background: #2d2d1a; border: 1px solid #f7df1e; }
-        .item-icon.note { background: linear-gradient(135deg, #1a2d1a, #2a4a2a); border: 1px solid var(--neon); }
-        .item-icon.other { background: #1a1a1a; border: 1px solid #555; }
-        .item-info { flex: 1; min-width: 0; }
-        .item-name { font-weight: 600; font-size: 0.78em; margin-bottom: 2px; }
-        .item-meta { font-size: 0.6em; color: var(--dim); font-family: 'Orbitron', sans-serif; display: flex; gap: 8px; }
-        .item-actions { display: flex; gap: 4px; }
+        /* List */
+        .list{max-height:350px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;padding-left:2px;}
+        .list::-webkit-scrollbar{width:3px;}
+        .list::-webkit-scrollbar-thumb{background:var(--neon);border-radius:6px;}
+        .item{display:flex;align-items:center;gap:10px;padding:11px;border-radius:12px;background:rgba(0,255,65,0.01);border:1px solid transparent;transition:all 0.3s;}
+        .item:hover{background:var(--neon-soft);border-color:var(--border);box-shadow:0 4px 20px rgba(0,0,0,0.3);}
+        .item-icon{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:0.9em;flex-shrink:0;}
+        .item-icon.html{background:linear-gradient(135deg,#2d1513,#4a1a1a);border:1px solid #e44d26;}
+        .item-icon.py{background:linear-gradient(135deg,#1a3d5c,#306998);}
+        .item-icon.js{background:#2d2d1a;border:1px solid #f7df1e;}
+        .item-icon.note{background:linear-gradient(135deg,#1a2d1a,#2a4a2a);border:1px solid var(--neon);}
+        .item-icon.other{background:#1a1a1a;border:1px solid #555;}
+        .item-info{flex:1;min-width:0;}
+        .item-name{font-weight:600;font-size:0.76em;margin-bottom:2px;}
+        .item-meta{font-size:0.58em;color:var(--dim);font-family:'Orbitron',sans-serif;display:flex;gap:6px;}
+        .item-actions{display:flex;gap:3px;}
 
-        .act-btn { width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--dim); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s; font-size: 0.85em; }
-        .act-btn:hover { background: var(--neon-soft); border-color: var(--neon); color: var(--neon); }
-        .act-btn.del:hover { color: var(--danger); border-color: var(--danger); background: rgba(255,23,68,0.1); }
+        .act-btn{width:28px;height:28px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--dim);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.3s;font-size:0.8em;}
+        .act-btn:hover{background:var(--neon-soft);border-color:var(--neon);color:var(--neon);}
+        .act-btn.del:hover{color:var(--danger);border-color:var(--danger);background:rgba(255,23,68,0.1);}
 
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 200; display: flex; align-items: center; justify-content: center; animation: fadeIn 0.3s ease; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .modal { background: var(--panel); border: 1px solid var(--neon); border-radius: 18px; padding: 26px; max-width: 500px; width: 90%; box-shadow: 0 0 70px rgba(0,255,65,0.1); animation: modalPop 0.4s ease; }
-        @keyframes modalPop { from { transform: scale(0.85) translateY(40px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
-        .modal h3 { font-family: 'Orbitron', sans-serif; color: var(--neon); font-size: 1em; margin-bottom: 14px; }
-        .link-box { background: rgba(0,0,0,0.6); border: 1px solid var(--neon); border-radius: 10px; padding: 12px; font-family: 'JetBrains Mono', monospace; color: var(--neon); font-size: 0.65em; word-break: break-all; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-        .copy-btn { padding: 7px 14px; border-radius: 8px; background: var(--neon); color: #000; border: none; cursor: pointer; font-weight: 700; font-size: 0.78em; white-space: nowrap; }
+        /* QR Modal */
+        .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(10px);z-index:200;display:flex;align-items:center;justify-content:center;animation:fadeIn 0.3s;}
+        @keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+        .modal{background:var(--panel);border:1px solid var(--neon);border-radius:18px;padding:24px;max-width:450px;width:90%;box-shadow:0 0 70px rgba(0,255,65,0.1);animation:modalPop 0.4s;}
+        @keyframes modalPop{from{transform:scale(0.85) translateY(40px);opacity:0;}to{transform:scale(1) translateY(0);opacity:1;}}
+        .modal h3{font-family:'Orbitron',sans-serif;color:var(--neon);font-size:0.95em;margin-bottom:14px;}
+        .link-box{background:rgba(0,0,0,0.6);border:1px solid var(--neon);border-radius:10px;padding:11px;font-family:'JetBrains Mono',monospace;color:var(--neon);font-size:0.62em;word-break:break-all;display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;}
+        .copy-btn{padding:7px 13px;border-radius:8px;background:var(--neon);color:#000;border:none;cursor:pointer;font-weight:700;font-size:0.75em;white-space:nowrap;}
+        .qr-container{display:flex;justify-content:center;padding:10px;background:#fff;border-radius:10px;margin:10px 0;}
 
-        .toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 300; pointer-events: none; }
-        .toast { padding: 10px 20px; border-radius: 10px; font-weight: 600; font-size: 0.78em; text-align: center; margin-bottom: 5px; backdrop-filter: blur(30px); animation: tIn 0.3s ease, tOut 0.3s ease 2s forwards; }
-        .toast.success { background: rgba(0,230,118,0.15); border: 1px solid var(--success); color: var(--success); }
-        .toast.error { background: rgba(255,23,68,0.15); border: 1px solid var(--danger); color: var(--danger); }
-        .toast.info { background: rgba(0,176,255,0.15); border: 1px solid var(--info); color: var(--info); }
-        @keyframes tIn { from { transform: translateY(-50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        @keyframes tOut { from { opacity: 1; } to { opacity: 0; transform: translateY(-20px); } }
+        /* Toast */
+        .toast-container{position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:300;pointer-events:none;}
+        .toast{padding:10px 18px;border-radius:10px;font-weight:600;font-size:0.75em;text-align:center;margin-bottom:4px;backdrop-filter:blur(30px);animation:tIn 0.3s,tOut 0.3s 2s forwards;}
+        .toast.success{background:rgba(0,230,118,0.15);border:1px solid var(--success);color:var(--success);}
+        .toast.error{background:rgba(255,23,68,0.15);border:1px solid var(--danger);color:var(--danger);}
+        .toast.info{background:rgba(0,176,255,0.15);border:1px solid var(--info);color:var(--info);}
+        @keyframes tIn{from{transform:translateY(-50px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+        @keyframes tOut{from{opacity:1;}to{opacity:0;transform:translateY(-20px);}}
 
-        .empty-state { text-align: center; padding: 30px; }
-        .empty-icon { font-size: 2.5em; opacity: 0.2; margin-bottom: 6px; }
-        .empty-text { color: var(--dim); font-size: 0.8em; }
+        .empty-state{text-align:center;padding:25px;}
+        .empty-icon{font-size:2.2em;opacity:0.2;margin-bottom:5px;}
+        .empty-text{color:var(--dim);font-size:0.75em;}
 
-        @media (max-width: 1100px) { .panels { grid-template-columns: 1fr; } }
-        @media (max-width: 650px) {
-            .app { padding: 8px; } .header { padding: 14px; } .header h1 { font-size: 1.2em; }
-            .cursor-outer, .cursor-inner { display: none; } body { cursor: auto; }
-        }
+        /* Password input for links */
+        .password-input{width:100%;padding:10px;background:rgba(0,0,0,0.5);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:0.8em;outline:none;margin-top:8px;}
+        .password-input:focus{border-color:var(--neon);}
+
+        .storage-bar{margin-top:12px;padding:8px 12px;background:rgba(0,0,0,0.4);border-radius:8px;border:1px solid var(--border);}
+        .storage-label{display:flex;justify-content:space-between;font-size:0.55em;color:var(--dim);font-family:'Orbitron',sans-serif;letter-spacing:1px;margin-bottom:4px;}
+        .storage-track{height:3px;background:rgba(255,255,255,0.05);border-radius:2px;overflow:hidden;}
+        .storage-fill{height:100%;background:linear-gradient(90deg,var(--neon),#66ff66);border-radius:2px;transition:width 0.5s;box-shadow:0 0 6px var(--neon-glow);}
+
+        .theme-toggle{position:fixed;bottom:20px;right:20px;z-index:100;width:44px;height:44px;border-radius:50%;background:var(--panel);border:1px solid var(--border);color:var(--neon);cursor:pointer;font-size:1.2em;display:flex;align-items:center;justify-content:center;box-shadow:0 0 20px var(--neon-soft);}
+
+        @media(max-width:1100px){.panels{grid-template-columns:1fr;}}
+        @media(max-width:650px){.app{padding:8px;}.header{padding:12px;}.header h1{font-size:1.1em;}.cursor-outer,.cursor-inner{display:none;}body{cursor:auto;}.tabs{overflow-x:auto;}}
     </style>
 </head>
 <body>
@@ -134,61 +155,120 @@
     <div class="vignette"></div>
     <div class="orbs-layer" id="orbs-layer"></div>
     <div class="toast-container" id="toast-container"></div>
+    <button class="theme-toggle" onclick="toggleTheme()" title="Dark/Light">🌓</button>
 
     <div class="app">
+        <!-- Header -->
         <div class="header">
             <div>
                 <h1>CODEORBIT</h1>
-                <div class="subtitle">▸ Commander Raibod · OPFS + Notes</div>
+                <div class="sub">▸ Commander Raibod · v12 · All Features</div>
             </div>
-            <div style="display:flex;gap:6px;">
+            <div style="display:flex;gap:5px;">
                 <button class="btn" onclick="refreshData()">⟳</button>
                 <button class="btn btn-primary" onclick="document.getElementById('file-input').click()">⬆ آپلود</button>
+                <button class="btn btn-primary" onclick="document.getElementById('folder-input').click()">📁 پوشه</button>
                 <button class="btn btn-danger" onclick="logout()">⏻</button>
-                <input type="file" id="file-input" multiple style="display:none" accept=".html,.css,.js,.py,.txt,.json,.xml,.md">
+                <input type="file" id="file-input" multiple style="display:none" accept=".html,.css,.js,.py,.txt,.json,.xml,.md,.csv,.svg,.ts,.jsx,.tsx,.vue,.scss,.less,.yaml,.yml,.sql,.rb,.php,.java,.cpp,.c,.h,.rs,.go,.swift,.kt,.sh,.bat,.r,.m,.ipynb,.log,.svelte,.styl,.dockerfile">
+                <input type="file" id="folder-input" webkitdirectory multiple style="display:none">
             </div>
         </div>
 
-        <div class="panels">
-            <!-- Upload -->
-            <div class="panel">
-                <div class="panel-title">⬆ <span>آپلود فایل</span> · لینک عمومی</div>
-                <div class="upload-zone" id="upload-zone">
-                    <div class="upload-icon">☁</div>
-                    <div class="upload-text">DROP FILES HERE</div>
-                    <div class="upload-hint">فایل رو بکش اینجا · لینک عمومی بگیر 🚀</div>
-                    <div class="tags">
-                        <span class="tag exe">.html</span><span class="tag exe">.py</span><span class="tag exe">.js</span><span class="tag exe">.css</span><span class="tag">.txt</span>
+        <!-- Tabs -->
+        <div class="tabs">
+            <div class="tab active" data-tab="upload">⬆ آپلود</div>
+            <div class="tab" data-tab="note">📝 یادداشت</div>
+            <div class="tab" data-tab="links">🔗 لینک‌ها</div>
+            <div class="tab" data-tab="history">🕐 تاریخچه</div>
+            <div class="tab" data-tab="editor">💻 ادیتور</div>
+            <div class="tab" data-tab="stats">📊 آمار</div>
+        </div>
+
+        <!-- Tab Content -->
+        <div id="tab-content">
+            <!-- Upload Panel -->
+            <div class="panels" id="tab-upload">
+                <div class="panel">
+                    <div class="panel-title">⬆ <span>آپلود فایل</span> · لینک عمومی</div>
+                    <div class="upload-zone" id="upload-zone">
+                        <div class="upload-icon">☁</div>
+                        <div class="upload-text">DROP FILES HERE</div>
+                        <div class="upload-hint">فایل رو بکش اینجا · لینک عمومی بگیر 🚀</div>
+                        <div class="tags">
+                            <span class="tag exe">.html</span><span class="tag exe">.py</span><span class="tag exe">.js</span><span class="tag exe">.css</span>
+                            <span class="tag">.md</span><span class="tag">.json</span><span class="tag">.csv</span><span class="tag">.svg</span>
+                            <span class="tag">.ts</span><span class="tag">.vue</span><span class="tag">.scss</span><span class="tag">+۳۰ فرمت</span>
+                        </div>
                     </div>
-                    <div class="limit-badge">📏 ۲۰MB · OPFS ∞</div>
+                    <div class="storage-bar">
+                        <div class="storage-label"><span>💾 فضای OPFS</span><span id="storage-percent">0%</span></div>
+                        <div class="storage-track"><div class="storage-fill" id="storage-fill" style="width:0%"></div></div>
+                    </div>
+                </div>
+                <div class="panel">
+                    <div class="panel-title">📝 <span>یادداشت سریع</span> · اشتراک متن</div>
+                    <textarea class="note-area" id="quick-note" placeholder="متن خود را اینجا بنویسید..."></textarea>
+                    <div style="display:flex;gap:6px;margin-top:8px;">
+                        <button class="btn btn-primary" onclick="shareNote()" style="flex:1;justify-content:center;">🚀 اشتراک</button>
+                        <button class="btn" onclick="document.getElementById('quick-note').value=''" style="justify-content:center;">✕</button>
+                    </div>
                 </div>
             </div>
 
-            <!-- Quick Note -->
-            <div class="panel">
-                <div class="panel-title">📝 <span>یادداشت سریع</span> · اشتراک متن</div>
-                <textarea class="note-area" id="quick-note" placeholder="متن خود را اینجا بنویسید..."></textarea>
-                <div class="note-actions">
-                    <button class="btn btn-primary" onclick="shareNote()" style="flex:1;justify-content:center;">🚀 اشتراک‌گذاری</button>
-                    <button class="btn" onclick="document.getElementById('quick-note').value=''" style="justify-content:center;">✕ پاک کردن</button>
+            <!-- Links List -->
+            <div class="panel" id="tab-links" style="display:none;">
+                <div class="panel-title">🔗 <span>لینک‌های عمومی</span></div>
+                <div class="list" id="links-list">
+                    <div class="empty-state"><div class="empty-icon">⊡</div><div class="empty-text">هنوز لینکی ساخته نشده</div></div>
                 </div>
             </div>
-        </div>
 
-        <!-- Links List -->
-        <div class="panel">
-            <div class="panel-title">🔗 <span>لینک‌های</span> عمومی</div>
-            <div class="list" id="links-list">
-                <div class="empty-state"><div class="empty-icon">⊡</div><div class="empty-text">هنوز لینکی ساخته نشده</div></div>
+            <!-- History -->
+            <div class="panel" id="tab-history" style="display:none;">
+                <div class="panel-title">🕐 <span>تاریخچه بازدید</span></div>
+                <div class="list" id="history-list">
+                    <div class="empty-state"><div class="empty-icon">🕐</div><div class="empty-text">هنوز بازدیدی ثبت نشده</div></div>
+                </div>
+            </div>
+
+            <!-- Live Editor -->
+            <div class="panels" id="tab-editor" style="display:none;">
+                <div class="panel">
+                    <div class="panel-title">💻 <span>ادیتور زنده</span></div>
+                    <textarea class="note-area" id="live-editor" style="min-height:200px;font-family:'JetBrains Mono',monospace;font-size:0.75em;" placeholder="کد HTML/CSS/JS را اینجا بنویسید..."></textarea>
+                    <div style="display:flex;gap:6px;margin-top:8px;">
+                        <button class="btn btn-primary" onclick="livePreview()" style="flex:1;justify-content:center;">▶ پیش‌نمایش</button>
+                        <button class="btn" onclick="document.getElementById('live-editor').value=''" style="justify-content:center;">✕</button>
+                    </div>
+                </div>
+                <div class="panel">
+                    <div class="panel-title">👁 <span>پیش‌نمایش</span></div>
+                    <iframe id="live-preview" style="width:100%;height:250px;border:1px solid var(--border);border-radius:10px;background:#fff;"></iframe>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="panel" id="tab-stats" style="display:none;">
+                <div class="panel-title">📊 <span>آمار</span></div>
+                <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;text-align:center;">
+                    <div><div style="font-family:'Orbitron',sans-serif;font-size:1.5em;color:var(--neon);" id="s-total">0</div><div style="font-size:0.6em;color:var(--dim);">کل فایل‌ها</div></div>
+                    <div><div style="font-family:'Orbitron',sans-serif;font-size:1.5em;color:var(--neon);" id="s-links">0</div><div style="font-size:0.6em;color:var(--dim);">لینک‌ها</div></div>
+                    <div><div style="font-family:'Orbitron',sans-serif;font-size:1.5em;color:var(--neon);" id="s-views">0</div><div style="font-size:0.6em;color:var(--dim);">بازدیدها</div></div>
+                    <div><div style="font-family:'Orbitron',sans-serif;font-size:1.5em;color:var(--neon);" id="s-uptime">99.9%</div><div style="font-size:0.6em;color:var(--dim);">آپتایم</div></div>
+                </div>
             </div>
         </div>
     </div>
 
+    <!-- Link Modal -->
     <div class="modal-overlay" id="link-modal" style="display:none">
         <div class="modal">
             <h3>🎉 لینک عمومی آماده است!</h3>
             <div class="link-box"><span id="modal-link"></span><button class="copy-btn" onclick="copyModalLink()">📋 کپی</button></div>
-            <div style="margin-top:12px;display:flex;gap:6px;">
+            <div id="qr-code" class="qr-container"></div>
+            <div style="font-size:0.7em;color:var(--dim);margin-bottom:8px;">🔒 رمز برای این لینک (اختیاری):</div>
+            <input type="text" class="password-input" id="link-password" placeholder="رمز دلخواه...">
+            <div style="display:flex;gap:6px;margin-top:8px;">
                 <button class="btn btn-primary" onclick="window.open(document.getElementById('modal-link').textContent,'_blank')" style="flex:1;justify-content:center;">🌐 باز کردن</button>
                 <button class="btn" onclick="closeModal()" style="flex:1;justify-content:center;">✕ بستن</button>
             </div>
@@ -199,251 +279,191 @@
         // ==========================================
         // AUTH
         // ==========================================
-        if (!localStorage.getItem('codeorbit_auth') && !sessionStorage.getItem('codeorbit_just_logged')) location.href = 'index.html';
-        if (sessionStorage.getItem('codeorbit_just_logged')) { localStorage.setItem('codeorbit_auth', 'true'); sessionStorage.removeItem('codeorbit_just_logged'); }
+        if(!localStorage.getItem('codeorbit_auth')&&!sessionStorage.getItem('codeorbit_just_logged'))location.href='index.html';
+        if(sessionStorage.getItem('codeorbit_just_logged')){localStorage.setItem('codeorbit_auth','true');sessionStorage.removeItem('codeorbit_just_logged');}
 
         // ==========================================
         // CURSOR
         // ==========================================
-        const cOuter = document.getElementById('cursor-outer'), cInner = document.getElementById('cursor-inner');
-        let mouseX = 0, mouseY = 0;
-        document.addEventListener('mousemove', e => { mouseX = e.clientX; mouseY = e.clientY; cOuter.style.left = mouseX+'px'; cOuter.style.top = mouseY+'px'; cInner.style.left = mouseX+'px'; cInner.style.top = mouseY+'px'; });
-        document.addEventListener('mousedown', () => cOuter.classList.add('click'));
-        document.addEventListener('mouseup', () => cOuter.classList.remove('click'));
-        document.querySelectorAll('button, a, .upload-zone, .item, .act-btn, .note-area').forEach(el => { el.addEventListener('mouseenter', () => cOuter.classList.add('hover')); el.addEventListener('mouseleave', () => cOuter.classList.remove('hover')); });
+        const cO=document.getElementById('cursor-outer'),cI=document.getElementById('cursor-inner');
+        let mx=0,my=0;
+        document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cO.style.left=(mx-15)+'px';cO.style.top=(my-15)+'px';cI.style.left=(mx-2.5)+'px';cI.style.top=(my-2.5)+'px';});
+        document.addEventListener('mousedown',()=>cO.classList.add('click'));
+        document.addEventListener('mouseup',()=>cO.classList.remove('click'));
+        document.querySelectorAll('button,a,.upload-zone,.item,.act-btn,.note-area,.tab').forEach(el=>{el.addEventListener('mouseenter',()=>cO.classList.add('hover'));el.addEventListener('mouseleave',()=>cO.classList.remove('hover'));});
 
         // ==========================================
         // THREE.JS
         // ==========================================
-        const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(75, innerWidth/innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('three-bg'), alpha: true, antialias: true });
-        renderer.setSize(innerWidth, innerHeight); camera.position.z = 28;
-        const sGeo = new THREE.BufferGeometry(), sPos = new Float32Array(2000*3);
-        for(let i=0; i<6000; i+=3) { sPos[i]=(Math.random()-0.5)*80; sPos[i+1]=(Math.random()-0.5)*80; sPos[i+2]=(Math.random()-0.5)*40; }
-        sGeo.setAttribute('position', new THREE.BufferAttribute(sPos,3));
-        const stars = new THREE.Points(sGeo, new THREE.PointsMaterial({ size:0.1, color:0x00ff41, blending:THREE.AdditiveBlending, depthWrite:false, transparent:true, opacity:0.6 }));
+        const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(75,innerWidth/innerHeight,0.1,1000);
+        const renderer=new THREE.WebGLRenderer({canvas:document.getElementById('three-bg'),alpha:true,antialias:true});
+        renderer.setSize(innerWidth,innerHeight);camera.position.z=28;
+        const sGeo=new THREE.BufferGeometry(),sPos=new Float32Array(2000*3);
+        for(let i=0;i<6000;i+=3){sPos[i]=(Math.random()-0.5)*80;sPos[i+1]=(Math.random()-0.5)*80;sPos[i+2]=(Math.random()-0.5)*40;}
+        sGeo.setAttribute('position',new THREE.BufferAttribute(sPos,3));
+        const stars=new THREE.Points(sGeo,new THREE.PointsMaterial({size:0.1,color:0x00ff41,blending:THREE.AdditiveBlending,depthWrite:false,transparent:true,opacity:0.6}));
         scene.add(stars);
-        (function anim(){ requestAnimationFrame(anim); stars.rotation.x+=0.00006+(mouseY/innerHeight-0.5)*0.0003; stars.rotation.y+=0.0001+(mouseX/innerWidth-0.5)*0.0003; renderer.render(scene,camera); })();
+        (function anim(){requestAnimationFrame(anim);stars.rotation.x+=0.00006;stars.rotation.y+=0.0001;renderer.render(scene,camera);})();
 
         // ==========================================
         // PARTICLES
         // ==========================================
-        const pCanvas = document.getElementById('particles-canvas'), pCtx = pCanvas.getContext('2d');
-        pCanvas.width=innerWidth; pCanvas.height=innerHeight;
-        const particles = [];
-        for(let i=0; i<60; i++) particles.push({ x:Math.random()*innerWidth, y:Math.random()*innerHeight, vx:(Math.random()-0.5)*0.4, vy:(Math.random()-0.5)*0.4, size:Math.random()*2+0.5, opacity:Math.random()*0.3+0.06 });
-        function drawP() { pCtx.clearRect(0,0,pCanvas.width,pCanvas.height); particles.forEach(p=>{ const dx=mouseX-p.x, dy=mouseY-p.y, dist=Math.sqrt(dx*dx+dy*dy); if(dist<150){ p.vx+=dx/dist*0.03; p.vy+=dy/dist*0.03; } p.x+=p.vx; p.y+=p.vy; p.vx*=0.99; p.vy*=0.99; if(p.x<0)p.x=pCanvas.width; if(p.x>pCanvas.width)p.x=0; if(p.y<0)p.y=pCanvas.height; if(p.y>pCanvas.height)p.y=0; pCtx.beginPath(); pCtx.arc(p.x,p.y,p.size,0,Math.PI*2); pCtx.fillStyle=`rgba(0,255,65,${p.opacity})`; pCtx.fill(); }); requestAnimationFrame(drawP); }
+        const pCanvas=document.getElementById('particles-canvas'),pCtx=pCanvas.getContext('2d');
+        pCanvas.width=innerWidth;pCanvas.height=innerHeight;
+        const particles=[];
+        for(let i=0;i<50;i++)particles.push({x:Math.random()*innerWidth,y:Math.random()*innerHeight,vx:(Math.random()-0.5)*0.3,vy:(Math.random()-0.5)*0.3,size:Math.random()*2+0.5,opacity:Math.random()*0.3+0.05});
+        function drawP(){pCtx.clearRect(0,0,pCanvas.width,pCanvas.height);particles.forEach(p=>{const dx=mx-p.x,dy=my-p.y,dist=Math.sqrt(dx*dx+dy*dy);if(dist<150){p.vx+=dx/dist*0.03;p.vy+=dy/dist*0.03;}p.x+=p.vx;p.y+=p.vy;p.vx*=0.99;p.vy*=0.99;if(p.x<0)p.x=pCanvas.width;if(p.x>pCanvas.width)p.x=0;if(p.y<0)p.y=pCanvas.height;if(p.y>pCanvas.height)p.y=0;pCtx.beginPath();pCtx.arc(p.x,p.y,p.size,0,Math.PI*2);pCtx.fillStyle=`rgba(0,255,65,${p.opacity})`;pCtx.fill();});requestAnimationFrame(drawP);}
         drawP();
 
         // ==========================================
         // ORBS
         // ==========================================
-        const orbsLayer = document.getElementById('orbs-layer');
-        for(let i=0; i<5; i++) { const orb=document.createElement('div'); orb.className='orb'; orb.style.cssText=`width:${70+Math.random()*120}px;height:${70+Math.random()*120}px;left:${Math.random()*90}%;top:${Math.random()*90}%;--dur:${7+Math.random()*8}s;--del:${Math.random()*4}s;`; orbsLayer.appendChild(orb); }
+        const orbsLayer=document.getElementById('orbs-layer');
+        for(let i=0;i<5;i++){const orb=document.createElement('div');orb.className='orb';orb.style.cssText=`width:${60+Math.random()*100}px;height:${60+Math.random()*100}px;left:${Math.random()*90}%;top:${Math.random()*90}%;--dur:${6+Math.random()*7}s;--del:${Math.random()*4}s;`;orbsLayer.appendChild(orb);}
 
         // ==========================================
-        // OPFS - فضای نامحدود
+        // THEME
         // ==========================================
-        async function getOPFSRoot() { try { return await navigator.storage.getDirectory(); } catch(e) { return null; } }
-        
-        async function storeInOPFS(id, data) {
-            try {
-                const root = await getOPFSRoot();
-                if (!root) return false;
-                const handle = await root.getFileHandle(id + '.json', { create: true });
-                const writable = await handle.createWritable();
-                await writable.write(JSON.stringify(data));
-                await writable.close();
-                return true;
-            } catch(e) { return false; }
-        }
-
-        async function getFromOPFS(id) {
-            try {
-                const root = await getOPFSRoot();
-                if (!root) return null;
-                const handle = await root.getFileHandle(id + '.json');
-                const file = await handle.getFile();
-                return JSON.parse(await file.text());
-            } catch(e) { return null; }
-        }
-
-        async function deleteFromOPFS(id) {
-            try { const root = await getOPFSRoot(); if (root) await root.removeEntry(id + '.json'); } catch(e) {}
-        }
+        function toggleTheme(){document.body.classList.toggle('light-mode');localStorage.setItem('codeorbit_theme',document.body.classList.contains('light-mode')?'light':'dark');}
+        if(localStorage.getItem('codeorbit_theme')==='light')document.body.classList.add('light-mode');
 
         // ==========================================
-        // INDEXEDDB - Fallback
+        // TABS
         // ==========================================
-        function openDB() { return new Promise((resolve, reject) => { const req=indexedDB.open('CodeOrbitDB',1); req.onupgradeneeded=e=>{ if(!e.target.result.objectStoreNames.contains('files')) e.target.result.createObjectStore('files',{keyPath:'id'}); }; req.onsuccess=e=>resolve(e.target.result); req.onerror=e=>reject(e.target.error); }); }
-        
-        function storeInDB(id, data) {
-            return new Promise(resolve => {
-                openDB().then(db => { const tx=db.transaction('files','readwrite'); tx.objectStore('files').put({id,data,timestamp:Date.now()}); tx.oncomplete=()=>{ db.close(); resolve(true); }; tx.onerror=()=>{ db.close(); resolve(false); }; }).catch(()=>resolve(false));
-            });
-        }
+        document.querySelectorAll('.tab').forEach(tab=>{tab.addEventListener('click',function(){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));this.classList.add('active');const tabName=this.dataset.tab;document.querySelectorAll('[id^="tab-"]').forEach(el=>el.style.display='none');const target=document.getElementById('tab-'+tabName);if(target)target.style.display=tabName==='upload'?'grid':'block';if(tabName==='history')updateHistoryUI();if(tabName==='stats')updateStatsUI();if(tabName==='editor')document.getElementById('tab-editor').style.display='grid';});});
 
-        function getFromDB(id) {
-            return new Promise(resolve => {
-                openDB().then(db => { if(!db.objectStoreNames.contains('files')){resolve(null);return;} const tx=db.transaction('files','readonly'); const req=tx.objectStore('files').get(id); req.onsuccess=()=>resolve(req.result?req.result.data:null); req.onerror=()=>resolve(null); tx.oncomplete=()=>db.close(); }).catch(()=>resolve(null));
-            });
-        }
+        // ==========================================
+        // OPFS
+        // ==========================================
+        async function getOPFSRoot(){try{return await navigator.storage.getDirectory();}catch(e){return null;}}
+        async function storeInOPFS(id,data){try{const root=await getOPFSRoot();if(!root)return false;const handle=await root.getFileHandle(id+'.json',{create:true});const writable=await handle.createWritable();await writable.write(JSON.stringify(data));await writable.close();return true;}catch(e){return false;}}
+        async function getFromOPFS(id){try{const root=await getOPFSRoot();if(!root)return null;const handle=await root.getFileHandle(id+'.json');const file=await handle.getFile();return JSON.parse(await file.text());}catch(e){return null;}}
+        async function deleteFromOPFS(id){try{const root=await getOPFSRoot();if(root)await root.removeEntry(id+'.json');}catch(e){}}
+        async function getOPFSSize(){try{const root=await getOPFSRoot();if(!root)return 0;let total=0;for await(const[name,handle]of root.entries()){if(handle.kind==='file'){const f=await handle.getFile();total+=f.size;}}return total;}catch(e){return 0;}}
 
-        function deleteFromDB(id) { openDB().then(db=>{ const tx=db.transaction('files','readwrite'); tx.objectStore('files').delete(id); tx.oncomplete=()=>db.close(); }).catch(()=>{}); }
+        // ==========================================
+        // INDEXEDDB
+        // ==========================================
+        function openDB(){return new Promise((resolve,reject)=>{const req=indexedDB.open('CodeOrbitDB',1);req.onupgradeneeded=e=>{if(!e.target.result.objectStoreNames.contains('files'))e.target.result.createObjectStore('files',{keyPath:'id'});};req.onsuccess=e=>resolve(e.target.result);req.onerror=e=>reject(e.target.error);});}
+        function storeInDB(id,data){return new Promise(resolve=>{openDB().then(db=>{const tx=db.transaction('files','readwrite');tx.objectStore('files').put({id,data,timestamp:Date.now()});tx.oncomplete=()=>{db.close();resolve(true);};tx.onerror=()=>{db.close();resolve(false);};}).catch(()=>resolve(false));});}
+        function getFromDB(id){return new Promise(resolve=>{openDB().then(db=>{if(!db.objectStoreNames.contains('files')){resolve(null);return;}const tx=db.transaction('files','readonly');const req=tx.objectStore('files').get(id);req.onsuccess=()=>resolve(req.result?req.result.data:null);req.onerror=()=>resolve(null);tx.oncomplete=()=>db.close();}).catch(()=>resolve(null));});}
+        function deleteFromDB(id){openDB().then(db=>{const tx=db.transaction('files','readwrite');tx.objectStore('files').delete(id);tx.oncomplete=()=>db.close();}).catch(()=>{});}
 
         // ==========================================
         // DATA
         // ==========================================
-        let shareLinks = [], codes = [];
-        try { shareLinks = JSON.parse(localStorage.getItem('codeorbit_links')||'[]'); } catch(e) { shareLinks = []; }
-        try { codes = JSON.parse(localStorage.getItem('codeorbit_codes')||'[]'); } catch(e) { codes = []; }
+        let shareLinks=[],codes=[],viewHistory=[],linkPasswords={};
+        try{shareLinks=JSON.parse(localStorage.getItem('codeorbit_links')||'[]');}catch(e){shareLinks=[];}
+        try{codes=JSON.parse(localStorage.getItem('codeorbit_codes')||'[]');}catch(e){codes=[];}
+        try{viewHistory=JSON.parse(localStorage.getItem('codeorbit_history')||'[]');}catch(e){viewHistory=[];}
+        try{linkPasswords=JSON.parse(localStorage.getItem('codeorbit_passwords')||'{}');}catch(e){linkPasswords={};}
 
-        function save() {
-            try { localStorage.setItem('codeorbit_links', JSON.stringify(shareLinks)); localStorage.setItem('codeorbit_codes', JSON.stringify(codes)); } catch(e) {}
-            updateUI();
+        function save(){try{localStorage.setItem('codeorbit_links',JSON.stringify(shareLinks));localStorage.setItem('codeorbit_codes',JSON.stringify(codes));localStorage.setItem('codeorbit_history',JSON.stringify(viewHistory));localStorage.setItem('codeorbit_passwords',JSON.stringify(linkPasswords));}catch(e){}updateUI();}
+
+        function formatSize(b){if(!b||b===0)return'0 B';if(b<1024)return b+' B';if(b<1048576)return(b/1024).toFixed(1)+' KB';return(b/1048576).toFixed(1)+' MB';}
+
+        async function updateUI(){
+            const list=document.getElementById('links-list');
+            if(shareLinks.length===0){list.innerHTML='<div class="empty-state"><div class="empty-icon">⊡</div><div class="empty-text">هنوز لینکی ساخته نشده</div></div>';}
+            else{list.innerHTML=shareLinks.slice().reverse().map(l=>{const ic=l.type==='python'?'py':l.type==='html'?'html':l.type==='js'?'js':l.type==='note'?'note':'other';const em=l.type==='python'?'🐍':l.type==='html'?'🌐':l.type==='js'?'JS':l.type==='note'?'📝':'📄';const name=l.type==='note'?(l.name.substring(0,40)+'...'):l.name;const lockIcon=linkPasswords[l.id]?'🔒':'';return`<div class="item"><div class="item-icon ${ic}">${em}</div><div class="item-info"><div class="item-name">${lockIcon} ${name}</div><div class="item-meta"><span>${new Date(l.date).toLocaleString('fa-IR')}</span><span>${l.size}</span></div></div><div class="item-actions"><button class="act-btn" onclick="copyLink('${l.id}')">📋</button><button class="act-btn" onclick="openLink('${l.id}')">🔗</button><button class="act-btn" onclick="showQR('${l.id}')">📱</button><button class="act-btn del" onclick="deleteLink('${l.id}')">🗑</button></div></div>`;}).join('');}
+
+            const used=await getOPFSSize();const pct=Math.min(100,Math.round((used/(1024*1024*1024))*100));
+            document.getElementById('storage-percent').textContent=pct+'%';document.getElementById('storage-fill').style.width=pct+'%';
         }
 
-        function formatSize(b) { if(!b||b===0) return '0 B'; if(b<1024) return b+' B'; if(b<1048576) return (b/1024).toFixed(1)+' KB'; return (b/1048576).toFixed(1)+' MB'; }
+        async function updateHistoryUI(){
+            const list=document.getElementById('history-list');
+            if(viewHistory.length===0){list.innerHTML='<div class="empty-state"><div class="empty-icon">🕐</div><div class="empty-text">هنوز بازدیدی ثبت نشده</div></div>';}
+            else{list.innerHTML=viewHistory.slice().reverse().slice(0,20).map(h=>`<div class="item"><div class="item-icon other">👁</div><div class="item-info"><div class="item-name">${h.name||'Unknown'}</div><div class="item-meta"><span>${new Date(h.date).toLocaleString('fa-IR')}</span></div></div></div>`).join('');}
+        }
 
-        function updateUI() {
-            const list = document.getElementById('links-list');
-            if(shareLinks.length===0) {
-                list.innerHTML = '<div class="empty-state"><div class="empty-icon">⊡</div><div class="empty-text">هنوز لینکی ساخته نشده</div></div>';
-            } else {
-                list.innerHTML = shareLinks.slice().reverse().map(l => {
-                    const ic = l.type==='python'?'py':l.type==='html'?'html':l.type==='js'?'js':l.type==='note'?'note':'other';
-                    const em = l.type==='python'?'🐍':l.type==='html'?'🌐':l.type==='js'?'JS':l.type==='note'?'📝':'📄';
-                    const name = l.type==='note' ? (l.name.substring(0,50)+'...') : l.name;
-                    return `<div class="item"><div class="item-icon ${ic}">${em}</div><div class="item-info"><div class="item-name">${name}</div><div class="item-meta"><span>${new Date(l.date).toLocaleString('fa-IR')}</span><span>${l.size}</span></div></div><div class="item-actions"><button class="act-btn" onclick="navigator.clipboard.writeText('${l.url.replace(/'/g,"\\'")}');showToast('✅ کپی شد','success')">📋</button><button class="act-btn" onclick="window.open('${l.url.replace(/'/g,"\\'")}','_blank')">🔗</button><button class="act-btn del" onclick="deleteLink('${l.id}')">🗑</button></div></div>`;
-                }).join('');
-            }
+        function updateStatsUI(){
+            document.getElementById('s-total').textContent=codes.length;
+            document.getElementById('s-links').textContent=shareLinks.length;
+            document.getElementById('s-views').textContent=viewHistory.length;
         }
 
         // ==========================================
-        // SMART STORAGE (OPFS > IndexedDB > localStorage)
+        // SMART STORE
         // ==========================================
-        async function smartStore(key, data) {
-            // 1. OPFS
-            if (await storeInOPFS(key, data)) return true;
-            // 2. IndexedDB
-            if (await storeInDB(key, data)) return true;
-            // 3. localStorage
-            try {
-                const compressed = LZString.compressToUTF16(data.content);
-                localStorage.setItem(key, JSON.stringify({...data, content:compressed, compressed:true}));
-                return true;
-            } catch(e) { return false; }
-        }
+        async function smartStore(key,data){if(await storeInOPFS(key,data))return true;if(await storeInDB(key,data))return true;try{const compressed=LZString.compressToUTF16(data.content);localStorage.setItem(key,JSON.stringify({...data,content:compressed,compressed:true}));return true;}catch(e){return false;}}
 
         // ==========================================
         // UPLOAD
         // ==========================================
-        document.getElementById('upload-zone').addEventListener('click', () => document.getElementById('file-input').click());
-        document.getElementById('upload-zone').addEventListener('dragover', e => { e.preventDefault(); e.target.classList.add('drag-over'); });
-        document.getElementById('upload-zone').addEventListener('dragleave', e => { e.target.classList.remove('drag-over'); });
-        document.getElementById('upload-zone').addEventListener('drop', e => { e.preventDefault(); e.target.classList.remove('drag-over'); handleFiles(e.dataTransfer.files); });
-        document.getElementById('file-input').addEventListener('change', function() { if(this.files&&this.files.length>0) handleFiles(this.files); this.value=''; });
+        document.getElementById('upload-zone').addEventListener('click',()=>document.getElementById('file-input').click());
+        document.getElementById('upload-zone').addEventListener('dragover',e=>{e.preventDefault();e.target.classList.add('drag-over');});
+        document.getElementById('upload-zone').addEventListener('dragleave',e=>{e.target.classList.remove('drag-over');});
+        document.getElementById('upload-zone').addEventListener('drop',e=>{e.preventDefault();e.target.classList.remove('drag-over');handleFiles(e.dataTransfer.files);});
+        document.getElementById('file-input').addEventListener('change',function(){if(this.files&&this.files.length>0)handleFiles(this.files);this.value='';});
+        document.getElementById('folder-input').addEventListener('change',function(){if(this.files&&this.files.length>0)handleFiles(this.files);this.value='';});
 
-        function handleFiles(files) {
-            if(!files||files.length===0) { showToast('❌ فایلی انتخاب نشد','error'); return; }
-            let ok=0, err=0;
-            const total=files.length, base=location.origin+location.pathname.replace('dashboard.html','');
+        function handleFiles(files){
+            if(!files||files.length===0){showToast('❌ فایلی انتخاب نشد','error');return;}
+            let ok=0,err=0;const total=files.length,base=location.origin+location.pathname.replace('dashboard.html','');
             showToast(`⏳ ${total} فایل...`,'info');
-
-            Array.from(files).forEach(file => {
-                if(file.size>20*1024*1024) { err++; showToast(`⚠️ ${file.name} > ۲۰MB`,'error'); if(ok+err===total&&ok===0) finish(); return; }
-                const reader = new FileReader();
-                reader.onload = async function(e) {
-                    const content = e.target.result;
-                    if(!content||content.length===0) { err++; if(ok+err===total) finish(); return; }
-                    const id = 'c_'+Date.now()+'_'+Math.random().toString(36).substr(2,9);
-                    const ext = file.name.split('.').pop()?.toLowerCase()||'txt';
-                    const key = 'codeorbit_shared_'+id;
-                    let url;
-
-                    codes.push({ id, name:file.name, size:formatSize(file.size), date:new Date().toISOString(), language:ext.toUpperCase() });
-
-                    if(content.length<1500) {
-                        url = base+'runner.html?code='+LZString.compressToEncodedURIComponent(content)+'&type='+ext+'&name='+encodeURIComponent(file.name);
-                    } else {
-                        const stored = await smartStore(key, { name:file.name, content, language:ext.toUpperCase(), date:new Date().toISOString() });
-                        if(stored) { url = base+'runner.html?share='+id; }
-                        else { err++; showToast(`❌ ${file.name} - خطا`,'error'); if(ok+err===total) finish(); return; }
-                    }
-
-                    shareLinks.push({ id, name:file.name, url, type:ext==='py'?'python':ext==='html'?'html':ext==='js'?'js':'other', size:formatSize(file.size), date:new Date().toISOString() });
-                    ok++;
-                    if(ok+err===total) finish();
+            Array.from(files).forEach(file=>{
+                if(file.size>20*1024*1024){err++;showToast(`⚠️ ${file.name} > ۲۰MB`,'error');if(ok+err===total&&ok===0)finish();return;}
+                const reader=new FileReader();
+                reader.onload=async function(e){
+                    const content=e.target.result;if(!content||content.length===0){err++;if(ok+err===total)finish();return;}
+                    const id='c_'+Date.now()+'_'+Math.random().toString(36).substr(2,9);
+                    const ext=file.name.split('.').pop()?.toLowerCase()||'txt';
+                    const key='codeorbit_shared_'+id;let url;
+                    codes.push({id,name:file.name,size:formatSize(file.size),date:new Date().toISOString(),language:ext.toUpperCase()});
+                    if(content.length<1500){url=base+'runner.html?code='+LZString.compressToEncodedURIComponent(content)+'&type='+ext+'&name='+encodeURIComponent(file.name);}
+                    else{const stored=await smartStore(key,{name:file.name,content,language:ext.toUpperCase(),date:new Date().toISOString()});if(stored){url=base+'runner.html?share='+id;}else{err++;showToast(`❌ ${file.name} - خطا`,'error');if(ok+err===total)finish();return;}}
+                    shareLinks.push({id,name:file.name,url,type:ext==='py'?'python':ext==='html'?'html':ext==='js'?'js':'other',size:formatSize(file.size),date:new Date().toISOString()});
+                    ok++;if(ok+err===total)finish();
                 };
-                reader.onerror = () => { err++; if(ok+err===total) finish(); };
+                reader.onerror=()=>{err++;if(ok+err===total)finish();};
                 reader.readAsText(file);
             });
-
-            function finish() {
-                save();
-                if(ok>0) { showToast(`✅ ${ok} فایل آپلود شد!`,'success'); if(shareLinks.length>0) showLinkModal(shareLinks[shareLinks.length-1]); }
-                else showToast('❌ هیچ فایلی آپلود نشد','error');
-            }
+            function finish(){save();if(ok>0){showToast(`✅ ${ok} فایل آپلود شد!`,'success');if(shareLinks.length>0)showLinkModal(shareLinks[shareLinks.length-1]);}else showToast('❌ هیچ فایلی آپلود نشد','error');}
         }
 
         // ==========================================
-        // QUICK NOTE
+        // NOTE
         // ==========================================
-        async function shareNote() {
-            const text = document.getElementById('quick-note').value.trim();
-            if (!text) { showToast('❌ متنی نوشته نشده','error'); return; }
-            
-            const id = 'n_'+Date.now()+'_'+Math.random().toString(36).substr(2,9);
-            const key = 'codeorbit_shared_'+id;
-            const base = location.origin+location.pathname.replace('dashboard.html','');
-            let url;
-
-            if (text.length < 1500) {
-                url = base+'runner.html?code='+LZString.compressToEncodedURIComponent(text)+'&type=note&name='+encodeURIComponent('یادداشت '+new Date().toLocaleString('fa-IR'));
-            } else {
-                const stored = await smartStore(key, { name:text.substring(0,50), content:text, language:'NOTE', date:new Date().toISOString() });
-                if (stored) { url = base+'runner.html?share='+id; }
-                else { showToast('❌ خطا در ذخیره','error'); return; }
-            }
-
-            shareLinks.push({ id, name:text.substring(0,50), url, type:'note', size:formatSize(text.length), date:new Date().toISOString() });
-            codes.push({ id, name:'Note: '+text.substring(0,30), size:formatSize(text.length), date:new Date().toISOString(), language:'NOTE' });
-            save();
-            showLinkModal(shareLinks[shareLinks.length-1]);
-            document.getElementById('quick-note').value = '';
-            showToast('✅ یادداشت اشتراک‌گذاری شد!','success');
-        }
-
-        function showLinkModal(link) {
-            document.getElementById('modal-link').textContent = link.url;
-            document.getElementById('link-modal').style.display = 'flex';
+        async function shareNote(){
+            const text=document.getElementById('quick-note').value.trim();
+            if(!text){showToast('❌ متنی نوشته نشده','error');return;}
+            const id='n_'+Date.now()+'_'+Math.random().toString(36).substr(2,9);
+            const key='codeorbit_shared_'+id;const base=location.origin+location.pathname.replace('dashboard.html','');let url;
+            if(text.length<1500){url=base+'runner.html?code='+LZString.compressToEncodedURIComponent(text)+'&type=note&name='+encodeURIComponent('یادداشت '+new Date().toLocaleString('fa-IR'));}
+            else{const stored=await smartStore(key,{name:text.substring(0,40),content:text,language:'NOTE',date:new Date().toISOString()});if(stored){url=base+'runner.html?share='+id;}else{showToast('❌ خطا','error');return;}}
+            shareLinks.push({id,name:text.substring(0,40),url,type:'note',size:formatSize(text.length),date:new Date().toISOString()});
+            codes.push({id,name:'Note: '+text.substring(0,25),size:formatSize(text.length),date:new Date().toISOString(),language:'NOTE'});
+            save();showLinkModal(shareLinks[shareLinks.length-1]);document.getElementById('quick-note').value='';showToast('✅ یادداشت شد!','success');
         }
 
         // ==========================================
-        // ACTIONS
+        // LIVE PREVIEW
         // ==========================================
-        function deleteLink(id) {
-            if(!confirm('⚠️ حذف شود؟')) return;
-            shareLinks = shareLinks.filter(l=>l.id!==id);
-            codes = codes.filter(c=>c.id!==id);
-            const key = 'codeorbit_shared_'+id;
-            deleteFromOPFS(key); deleteFromDB(key);
-            if(localStorage.getItem(key)) localStorage.removeItem(key);
-            save(); showToast('🗑️ حذف شد','error');
-        }
+        function livePreview(){const code=document.getElementById('live-editor').value;document.getElementById('live-preview').srcdoc=code;}
 
-        function copyModalLink() { navigator.clipboard.writeText(document.getElementById('modal-link').textContent).then(()=>showToast('✅ کپی شد','success')); closeModal(); }
-        function closeModal() { document.getElementById('link-modal').style.display='none'; }
-        function showToast(msg, type) { type=type||'success'; const c=document.getElementById('toast-container'), t=document.createElement('div'); t.className='toast '+type; t.textContent=msg; c.appendChild(t); setTimeout(()=>t.remove(),2500); }
-        function refreshData() { try { shareLinks=JSON.parse(localStorage.getItem('codeorbit_links')||'[]'); codes=JSON.parse(localStorage.getItem('codeorbit_codes')||'[]'); } catch(e) {} updateUI(); showToast('⟳ بروز شد','info'); }
-        function logout() { localStorage.removeItem('codeorbit_auth'); sessionStorage.clear(); location.href='index.html'; }
+        // ==========================================
+        // MODAL & QR
+        // ==========================================
+        function showLinkModal(link){document.getElementById('modal-link').textContent=link.url;document.getElementById('link-modal').style.display='flex';document.getElementById('qr-code').innerHTML='';new QRCode(document.getElementById('qr-code'),{text:link.url,width:150,height:150,colorDark:'#000',colorLight:'#fff'});}
+        function showQR(id){const link=shareLinks.find(l=>l.id===id);if(link)showLinkModal(link);}
+        function copyModalLink(){navigator.clipboard.writeText(document.getElementById('modal-link').textContent).then(()=>showToast('✅ کپی شد','success'));closeModal();}
+        function copyLink(id){const link=shareLinks.find(l=>l.id===id);if(link){navigator.clipboard.writeText(link.url).then(()=>showToast('✅ کپی شد','success'));}}
+        function openLink(id){const link=shareLinks.find(l=>l.id===id);if(link){const pw=linkPasswords[id];if(pw){const input=prompt('🔒 این لینک رمز دارد. رمز را وارد کنید:');if(input!==pw){showToast('❌ رمز اشتباه','error');return;}}viewHistory.push({name:link.name,date:new Date().toISOString()});save();window.open(link.url,'_blank');}}
+        function closeModal(){document.getElementById('link-modal').style.display='none';const pw=document.getElementById('link-password').value;if(pw){const linkUrl=document.getElementById('modal-link').textContent;const id=shareLinks.find(l=>l.url===linkUrl)?.id;if(id){linkPasswords[id]=pw;save();}}document.getElementById('link-password').value='';}
 
-        document.getElementById('link-modal').addEventListener('click', e => { if(e.target===e.currentTarget) closeModal(); });
-        document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); });
-        window.addEventListener('resize', () => { camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth,innerHeight); pCanvas.width=innerWidth; pCanvas.height=innerHeight; });
+        function deleteLink(id){if(!confirm('⚠️ حذف شود؟'))return;shareLinks=shareLinks.filter(l=>l.id!==id);codes=codes.filter(c=>c.id!==id);const key='codeorbit_shared_'+id;deleteFromOPFS(key);deleteFromDB(key);if(localStorage.getItem(key))localStorage.removeItem(key);delete linkPasswords[id];save();showToast('🗑️ حذف شد','error');}
+
+        function showToast(msg,type){type=type||'success';const c=document.getElementById('toast-container'),t=document.createElement('div');t.className='toast '+type;t.textContent=msg;c.appendChild(t);setTimeout(()=>t.remove(),2500);}
+        function refreshData(){try{shareLinks=JSON.parse(localStorage.getItem('codeorbit_links')||'[]');codes=JSON.parse(localStorage.getItem('codeorbit_codes')||'[]');viewHistory=JSON.parse(localStorage.getItem('codeorbit_history')||'[]');linkPasswords=JSON.parse(localStorage.getItem('codeorbit_passwords')||'{}');}catch(e){}updateUI();showToast('⟳ بروز شد','info');}
+        function logout(){localStorage.removeItem('codeorbit_auth');sessionStorage.clear();location.href='index.html';}
+
+        document.getElementById('link-modal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeModal();});
+        document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+        window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);pCanvas.width=innerWidth;pCanvas.height=innerHeight;});
 
         updateUI();
-        console.log('🌍 CODEORBIT v11 · Commander: Raibod · OPFS + Notes');
+        console.log('🌍 CODEORBIT v12 · 10 Features · Commander Raibod');
     </script>
 </body>
 </html>
