@@ -5,64 +5,135 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>اجرای کد</title>
     
-    <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><defs><linearGradient id='g1' x1='0%25' y1='0%25' x2='100%25' y2='100%25'><stop offset='0%25' style='stop-color:%2300ff41;stop-opacity:1'/><stop offset='50%25' style='stop-color:%2300cc33'/><stop offset='100%25' style='stop-color:%23006600'/></linearGradient><filter id='glow'><feGaussianBlur stdDeviation='6'/><feMerge><feMergeNode in='blur'/><feMergeNode in='SourceGraphic'/></feMerge></filter></defs><rect width='512' height='512' rx='120' fill='%23050505'/><rect width='512' height='512' rx='120' fill='none' stroke='%2300ff41' stroke-width='3' opacity='0.3'/><circle cx='256' cy='240' r='110' fill='url(%23g1)' filter='url(%23glow)' opacity='0.9'/><circle cx='256' cy='240' r='80' fill='%23050505' stroke='%2300ff41' stroke-width='2' opacity='0.5'/><ellipse cx='256' cy='240' rx='170' ry='35' fill='none' stroke='%2300ff41' stroke-width='3' transform='rotate(-25,256,240)' opacity='0.6'/><ellipse cx='256' cy='240' rx='140' ry='25' fill='none' stroke='%2300ff41' stroke-width='2' transform='rotate(55,256,240)' opacity='0.4'/><circle cx='170' cy='170' r='5' fill='%23fff' filter='url(%23glow)'/><circle cx='340' cy='310' r='4' fill='%23fff' opacity='0.7'/></svg>">
     
     <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+
+        :root {
+            --neon: #00ff41; --neon-glow: rgba(0,255,65,0.5); --bg: #0a0a0a; --text: #e0ffe0;
+            --keyword: #ff79c6; --string: #f1fa8c; --comment: #6272a4; --number: #bd93f9;
+            --function: #50fa7b; --variable: #f8f8f2; --tag: #ff5555; --attr: #ffb86c;
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Vazirmatn', sans-serif; background: #000; overflow: auto; }
+
+        body {
+            font-family: 'Vazirmatn', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Password Gate */
+        #password-gate {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.95);
+            z-index: 999; display: flex; align-items: center; justify-content: center;
+            flex-direction: column; gap: 15px;
+        }
+        #password-gate h2 { font-family: 'Orbitron', sans-serif; color: var(--neon); font-size: 1.2em; }
+        #password-gate input {
+            padding: 12px 20px; background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(0,255,65,0.3); border-radius: 10px;
+            color: var(--text); font-size: 1em; text-align: center;
+            outline: none; width: 250px;
+        }
+        #password-gate input:focus { border-color: var(--neon); box-shadow: 0 0 20px var(--neon-glow); }
+        #password-gate button {
+            padding: 10px 30px; background: var(--neon); color: #000;
+            border: none; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 1em;
+        }
+        #password-error { color: #ff4444; font-size: 0.85em; display: none; }
+
+        /* Output */
         #output-frame { width: 100%; height: 100vh; border: none; background: #fff; display: none; }
-        #text-display { color: #e0ffe0; background: #0a0a0a; padding: 30px; min-height: 100vh; white-space: pre-wrap; word-break: break-word; font-size: 16px; line-height: 2; display: none; font-family: 'Vazirmatn', sans-serif; }
-        #code-display { color: #0f0; background: #000; padding: 20px; font-family: 'JetBrains Mono', monospace; min-height: 100vh; white-space: pre-wrap; word-break: break-all; font-size: 14px; line-height: 1.6; display: none; }
-        #error-msg { color: #f44; text-align: center; padding: 50px; font-size: 18px; display: none; }
-        #loading { color: #0f0; text-align: center; padding: 50px; font-size: 18px; font-family: monospace; }
+        #text-display {
+            color: #e0ffe0; background: #0d0d0d; padding: 30px; min-height: 100vh;
+            white-space: pre-wrap; word-break: break-word; font-size: 16px; line-height: 2;
+            display: none; font-family: 'Vazirmatn', sans-serif; max-width: 800px; margin: 0 auto;
+        }
+        #text-display h1, #text-display h2, #text-display h3 { color: var(--neon); margin: 20px 0 10px; }
+        #text-display code { background: rgba(0,255,65,0.1); padding: 2px 6px; border-radius: 4px; font-family: 'JetBrains Mono', monospace; }
+        #text-display pre { background: rgba(0,0,0,0.5); padding: 15px; border-radius: 8px; overflow-x: auto; border: 1px solid rgba(0,255,65,0.2); }
+        #text-display a { color: var(--neon); }
+        #text-display img { max-width: 100%; }
+        
+        #code-display {
+            color: #0f0; background: #050505; padding: 20px;
+            font-family: 'JetBrains Mono', monospace; min-height: 100vh;
+            white-space: pre-wrap; word-break: break-all;
+            font-size: 14px; line-height: 1.8; display: none;
+            counter-reset: line;
+        }
+        #code-display .line {
+            display: flex; padding: 1px 0;
+        }
+        #code-display .line::before {
+            counter-increment: line; content: counter(line);
+            color: rgba(0,255,65,0.3); min-width: 40px;
+            text-align: right; margin-left: 15px; user-select: none;
+        }
+        #code-display .line-content { flex: 1; }
+
+        .kw { color: var(--keyword); }
+        .str { color: var(--string); }
+        .cm { color: var(--comment); font-style: italic; }
+        .num { color: var(--number); }
+        .fn { color: var(--function); }
+        .tag { color: var(--tag); }
+        .attr { color: var(--attr); }
+
+        #error-msg { color: #f44; text-align: center; padding: 60px 20px; font-size: 18px; display: none; }
+        #loading { color: #0f0; text-align: center; padding: 60px 20px; font-size: 18px; font-family: monospace; }
+        .spinner { display: inline-block; width: 20px; height: 20px; border: 2px solid rgba(0,255,65,0.2); border-top-color: var(--neon); border-radius: 50%; animation: spin 0.8s linear infinite; vertical-align: middle; margin: 0 8px; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        @media (max-width: 600px) {
+            #text-display { padding: 15px; font-size: 14px; }
+            #code-display { font-size: 11px; padding: 10px; }
+            #code-display .line::before { min-width: 25px; margin-left: 8px; }
+        }
     </style>
 </head>
 <body>
-    <div id="loading">⏳ در حال بارگذاری...</div>
+    <div id="password-gate" style="display:none;">
+        <h2>🔒 این لینک رمز دارد</h2>
+        <input type="password" id="pw-input" placeholder="رمز را وارد کنید...">
+        <button onclick="checkPassword()">🔓 باز کردن</button>
+        <div id="password-error">❌ رمز اشتباه است</div>
+    </div>
+
+    <div id="loading"><span class="spinner"></span> در حال بارگذاری...</div>
     <div id="error-msg"></div>
     <iframe id="output-frame" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
     <div id="text-display"></div>
-    <pre id="code-display"></pre>
+    <div id="code-display"></div>
 
     <script>
         // ==========================================
-        // OPFS READER
+        // STORAGE READERS
         // ==========================================
         async function getFromOPFS(key) {
-            try {
-                var root = await navigator.storage.getDirectory();
-                var handle = await root.getFileHandle(key + '.json');
-                var file = await handle.getFile();
-                var text = await file.text();
-                return JSON.parse(text);
-            } catch(e) {
-                return null;
-            }
+            try { var root = await navigator.storage.getDirectory(); var handle = await root.getFileHandle(key+'.json'); var file = await handle.getFile(); return JSON.parse(await file.text()); }
+            catch(e) { return null; }
         }
 
-        // ==========================================
-        // INDEXEDDB READER
-        // ==========================================
         function getFromDB(key) {
             return new Promise(function(resolve) {
                 var req = indexedDB.open('CodeOrbitDB', 1);
                 req.onsuccess = function(e) {
                     var db = e.target.result;
-                    if (!db.objectStoreNames.contains('files')) { db.close(); resolve(null); return; }
+                    if(!db.objectStoreNames.contains('files')) { db.close(); resolve(null); return; }
                     var tx = db.transaction('files', 'readonly');
-                    var store = tx.objectStore('files');
-                    var getReq = store.get(key);
-                    getReq.onsuccess = function() {
-                        if (getReq.result && getReq.result.data) {
-                            resolve(getReq.result.data);
-                        } else {
-                            resolve(null);
-                        }
-                    };
+                    var getReq = tx.objectStore('files').get(key);
+                    getReq.onsuccess = function() { resolve(getReq.result ? getReq.result.data : null); };
                     getReq.onerror = function() { resolve(null); };
                     tx.oncomplete = function() { db.close(); };
                 };
@@ -71,17 +142,58 @@
         }
 
         // ==========================================
-        // FORMAT SIZE
+        // SYNTAX HIGHLIGHTING
         // ==========================================
-        function formatSize(bytes) {
-            if (!bytes || bytes === 0) return '0 B';
-            if (bytes < 1024) return bytes + ' B';
-            if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
-            return (bytes / 1048576).toFixed(1) + ' MB';
+        function highlightCode(code, lang) {
+            if(!lang) lang = 'text';
+            var lines = code.split('\n');
+            var result = '';
+            
+            for(var i = 0; i < lines.length; i++) {
+                var line = lines[i];
+                var escaped = escapeHTML(line);
+                var highlighted = '';
+                
+                if(lang === 'html' || lang === 'htm') {
+                    highlighted = escaped
+                        .replace(/(&lt;\/?)(\w+)/g, '$1<span class="tag">$2</span>')
+                        .replace(/(\s+)(\w+)=(&quot;.*?&quot;)/g, '$1<span class="attr">$2</span>=$3')
+                        .replace(/(&lt;!--.*?--&gt;)/g, '<span class="cm">$1</span>');
+                } else if(lang === 'css') {
+                    highlighted = escaped
+                        .replace(/([.#@]\w[\w-]*)/g, '<span class="tag">$1</span>')
+                        .replace(/(:\s*)([^;{]+)/g, '$1<span class="str">$2</span>')
+                        .replace(/(\/\*.*?\*\/)/g, '<span class="cm">$1</span>');
+                } else if(lang === 'js' || lang === 'javascript' || lang === 'ts') {
+                    highlighted = escaped
+                        .replace(/\b(function|var|let|const|if|else|for|while|return|class|import|export|from|async|await|try|catch|throw|new|this|typeof|instanceof)\b/g, '<span class="kw">$1</span>')
+                        .replace(/(&quot;.*?&quot;|'.*?'|`.*?`)/g, '<span class="str">$1</span>')
+                        .replace(/\b(\d+\.?\d*)\b/g, '<span class="num">$1</span>')
+                        .replace(/(\/\/.*)/g, '<span class="cm">$1</span>')
+                        .replace(/\b(console|log|alert|fetch|async|await|then|catch|finally)\b/g, '<span class="fn">$1</span>');
+                } else if(lang === 'py' || lang === 'python') {
+                    highlighted = escaped
+                        .replace(/\b(def|class|if|elif|else|for|while|import|from|return|try|except|raise|with|as|in|is|not|and|or|True|False|None|async|await|yield|lambda|pass|break|continue|global|nonlocal)\b/g, '<span class="kw">$1</span>')
+                        .replace(/(&quot;.*?&quot;|'.*?'|&quot;&quot;&quot;[\s\S]*?&quot;&quot;&quot;)/g, '<span class="str">$1</span>')
+                        .replace(/\b(\d+\.?\d*)\b/g, '<span class="num">$1</span>')
+                        .replace(/(#.*)/g, '<span class="cm">$1</span>')
+                        .replace(/\b(print|len|range|int|str|list|dict|set|tuple|input|open|enumerate|zip|map|filter|sorted|reversed)\b/g, '<span class="fn">$1</span>');
+                } else {
+                    highlighted = escaped;
+                }
+                
+                result += '<div class="line"><div class="line-content">' + (highlighted || '&nbsp;') + '</div></div>';
+            }
+            
+            return result;
+        }
+
+        function escapeHTML(str) {
+            return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
         }
 
         // ==========================================
-        // MAIN EXECUTION
+        // MAIN
         // ==========================================
         async function main() {
             var params = new URLSearchParams(location.search);
@@ -91,123 +203,118 @@
             var codeName = params.get('name') || 'project';
             var codeData = null;
 
-            // 1. TRY OPFS (فضای نامحدود)
-            if (shareId) {
-                var dbKey = 'codeorbit_shared_' + shareId;
-                codeData = await getFromOPFS(dbKey);
+            // Try OPFS
+            if(shareId) { var dbKey = 'codeorbit_shared_' + shareId; codeData = await getFromOPFS(dbKey); }
+            // Try IndexedDB
+            if(!codeData && shareId) { codeData = await getFromDB('codeorbit_shared_'+shareId); }
+            // Try localStorage
+            if(!codeData && shareId) {
+                var stored = localStorage.getItem('codeorbit_shared_'+shareId);
+                if(stored) { try { codeData = JSON.parse(stored); if(codeData&&codeData.compressed) codeData.content = LZString.decompressFromUTF16(codeData.content); } catch(e) {} }
             }
-
-            // 2. TRY INDEXEDDB (Fallback)
-            if (!codeData && shareId) {
-                var dbKey = 'codeorbit_shared_' + shareId;
-                codeData = await getFromDB(dbKey);
+            // Try URL
+            if(!codeData && encodedCode) {
+                try { var decoded = LZString.decompressFromEncodedURIComponent(encodedCode); if(decoded) codeData = { name: decodeURIComponent(codeName), content: decoded, language: (codeType==='note')?'NOTE':codeType.toUpperCase() }; } catch(e) {}
             }
+            // Fallback
+            if(!codeData) { try { codeData = JSON.parse(sessionStorage.getItem('codeorbit_run_code')||'null'); } catch(e) {} }
 
-            // 3. TRY LOCALSTORAGE (Fallback)
-            if (!codeData && shareId) {
-                var dbKey = 'codeorbit_shared_' + shareId;
-                var stored = localStorage.getItem(dbKey);
-                if (stored) {
-                    try {
-                        codeData = JSON.parse(stored);
-                        if (codeData && codeData.compressed) {
-                            codeData.content = LZString.decompressFromUTF16(codeData.content);
-                        }
-                    } catch(e) {}
-                }
-            }
-
-            // 4. TRY ENCODED URL (فایل‌های کوچک و یادداشت)
-            if (!codeData && encodedCode) {
-                try {
-                    var decoded = LZString.decompressFromEncodedURIComponent(encodedCode);
-                    if (decoded) {
-                        codeData = {
-                            name: decodeURIComponent(codeName),
-                            content: decoded,
-                            language: (codeType === 'note') ? 'NOTE' : codeType.toUpperCase()
-                        };
-                    }
-                } catch(e) {}
-            }
-
-            // 5. FALLBACK: sessionStorage
-            if (!codeData) {
-                try {
-                    codeData = JSON.parse(sessionStorage.getItem('codeorbit_run_code') || 'null');
-                } catch(e) {}
-            }
-
-            // CHECK RESULT
-            if (!codeData || !codeData.content) {
+            if(!codeData || !codeData.content) {
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('error-msg').style.display = 'block';
-                document.getElementById('error-msg').textContent = '❌ کدی برای اجرا پیدا نشد';
+                document.getElementById('error-msg').innerHTML = '❌ کدی برای اجرا پیدا نشد<br><small>لینک ممکن است منقضی شده باشد</small>';
                 return;
             }
 
-            // SUCCESS
+            // Check password
+            if(shareId) {
+                var passwords = JSON.parse(localStorage.getItem('codeorbit_passwords')||'{}');
+                var pw = passwords[shareId];
+                if(pw) {
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('password-gate').style.display = 'flex';
+                    window._codeorbit_pw = pw;
+                    window._codeorbit_data = codeData;
+                    return;
+                }
+            }
+
+            renderCode(codeData);
+        }
+
+        function checkPassword() {
+            var input = document.getElementById('pw-input').value;
+            if(input === window._codeorbit_pw) {
+                document.getElementById('password-gate').style.display = 'none';
+                document.getElementById('password-error').style.display = 'none';
+                renderCode(window._codeorbit_data);
+            } else {
+                document.getElementById('password-error').style.display = 'block';
+            }
+        }
+
+        async function renderCode(codeData) {
             document.getElementById('loading').style.display = 'none';
             document.title = (codeData.name && codeData.name !== 'project') ? codeData.name : 'اجرای کد';
+
+            // Record view
+            try {
+                var history = JSON.parse(localStorage.getItem('codeorbit_history')||'[]');
+                history.push({ name: codeData.name, date: new Date().toISOString() });
+                localStorage.setItem('codeorbit_history', JSON.stringify(history));
+            } catch(e) {}
 
             var code = codeData.content;
             var lang = (codeData.language || '').toUpperCase();
             var ext = (codeData.name || '').split('.').pop()?.toLowerCase() || '';
 
-            // EXECUTE BASED ON TYPE
-            if (lang === 'NOTE' || codeType === 'note') {
-                // Show as styled text
+            // RENDER
+            if(lang === 'NOTE' || codeType === 'note') {
+                // Markdown
                 var textDisplay = document.getElementById('text-display');
                 textDisplay.style.display = 'block';
-                textDisplay.textContent = code;
-            } else if (ext === 'html' || ext === 'htm' || lang === 'HTML') {
-                // Show in iframe
+                try { textDisplay.innerHTML = marked.parse(code); }
+                catch(e) { textDisplay.innerHTML = code.replace(/\n/g,'<br>'); }
+            } else if(ext === 'md' || ext === 'markdown') {
+                var textDisplay = document.getElementById('text-display');
+                textDisplay.style.display = 'block';
+                try { textDisplay.innerHTML = marked.parse(code); }
+                catch(e) { textDisplay.textContent = code; }
+            } else if(ext === 'html' || ext === 'htm') {
                 var iframe = document.getElementById('output-frame');
                 iframe.style.display = 'block';
                 iframe.srcdoc = code;
-            } else if (ext === 'js' || lang === 'JAVASCRIPT' || lang === 'JS') {
-                // Execute JavaScript
+            } else if(ext === 'js' || lang === 'JAVASCRIPT' || lang === 'JS') {
                 var codeDisplay = document.getElementById('code-display');
                 codeDisplay.style.display = 'block';
-                codeDisplay.textContent = '';
+                codeDisplay.innerHTML = '<div style="color:var(--neon);margin-bottom:10px;">▶ Output:</div>';
                 var origLog = console.log;
                 console.log = function() {
                     var args = Array.prototype.slice.call(arguments);
-                    codeDisplay.textContent += args.join(' ') + '\n';
+                    codeDisplay.innerHTML += '<div style="color:#e0ffe0;">' + args.join(' ') + '</div>';
                 };
-                try {
-                    eval(code);
-                } catch(e) {
-                    codeDisplay.textContent += '\n❌ Error: ' + e.message;
-                }
+                try { eval(code); } catch(e) { codeDisplay.innerHTML += '<div style="color:#ff4444;">❌ Error: ' + e.message + '</div>'; }
                 console.log = origLog;
-            } else if (ext === 'py' || lang === 'PYTHON' || lang === 'PY') {
-                // Execute Python
+            } else if(ext === 'py' || lang === 'PYTHON' || lang === 'PY') {
                 var codeDisplay = document.getElementById('code-display');
                 codeDisplay.style.display = 'block';
-                codeDisplay.textContent = '🐍 Loading Python...\n';
+                codeDisplay.innerHTML = '<div style="color:var(--neon);">🐍 Loading Python... <span class="spinner"></span></div>';
                 try {
                     var pyodide = await loadPyodide();
-                    codeDisplay.textContent += '▶ Running...\n\n';
-                    pyodide.setStdout({
-                        batched: function(text) {
-                            codeDisplay.textContent += text;
-                        }
-                    });
+                    codeDisplay.innerHTML += '<div style="color:var(--neon);">▶ Running...</div><br>';
+                    pyodide.setStdout({ batched: function(text) { codeDisplay.innerHTML += text.replace(/\n/g,'<br>'); } });
                     await pyodide.runPythonAsync(code);
-                    codeDisplay.textContent += '\n\n✅ Execution completed.';
-                } catch(e) {
-                    codeDisplay.textContent += '\n\n❌ Error: ' + e.message;
-                }
+                    codeDisplay.innerHTML += '<br><div style="color:#00e676;">✅ Done.</div>';
+                } catch(e) { codeDisplay.innerHTML += '<br><div style="color:#ff4444;">❌ Error: ' + e.message + '</div>'; }
             } else {
-                // Display source code
+                // Display with Syntax Highlighting
                 var codeDisplay = document.getElementById('code-display');
                 codeDisplay.style.display = 'block';
-                codeDisplay.textContent = code;
+                codeDisplay.innerHTML = '<div style="color:var(--dim);margin-bottom:8px;font-family:Orbitron;font-size:0.8em;">📄 ' + codeData.name + ' (' + lang + ')</div>';
+                codeDisplay.innerHTML += highlightCode(code, ext || lang.toLowerCase());
             }
         }
 
-        // START
         main();
     </script>
 </body>
