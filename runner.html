@@ -19,7 +19,7 @@
         :root {
             --neon: #00ff41; --neon-glow: rgba(0,255,65,0.5); --bg: #0a0a0a; --text: #e0ffe0;
             --keyword: #ff79c6; --string: #f1fa8c; --comment: #6272a4; --number: #bd93f9;
-            --function: #50fa7b; --variable: #f8f8f2; --tag: #ff5555; --attr: #ffb86c;
+            --function: #50fa7b; --tag: #ff5555; --attr: #ffb86c;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -35,21 +35,23 @@
         /* Password Gate */
         #password-gate {
             position: fixed; inset: 0; background: rgba(0,0,0,0.95);
-            z-index: 999; display: flex; align-items: center; justify-content: center;
+            z-index: 999; display: none; align-items: center; justify-content: center;
             flex-direction: column; gap: 15px;
         }
-        #password-gate h2 { font-family: 'Orbitron', sans-serif; color: var(--neon); font-size: 1.2em; }
+        #password-gate h2 { font-family: 'Orbitron', sans-serif; color: var(--neon); font-size: 1.2em; text-shadow: 0 0 15px var(--neon-glow); }
         #password-gate input {
             padding: 12px 20px; background: rgba(255,255,255,0.05);
             border: 1px solid rgba(0,255,65,0.3); border-radius: 10px;
             color: var(--text); font-size: 1em; text-align: center;
-            outline: none; width: 250px;
+            outline: none; width: 250px; font-family: 'JetBrains Mono', monospace;
         }
         #password-gate input:focus { border-color: var(--neon); box-shadow: 0 0 20px var(--neon-glow); }
         #password-gate button {
             padding: 10px 30px; background: var(--neon); color: #000;
             border: none; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 1em;
+            font-family: 'Vazirmatn', sans-serif;
         }
+        #password-gate button:hover { box-shadow: 0 0 25px var(--neon-glow); }
         #password-error { color: #ff4444; font-size: 0.85em; display: none; }
 
         /* Output */
@@ -59,38 +61,42 @@
             white-space: pre-wrap; word-break: break-word; font-size: 16px; line-height: 2;
             display: none; font-family: 'Vazirmatn', sans-serif; max-width: 800px; margin: 0 auto;
         }
-        #text-display h1, #text-display h2, #text-display h3 { color: var(--neon); margin: 20px 0 10px; }
-        #text-display code { background: rgba(0,255,65,0.1); padding: 2px 6px; border-radius: 4px; font-family: 'JetBrains Mono', monospace; }
-        #text-display pre { background: rgba(0,0,0,0.5); padding: 15px; border-radius: 8px; overflow-x: auto; border: 1px solid rgba(0,255,65,0.2); }
-        #text-display a { color: var(--neon); }
-        #text-display img { max-width: 100%; }
+        #text-display h1, #text-display h2, #text-display h3 { color: var(--neon); margin: 20px 0 10px; border-bottom: 1px solid rgba(0,255,65,0.2); padding-bottom: 8px; }
+        #text-display code { background: rgba(0,255,65,0.1); padding: 2px 6px; border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 0.9em; }
+        #text-display pre { background: rgba(0,0,0,0.5); padding: 15px; border-radius: 8px; overflow-x: auto; border: 1px solid rgba(0,255,65,0.2); margin: 15px 0; }
+        #text-display pre code { background: none; padding: 0; }
+        #text-display a { color: var(--neon); text-decoration: underline; }
+        #text-display img { max-width: 100%; border-radius: 8px; }
+        #text-display blockquote { border-right: 3px solid var(--neon); padding-right: 15px; margin: 15px 0; color: rgba(224,255,224,0.7); }
+        #text-display table { border-collapse: collapse; width: 100%; margin: 15px 0; }
+        #text-display th, #text-display td { border: 1px solid rgba(0,255,65,0.3); padding: 8px 12px; text-align: right; }
+        #text-display th { background: rgba(0,255,65,0.1); }
+        #text-display ul, #text-display ol { padding-right: 20px; }
         
         #code-display {
             color: #0f0; background: #050505; padding: 20px;
             font-family: 'JetBrains Mono', monospace; min-height: 100vh;
             white-space: pre-wrap; word-break: break-all;
             font-size: 14px; line-height: 1.8; display: none;
-            counter-reset: line;
         }
-        #code-display .line {
-            display: flex; padding: 1px 0;
-        }
+        #code-display .line { display: flex; padding: 1px 0; }
         #code-display .line::before {
-            counter-increment: line; content: counter(line);
-            color: rgba(0,255,65,0.3); min-width: 40px;
-            text-align: right; margin-left: 15px; user-select: none;
+            content: attr(data-line); color: rgba(0,255,65,0.25);
+            min-width: 45px; text-align: right; margin-left: 12px; user-select: none;
+            font-size: 0.85em;
         }
         #code-display .line-content { flex: 1; }
 
-        .kw { color: var(--keyword); }
+        .kw { color: var(--keyword); font-weight: 700; }
         .str { color: var(--string); }
         .cm { color: var(--comment); font-style: italic; }
         .num { color: var(--number); }
-        .fn { color: var(--function); }
+        .fn { color: var(--function); font-weight: 700; }
         .tag { color: var(--tag); }
         .attr { color: var(--attr); }
 
         #error-msg { color: #f44; text-align: center; padding: 60px 20px; font-size: 18px; display: none; }
+        #error-msg small { color: rgba(255,68,68,0.6); display: block; margin-top: 10px; }
         #loading { color: #0f0; text-align: center; padding: 60px 20px; font-size: 18px; font-family: monospace; }
         .spinner { display: inline-block; width: 20px; height: 20px; border: 2px solid rgba(0,255,65,0.2); border-top-color: var(--neon); border-radius: 50%; animation: spin 0.8s linear infinite; vertical-align: middle; margin: 0 8px; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
@@ -98,14 +104,14 @@
         @media (max-width: 600px) {
             #text-display { padding: 15px; font-size: 14px; }
             #code-display { font-size: 11px; padding: 10px; }
-            #code-display .line::before { min-width: 25px; margin-left: 8px; }
+            #code-display .line::before { min-width: 30px; margin-left: 6px; }
         }
     </style>
 </head>
 <body>
-    <div id="password-gate" style="display:none;">
+    <div id="password-gate">
         <h2>🔒 این لینک رمز دارد</h2>
-        <input type="password" id="pw-input" placeholder="رمز را وارد کنید...">
+        <input type="password" id="pw-input" placeholder="رمز را وارد کنید..." autocomplete="off">
         <button onclick="checkPassword()">🔓 باز کردن</button>
         <div id="password-error">❌ رمز اشتباه است</div>
     </div>
@@ -157,39 +163,40 @@
                 if(lang === 'html' || lang === 'htm') {
                     highlighted = escaped
                         .replace(/(&lt;\/?)(\w+)/g, '$1<span class="tag">$2</span>')
-                        .replace(/(\s+)(\w+)=(&quot;.*?&quot;)/g, '$1<span class="attr">$2</span>=$3')
-                        .replace(/(&lt;!--.*?--&gt;)/g, '<span class="cm">$1</span>');
+                        .replace(/(\s+)(\w+)(=)(&quot;.*?&quot;)/g, '$1<span class="attr">$2</span>$3<span class="str">$4</span>')
+                        .replace(/(&lt;!--[\s\S]*?--&gt;)/g, '<span class="cm">$1</span>');
                 } else if(lang === 'css') {
                     highlighted = escaped
                         .replace(/([.#@]\w[\w-]*)/g, '<span class="tag">$1</span>')
                         .replace(/(:\s*)([^;{]+)/g, '$1<span class="str">$2</span>')
-                        .replace(/(\/\*.*?\*\/)/g, '<span class="cm">$1</span>');
-                } else if(lang === 'js' || lang === 'javascript' || lang === 'ts') {
+                        .replace(/(\/\*[\s\S]*?\*\/)/g, '<span class="cm">$1</span>');
+                } else if(lang === 'js' || lang === 'javascript' || lang === 'ts' || lang === 'typescript') {
                     highlighted = escaped
-                        .replace(/\b(function|var|let|const|if|else|for|while|return|class|import|export|from|async|await|try|catch|throw|new|this|typeof|instanceof)\b/g, '<span class="kw">$1</span>')
-                        .replace(/(&quot;.*?&quot;|'.*?'|`.*?`)/g, '<span class="str">$1</span>')
+                        .replace(/\b(function|var|let|const|if|else|for|while|return|class|import|export|from|async|await|try|catch|throw|new|this|typeof|instanceof|switch|case|break|default|continue|do|static|extends|super|get|set)\b/g, '<span class="kw">$1</span>')
+                        .replace(/(&quot;[\s\S]*?&quot;|'[\s\S]*?'|`[\s\S]*?`)/g, '<span class="str">$1</span>')
                         .replace(/\b(\d+\.?\d*)\b/g, '<span class="num">$1</span>')
                         .replace(/(\/\/.*)/g, '<span class="cm">$1</span>')
-                        .replace(/\b(console|log|alert|fetch|async|await|then|catch|finally)\b/g, '<span class="fn">$1</span>');
+                        .replace(/\b(console|log|alert|fetch|document|window|Math|JSON|parse|stringify|setTimeout|setInterval|addEventListener|querySelector|getElementById|createElement|appendChild)\b/g, '<span class="fn">$1</span>');
                 } else if(lang === 'py' || lang === 'python') {
                     highlighted = escaped
-                        .replace(/\b(def|class|if|elif|else|for|while|import|from|return|try|except|raise|with|as|in|is|not|and|or|True|False|None|async|await|yield|lambda|pass|break|continue|global|nonlocal)\b/g, '<span class="kw">$1</span>')
-                        .replace(/(&quot;.*?&quot;|'.*?'|&quot;&quot;&quot;[\s\S]*?&quot;&quot;&quot;)/g, '<span class="str">$1</span>')
+                        .replace(/\b(def|class|if|elif|else|for|while|import|from|return|try|except|raise|with|as|in|is|not|and|or|True|False|None|async|await|yield|lambda|pass|break|continue|global|nonlocal|finally|assert|del)\b/g, '<span class="kw">$1</span>')
+                        .replace(/(&quot;[\s\S]*?&quot;|'[\s\S]*?'|&quot;&quot;&quot;[\s\S]*?&quot;&quot;&quot;|'''[\s\S]*?''')/g, '<span class="str">$1</span>')
                         .replace(/\b(\d+\.?\d*)\b/g, '<span class="num">$1</span>')
                         .replace(/(#.*)/g, '<span class="cm">$1</span>')
-                        .replace(/\b(print|len|range|int|str|list|dict|set|tuple|input|open|enumerate|zip|map|filter|sorted|reversed)\b/g, '<span class="fn">$1</span>');
+                        .replace(/\b(print|len|range|int|str|list|dict|set|tuple|input|open|enumerate|zip|map|filter|sorted|reversed|sum|min|max|abs|type|isinstance|hasattr|getattr|setattr)\b/g, '<span class="fn">$1</span>');
                 } else {
                     highlighted = escaped;
                 }
                 
-                result += '<div class="line"><div class="line-content">' + (highlighted || '&nbsp;') + '</div></div>';
+                result += '<div class="line" data-line="' + (i+1) + '"><div class="line-content">' + (highlighted || '&nbsp;') + '</div></div>';
             }
             
             return result;
         }
 
         function escapeHTML(str) {
-            return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+            if(!str) return '';
+            return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
         }
 
         // ==========================================
@@ -203,22 +210,41 @@
             var codeName = params.get('name') || 'project';
             var codeData = null;
 
-            // Try OPFS
-            if(shareId) { var dbKey = 'codeorbit_shared_' + shareId; codeData = await getFromOPFS(dbKey); }
-            // Try IndexedDB
-            if(!codeData && shareId) { codeData = await getFromDB('codeorbit_shared_'+shareId); }
-            // Try localStorage
+            // 1. Try OPFS
+            if(shareId) { codeData = await getFromOPFS('codeorbit_shared_' + shareId); }
+            // 2. Try IndexedDB
+            if(!codeData && shareId) { codeData = await getFromDB('codeorbit_shared_' + shareId); }
+            // 3. Try localStorage
             if(!codeData && shareId) {
-                var stored = localStorage.getItem('codeorbit_shared_'+shareId);
-                if(stored) { try { codeData = JSON.parse(stored); if(codeData&&codeData.compressed) codeData.content = LZString.decompressFromUTF16(codeData.content); } catch(e) {} }
+                var stored = localStorage.getItem('codeorbit_shared_' + shareId);
+                if(stored) {
+                    try { 
+                        codeData = JSON.parse(stored); 
+                        if(codeData && codeData.compressed) {
+                            codeData.content = LZString.decompressFromUTF16(codeData.content);
+                        }
+                    } catch(e) {}
+                }
             }
-            // Try URL
+            // 4. Try URL encoded
             if(!codeData && encodedCode) {
-                try { var decoded = LZString.decompressFromEncodedURIComponent(encodedCode); if(decoded) codeData = { name: decodeURIComponent(codeName), content: decoded, language: (codeType==='note')?'NOTE':codeType.toUpperCase() }; } catch(e) {}
+                try { 
+                    var decoded = LZString.decompressFromEncodedURIComponent(encodedCode); 
+                    if(decoded) {
+                        codeData = { 
+                            name: decodeURIComponent(codeName), 
+                            content: decoded, 
+                            language: (codeType === 'note') ? 'NOTE' : codeType.toUpperCase() 
+                        }; 
+                    }
+                } catch(e) {}
             }
-            // Fallback
-            if(!codeData) { try { codeData = JSON.parse(sessionStorage.getItem('codeorbit_run_code')||'null'); } catch(e) {} }
+            // 5. Fallback: sessionStorage
+            if(!codeData) { 
+                try { codeData = JSON.parse(sessionStorage.getItem('codeorbit_run_code') || 'null'); } catch(e) {} 
+            }
 
+            // No data found
             if(!codeData || !codeData.content) {
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('error-msg').style.display = 'block';
@@ -226,19 +252,25 @@
                 return;
             }
 
-            // Check password
+            // 🔒 CHECK PASSWORD (only for shared links with password)
             if(shareId) {
-                var passwords = JSON.parse(localStorage.getItem('codeorbit_passwords')||'{}');
+                var passwords = {};
+                try { passwords = JSON.parse(localStorage.getItem('codeorbit_passwords') || '{}'); } catch(e) {}
                 var pw = passwords[shareId];
-                if(pw) {
+                
+                if(pw && pw.length > 0) {
+                    // Password exists - show gate
                     document.getElementById('loading').style.display = 'none';
                     document.getElementById('password-gate').style.display = 'flex';
+                    document.getElementById('pw-input').focus();
+                    // Store for later
                     window._codeorbit_pw = pw;
                     window._codeorbit_data = codeData;
                     return;
                 }
             }
 
+            // No password - render directly
             renderCode(codeData);
         }
 
@@ -247,19 +279,32 @@
             if(input === window._codeorbit_pw) {
                 document.getElementById('password-gate').style.display = 'none';
                 document.getElementById('password-error').style.display = 'none';
+                document.getElementById('pw-input').value = '';
                 renderCode(window._codeorbit_data);
             } else {
                 document.getElementById('password-error').style.display = 'block';
+                document.getElementById('pw-input').value = '';
+                document.getElementById('pw-input').focus();
             }
         }
+
+        // Enter key for password
+        document.addEventListener('DOMContentLoaded', function() {
+            var pwInput = document.getElementById('pw-input');
+            if(pwInput) {
+                pwInput.addEventListener('keypress', function(e) {
+                    if(e.key === 'Enter') checkPassword();
+                });
+            }
+        });
 
         async function renderCode(codeData) {
             document.getElementById('loading').style.display = 'none';
             document.title = (codeData.name && codeData.name !== 'project') ? codeData.name : 'اجرای کد';
 
-            // Record view
+            // Record view in history
             try {
-                var history = JSON.parse(localStorage.getItem('codeorbit_history')||'[]');
+                var history = JSON.parse(localStorage.getItem('codeorbit_history') || '[]');
                 history.push({ name: codeData.name, date: new Date().toISOString() });
                 localStorage.setItem('codeorbit_history', JSON.stringify(history));
             } catch(e) {}
@@ -268,13 +313,13 @@
             var lang = (codeData.language || '').toUpperCase();
             var ext = (codeData.name || '').split('.').pop()?.toLowerCase() || '';
 
-            // RENDER
-            if(lang === 'NOTE' || codeType === 'note') {
-                // Markdown
+            // RENDER BASED ON TYPE
+            if(lang === 'NOTE' || ext === 'note') {
+                // Markdown rendering
                 var textDisplay = document.getElementById('text-display');
                 textDisplay.style.display = 'block';
                 try { textDisplay.innerHTML = marked.parse(code); }
-                catch(e) { textDisplay.innerHTML = code.replace(/\n/g,'<br>'); }
+                catch(e) { textDisplay.innerHTML = code.replace(/\n/g, '<br>'); }
             } else if(ext === 'md' || ext === 'markdown') {
                 var textDisplay = document.getElementById('text-display');
                 textDisplay.style.display = 'block';
@@ -287,34 +332,35 @@
             } else if(ext === 'js' || lang === 'JAVASCRIPT' || lang === 'JS') {
                 var codeDisplay = document.getElementById('code-display');
                 codeDisplay.style.display = 'block';
-                codeDisplay.innerHTML = '<div style="color:var(--neon);margin-bottom:10px;">▶ Output:</div>';
+                codeDisplay.innerHTML = '<div style="color:var(--neon);margin-bottom:10px;font-family:Orbitron;">▶ Console Output:</div>';
                 var origLog = console.log;
                 console.log = function() {
                     var args = Array.prototype.slice.call(arguments);
-                    codeDisplay.innerHTML += '<div style="color:#e0ffe0;">' + args.join(' ') + '</div>';
+                    codeDisplay.innerHTML += '<div style="color:#e0ffe0;padding:2px 0;">' + args.map(escapeHTML).join(' ') + '</div>';
                 };
-                try { eval(code); } catch(e) { codeDisplay.innerHTML += '<div style="color:#ff4444;">❌ Error: ' + e.message + '</div>'; }
+                try { eval(code); } catch(e) { codeDisplay.innerHTML += '<div style="color:#ff4444;padding:4px 0;">❌ Error: ' + escapeHTML(e.message) + '</div>'; }
                 console.log = origLog;
             } else if(ext === 'py' || lang === 'PYTHON' || lang === 'PY') {
                 var codeDisplay = document.getElementById('code-display');
                 codeDisplay.style.display = 'block';
-                codeDisplay.innerHTML = '<div style="color:var(--neon);">🐍 Loading Python... <span class="spinner"></span></div>';
+                codeDisplay.innerHTML = '<div style="color:var(--neon);font-family:Orbitron;">🐍 Loading Python... <span class="spinner"></span></div>';
                 try {
                     var pyodide = await loadPyodide();
-                    codeDisplay.innerHTML += '<div style="color:var(--neon);">▶ Running...</div><br>';
-                    pyodide.setStdout({ batched: function(text) { codeDisplay.innerHTML += text.replace(/\n/g,'<br>'); } });
+                    codeDisplay.innerHTML += '<div style="color:var(--neon);font-family:Orbitron;">▶ Running...</div><br>';
+                    pyodide.setStdout({ batched: function(text) { codeDisplay.innerHTML += text.replace(/\n/g,'<br>').replace(/ /g,'&nbsp;'); } });
                     await pyodide.runPythonAsync(code);
-                    codeDisplay.innerHTML += '<br><div style="color:#00e676;">✅ Done.</div>';
-                } catch(e) { codeDisplay.innerHTML += '<br><div style="color:#ff4444;">❌ Error: ' + e.message + '</div>'; }
+                    codeDisplay.innerHTML += '<br><div style="color:#00e676;font-family:Orbitron;">✅ Execution completed.</div>';
+                } catch(e) { codeDisplay.innerHTML += '<br><div style="color:#ff4444;">❌ Error: ' + escapeHTML(e.message) + '</div>'; }
             } else {
                 // Display with Syntax Highlighting
                 var codeDisplay = document.getElementById('code-display');
                 codeDisplay.style.display = 'block';
-                codeDisplay.innerHTML = '<div style="color:var(--dim);margin-bottom:8px;font-family:Orbitron;font-size:0.8em;">📄 ' + codeData.name + ' (' + lang + ')</div>';
+                codeDisplay.innerHTML = '<div style="color:var(--dim);margin-bottom:8px;font-family:Orbitron;font-size:0.8em;">📄 ' + escapeHTML(codeData.name) + ' (' + lang + ')</div>';
                 codeDisplay.innerHTML += highlightCode(code, ext || lang.toLowerCase());
             }
         }
 
+        // Start
         main();
     </script>
 </body>
