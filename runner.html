@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>اجرای کد</title>
+    <title>CODEORBIT | اجرای کد</title>
     
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><defs><linearGradient id='g1' x1='0%25' y1='0%25' x2='100%25' y2='100%25'><stop offset='0%25' style='stop-color:%2300ff41;stop-opacity:1'/><stop offset='50%25' style='stop-color:%2300cc33'/><stop offset='100%25' style='stop-color:%23006600'/></linearGradient><filter id='glow'><feGaussianBlur stdDeviation='6'/><feMerge><feMergeNode in='blur'/><feMergeNode in='SourceGraphic'/></feMerge></filter></defs><rect width='512' height='512' rx='120' fill='%23050505'/><rect width='512' height='512' rx='120' fill='none' stroke='%2300ff41' stroke-width='3' opacity='0.3'/><circle cx='256' cy='240' r='110' fill='url(%23g1)' filter='url(%23glow)' opacity='0.9'/><circle cx='256' cy='240' r='80' fill='%23050505' stroke='%2300ff41' stroke-width='2' opacity='0.5'/><ellipse cx='256' cy='240' rx='170' ry='35' fill='none' stroke='%2300ff41' stroke-width='3' transform='rotate(-25,256,240)' opacity='0.6'/><ellipse cx='256' cy='240' rx='140' ry='25' fill='none' stroke='%2300ff41' stroke-width='2' transform='rotate(55,256,240)' opacity='0.4'/><circle cx='170' cy='170' r='5' fill='%23fff' filter='url(%23glow)'/><circle cx='340' cy='310' r='4' fill='%23fff' opacity='0.7'/></svg>">
     
@@ -77,12 +77,13 @@
             color: #0f0; background: #050505; padding: 20px;
             font-family: 'JetBrains Mono', monospace; min-height: 100vh;
             white-space: pre-wrap; word-break: break-all;
-            font-size: 14px; line-height: 1.8; display: none;
+            font-size: 14px; line-height: 2.2;
+            display: none;
         }
-        #code-display .line { display: flex; padding: 1px 0; }
+        #code-display .line { display: flex; padding: 2px 0; }
         #code-display .line::before {
-            content: attr(data-line); color: rgba(0,255,65,0.25);
-            min-width: 45px; text-align: right; margin-left: 12px; user-select: none;
+            content: attr(data-line); color: rgba(0,255,65,0.35);
+            min-width: 55px; text-align: right; margin-left: 18px; user-select: none;
             font-size: 0.85em;
         }
         #code-display .line-content { flex: 1; }
@@ -104,7 +105,7 @@
         @media (max-width: 600px) {
             #text-display { padding: 15px; font-size: 14px; }
             #code-display { font-size: 11px; padding: 10px; }
-            #code-display .line::before { min-width: 30px; margin-left: 6px; }
+            #code-display .line::before { min-width: 40px; margin-left: 10px; }
         }
     </style>
 </head>
@@ -190,7 +191,6 @@
                 
                 result += '<div class="line" data-line="' + (i+1) + '"><div class="line-content">' + (highlighted || '&nbsp;') + '</div></div>';
             }
-            
             return result;
         }
 
@@ -200,7 +200,86 @@
         }
 
         // ==========================================
-        // MAIN
+        // RENDER FUNCTIONS
+        // ==========================================
+        async function renderCode(codeData) {
+            document.getElementById('loading').style.display = 'none';
+            document.title = (codeData.name && codeData.name !== 'project') ? codeData.name : 'اجرای کد';
+
+            // Record view in history
+            try {
+                var history = JSON.parse(localStorage.getItem('codeorbit_history') || '[]');
+                history.push({ name: codeData.name, date: new Date().toISOString() });
+                if(history.length > 50) history = history.slice(-50);
+                localStorage.setItem('codeorbit_history', JSON.stringify(history));
+            } catch(e) {}
+
+            var code = codeData.content;
+            var lang = (codeData.language || '').toUpperCase();
+            var ext = (codeData.name || '').split('.').pop()?.toLowerCase() || '';
+
+            // RENDER BASED ON TYPE
+            if(lang === 'NOTE' || ext === 'note') {
+                var textDisplay = document.getElementById('text-display');
+                textDisplay.style.display = 'block';
+                try { textDisplay.innerHTML = marked.parse(code); }
+                catch(e) { textDisplay.innerHTML = code.replace(/\n/g, '<br>'); }
+            } else if(ext === 'md' || ext === 'markdown') {
+                var textDisplay = document.getElementById('text-display');
+                textDisplay.style.display = 'block';
+                try { textDisplay.innerHTML = marked.parse(code); }
+                catch(e) { textDisplay.textContent = code; }
+            } else if(ext === 'html' || ext === 'htm') {
+                var iframe = document.getElementById('output-frame');
+                iframe.style.display = 'block';
+                iframe.srcdoc = code;
+            } else if(ext === 'js' || lang === 'JAVASCRIPT' || lang === 'JS') {
+                var codeDisplay = document.getElementById('code-display');
+                codeDisplay.style.display = 'block';
+                codeDisplay.innerHTML = '<div style="color:var(--neon);margin-bottom:10px;font-family:Orbitron;">▶ Console Output:</div>';
+                var origLog = console.log;
+                console.log = function() {
+                    var args = Array.prototype.slice.call(arguments);
+                    codeDisplay.innerHTML += '<div style="color:#e0ffe0;padding:2px 0;">' + args.map(escapeHTML).join(' ') + '</div>';
+                };
+                try { eval(code); } catch(e) { codeDisplay.innerHTML += '<div style="color:#ff4444;padding:4px 0;">❌ Error: ' + escapeHTML(e.message) + '</div>'; }
+                console.log = origLog;
+            } else if(ext === 'py' || lang === 'PYTHON' || lang === 'PY') {
+                var codeDisplay = document.getElementById('code-display');
+                codeDisplay.style.display = 'block';
+                codeDisplay.innerHTML = '<div style="color:var(--neon);font-family:Orbitron;">🐍 Loading Python... <span class="spinner"></span></div>';
+                try {
+                    var pyodide = await loadPyodide();
+                    codeDisplay.innerHTML += '<div style="color:var(--neon);font-family:Orbitron;">▶ Running...</div><br>';
+                    pyodide.setStdout({ batched: function(text) { codeDisplay.innerHTML += text.replace(/\n/g,'<br>').replace(/ /g,'&nbsp;'); } });
+                    await pyodide.runPythonAsync(code);
+                    codeDisplay.innerHTML += '<br><div style="color:#00e676;font-family:Orbitron;">✅ Execution completed.</div>';
+                } catch(e) { codeDisplay.innerHTML += '<br><div style="color:#ff4444;">❌ Error: ' + escapeHTML(e.message) + '</div>'; }
+            } else {
+                // Display with Syntax Highlighting
+                var codeDisplay = document.getElementById('code-display');
+                codeDisplay.style.display = 'block';
+                codeDisplay.innerHTML = '<div style="color:var(--dim);margin-bottom:8px;font-family:Orbitron;font-size:0.8em;">📄 ' + escapeHTML(codeData.name) + ' (' + lang + ')</div>';
+                codeDisplay.innerHTML += highlightCode(code, ext || lang.toLowerCase());
+            }
+        }
+
+        function checkPassword() {
+            var input = document.getElementById('pw-input').value;
+            if(input === window._codeorbit_pw) {
+                document.getElementById('password-gate').style.display = 'none';
+                document.getElementById('password-error').style.display = 'none';
+                document.getElementById('pw-input').value = '';
+                renderCode(window._codeorbit_data);
+            } else {
+                document.getElementById('password-error').style.display = 'block';
+                document.getElementById('pw-input').value = '';
+                document.getElementById('pw-input').focus();
+            }
+        }
+
+        // ==========================================
+        // MAIN FUNCTION (FIXED)
         // ==========================================
         async function main() {
             var params = new URLSearchParams(location.search);
@@ -252,49 +331,32 @@
                 return;
             }
 
-            // 🔒 CHECK PASSWORD - FIXED (checks inside stored data too)
-if(shareId) {
-    var pw = null;
-    
-    // 1. Check localStorage passwords
-    var passwords = {};
-    try { passwords = JSON.parse(localStorage.getItem('codeorbit_passwords') || '{}'); } catch(e) {}
-    pw = passwords[shareId];
-    
-    // 2. Check inside the stored data
-    if (!pw && codeData && codeData._password) {
-        pw = codeData._password;
-    }
-    
-    if (pw && pw.length > 0) {
-        document.getElementById('loading').style.display = 'none';
-        document.getElementById('password-gate').style.display = 'flex';
-        document.getElementById('pw-input').focus();
-        window._codeorbit_pw = pw;
-        window._codeorbit_data = codeData;
-        return;
-    }
-}
-            // بعد از این خط:
-// if (pw && pw.length > 0) { ... return; }
-// (یعنی بعد از آکولاد بسته if(shareId))
-
-// اگر به اینجا رسیدیم، رمزی وجود ندارد یا رمز قبلاً تأیید شده است
-document.getElementById('loading').style.display = 'none';
-renderCode(codeData);
-
-        function checkPassword() {
-            var input = document.getElementById('pw-input').value;
-            if(input === window._codeorbit_pw) {
-                document.getElementById('password-gate').style.display = 'none';
-                document.getElementById('password-error').style.display = 'none';
-                document.getElementById('pw-input').value = '';
-                renderCode(window._codeorbit_data);
-            } else {
-                document.getElementById('password-error').style.display = 'block';
-                document.getElementById('pw-input').value = '';
-                document.getElementById('pw-input').focus();
+            // 🔒 CHECK PASSWORD (only if shareId exists)
+            if(shareId) {
+                var pw = null;
+                // 1. Check localStorage passwords
+                var passwords = {};
+                try { passwords = JSON.parse(localStorage.getItem('codeorbit_passwords') || '{}'); } catch(e) {}
+                pw = passwords[shareId];
+                // 2. Check inside the stored data
+                if (!pw && codeData && codeData._password) {
+                    pw = codeData._password;
+                }
+                
+                if (pw && pw.length > 0) {
+                    // This link requires password -> show gate
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('password-gate').style.display = 'flex';
+                    document.getElementById('pw-input').focus();
+                    window._codeorbit_pw = pw;
+                    window._codeorbit_data = codeData;
+                    return;  // Stop here until password is entered
+                }
             }
+            
+            // ✅ No password required (or no shareId) -> render immediately
+            document.getElementById('loading').style.display = 'none';
+            renderCode(codeData);
         }
 
         // Enter key for password
@@ -306,68 +368,6 @@ renderCode(codeData);
                 });
             }
         });
-
-        async function renderCode(codeData) {
-            document.getElementById('loading').style.display = 'none';
-            document.title = (codeData.name && codeData.name !== 'project') ? codeData.name : 'اجرای کد';
-
-            // Record view in history
-            try {
-                var history = JSON.parse(localStorage.getItem('codeorbit_history') || '[]');
-                history.push({ name: codeData.name, date: new Date().toISOString() });
-                localStorage.setItem('codeorbit_history', JSON.stringify(history));
-            } catch(e) {}
-
-            var code = codeData.content;
-            var lang = (codeData.language || '').toUpperCase();
-            var ext = (codeData.name || '').split('.').pop()?.toLowerCase() || '';
-
-            // RENDER BASED ON TYPE
-            if(lang === 'NOTE' || ext === 'note') {
-                // Markdown rendering
-                var textDisplay = document.getElementById('text-display');
-                textDisplay.style.display = 'block';
-                try { textDisplay.innerHTML = marked.parse(code); }
-                catch(e) { textDisplay.innerHTML = code.replace(/\n/g, '<br>'); }
-            } else if(ext === 'md' || ext === 'markdown') {
-                var textDisplay = document.getElementById('text-display');
-                textDisplay.style.display = 'block';
-                try { textDisplay.innerHTML = marked.parse(code); }
-                catch(e) { textDisplay.textContent = code; }
-            } else if(ext === 'html' || ext === 'htm') {
-                var iframe = document.getElementById('output-frame');
-                iframe.style.display = 'block';
-                iframe.srcdoc = code;
-            } else if(ext === 'js' || lang === 'JAVASCRIPT' || lang === 'JS') {
-                var codeDisplay = document.getElementById('code-display');
-                codeDisplay.style.display = 'block';
-                codeDisplay.innerHTML = '<div style="color:var(--neon);margin-bottom:10px;font-family:Orbitron;">▶ Console Output:</div>';
-                var origLog = console.log;
-                console.log = function() {
-                    var args = Array.prototype.slice.call(arguments);
-                    codeDisplay.innerHTML += '<div style="color:#e0ffe0;padding:2px 0;">' + args.map(escapeHTML).join(' ') + '</div>';
-                };
-                try { eval(code); } catch(e) { codeDisplay.innerHTML += '<div style="color:#ff4444;padding:4px 0;">❌ Error: ' + escapeHTML(e.message) + '</div>'; }
-                console.log = origLog;
-            } else if(ext === 'py' || lang === 'PYTHON' || lang === 'PY') {
-                var codeDisplay = document.getElementById('code-display');
-                codeDisplay.style.display = 'block';
-                codeDisplay.innerHTML = '<div style="color:var(--neon);font-family:Orbitron;">🐍 Loading Python... <span class="spinner"></span></div>';
-                try {
-                    var pyodide = await loadPyodide();
-                    codeDisplay.innerHTML += '<div style="color:var(--neon);font-family:Orbitron;">▶ Running...</div><br>';
-                    pyodide.setStdout({ batched: function(text) { codeDisplay.innerHTML += text.replace(/\n/g,'<br>').replace(/ /g,'&nbsp;'); } });
-                    await pyodide.runPythonAsync(code);
-                    codeDisplay.innerHTML += '<br><div style="color:#00e676;font-family:Orbitron;">✅ Execution completed.</div>';
-                } catch(e) { codeDisplay.innerHTML += '<br><div style="color:#ff4444;">❌ Error: ' + escapeHTML(e.message) + '</div>'; }
-            } else {
-                // Display with Syntax Highlighting
-                var codeDisplay = document.getElementById('code-display');
-                codeDisplay.style.display = 'block';
-                codeDisplay.innerHTML = '<div style="color:var(--dim);margin-bottom:8px;font-family:Orbitron;font-size:0.8em;">📄 ' + escapeHTML(codeData.name) + ' (' + lang + ')</div>';
-                codeDisplay.innerHTML += highlightCode(code, ext || lang.toLowerCase());
-            }
-        }
 
         // Start
         main();
