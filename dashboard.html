@@ -482,15 +482,68 @@
         function copyModalLink(){navigator.clipboard.writeText(document.getElementById('modal-link').textContent).then(()=>showToast('✅ کپی شد','success'));closeModal();}
         function copyLink(id){var link=shareLinks.find(l=>l.id===id);if(link){navigator.clipboard.writeText(link.url).then(()=>showToast('✅ کپی شد','success'));}}
         function openLink(id){var link=shareLinks.find(l=>l.id===id);if(link){var pw=linkPasswords[id];if(pw){var input=prompt('🔒 این لینک رمز دارد. رمز را وارد کنید:');if(input!==pw){showToast('❌ رمز اشتباه','error');return;}}viewHistory.push({name:link.name,date:new Date().toISOString()});save();window.open(link.url,'_blank');}}
-        function closeModal(){
-            var linkUrl=document.getElementById('modal-link').textContent;
-            var pw=document.getElementById('link-password').value.trim();
-            var link=shareLinks.find(l=>l.url===linkUrl);
-            if(link&&pw){linkPasswords[link.id]=pw;save();showToast('🔒 رمز تنظیم شد','success');}
-            else if(link&&!pw&&linkPasswords[link.id]){delete linkPasswords[link.id];save();showToast('🔓 رمز برداشته شد','info');}
-            document.getElementById('link-modal').style.display='none';
-            document.getElementById('link-password').value='';
+        async function closeModal() {
+    var linkUrl = document.getElementById('modal-link').textContent;
+    var pw = document.getElementById('link-password').value.trim();
+    var link = shareLinks.find(l => l.url === linkUrl);
+    
+    if (link && pw) {
+        // Save password in localStorage
+        linkPasswords[link.id] = pw;
+        save();
+        
+        // 🔥 ALSO save password INSIDE the stored file data
+        var key = 'codeorbit_shared_' + link.id;
+        
+        // Update in OPFS
+        var opfsData = await getFromOPFS(key);
+        if (opfsData) {
+            opfsData._password = pw;
+            await storeInOPFS(key, opfsData);
         }
+        
+        // Update in IndexedDB
+        var dbData = await getFromDB(key);
+        if (dbData) {
+            dbData._password = pw;
+            await storeInDB(key, dbData);
+        }
+        
+        // Update in localStorage
+        var lsData = localStorage.getItem(key);
+        if (lsData) {
+            try {
+                var parsed = JSON.parse(lsData);
+                parsed._password = pw;
+                if (parsed.compressed) {
+                    localStorage.setItem(key, JSON.stringify(parsed));
+                } else {
+                    parsed._password = pw;
+                    localStorage.setItem(key, JSON.stringify(parsed));
+                }
+            } catch(e) {}
+        }
+        
+        showToast('🔒 رمز تنظیم شد', 'success');
+    } else if (link && !pw && linkPasswords[link.id]) {
+        // Remove password
+        delete linkPasswords[link.id];
+        save();
+        
+        // Also remove from stored data
+        var key = 'codeorbit_shared_' + link.id;
+        var opfsData = await getFromOPFS(key);
+        if (opfsData && opfsData._password) {
+            delete opfsData._password;
+            await storeInOPFS(key, opfsData);
+        }
+        
+        showToast('🔓 رمز برداشته شد', 'info');
+    }
+    
+    document.getElementById('link-modal').style.display = 'none';
+    document.getElementById('link-password').value = '';
+}
 
         function deleteLink(id){if(!confirm('⚠️ حذف شود؟'))return;shareLinks=shareLinks.filter(l=>l.id!==id);codes=codes.filter(c=>c.id!==id);var key='codeorbit_shared_'+id;deleteFromOPFS(key);deleteFromDB(key);if(localStorage.getItem(key))localStorage.removeItem(key);delete linkPasswords[id];save();showToast('🗑️ حذف شد','error');}
 
