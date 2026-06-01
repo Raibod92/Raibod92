@@ -929,27 +929,35 @@
         setInterval(updateClock, 1000);
         updateClock();
 
-        // ==========================================
-        // EXECUTION ENGINE
+         // ==========================================
+        // EXECUTION ENGINE (UPDATED - Read from URL)
         // ==========================================
         async function executeCode() {
-            let codeData;
             const urlParams = new URLSearchParams(location.search);
-            const codeId = urlParams.get('code');
+            const encodedCode = urlParams.get('code');
+            const codeType = urlParams.get('type') || 'txt';
+            const codeName = urlParams.get('name') || 'unnamed';
             
-            if(codeId && window.opener) {
-                const codes = JSON.parse(localStorage.getItem('codeorbit_codes') || '[]');
-                codeData = codes.find(c => c.id === codeId);
+            let codeData;
+            
+            if (encodedCode) {
+                // Decode from URL
+                const decoded = decodeURIComponent(escape(atob(encodedCode)));
+                codeData = {
+                    name: codeName,
+                    content: decoded,
+                    language: codeType.toUpperCase(),
+                    size: formatSize(new Blob([decoded]).size)
+                };
             } else {
+                // Fallback: get from sessionStorage
                 codeData = JSON.parse(sessionStorage.getItem('codeorbit_run_code') || 'null');
             }
 
             if(!codeData) {
-                addLine('', 'output');
-                addLine('╔══════════════════════════════════════╗', 'error');
-                addLine('║  ❌ ERROR: No code found to execute  ║', 'error');
-                addLine('║  Please upload code from dashboard   ║', 'error');
-                addLine('╚══════════════════════════════════════╝', 'error');
+                addLine('╔══════════════════════════════╗', 'error');
+                addLine('║  ❌ No code to execute       ║', 'error');
+                addLine('╚══════════════════════════════╝', 'error');
                 setStatus('error');
                 return;
             }
