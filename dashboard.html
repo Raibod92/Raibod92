@@ -81,6 +81,10 @@
 
         .note-area{width:100%;min-height:90px;background:rgba(0,0,0,0.5);border:1px solid var(--border);border-radius:12px;padding:12px;color:var(--text);font-family:'Vazirmatn','JetBrains Mono',sans-serif;font-size:0.78em;resize:vertical;outline:none;transition:all 0.3s;}
         .note-area:focus{border-color:var(--neon);box-shadow:0 0 20px var(--neon-soft);}
+        .note-password-row{display:flex;align-items:center;gap:8px;margin-top:6px;}
+        .note-password-row input{flex:1;padding:6px 10px;background:rgba(0,0,0,0.5);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:0.72em;outline:none;}
+        .note-password-row input:focus{border-color:var(--neon);}
+        .note-password-row label{font-size:0.7em;color:var(--dim);white-space:nowrap;}
 
         .list{max-height:350px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;padding-left:2px;}
         .list::-webkit-scrollbar{width:3px;}
@@ -195,9 +199,13 @@
                 <div class="panel">
                     <div class="panel-title">📝 <span>یادداشت سریع</span> · اشتراک متن</div>
                     <textarea class="note-area" id="quick-note" placeholder="متن خود را اینجا بنویسید..."></textarea>
+                    <div class="note-password-row">
+                        <label>🔒 رمز (اختیاری):</label>
+                        <input type="text" id="note-password" placeholder="برای یادداشت رمز بگذارید">
+                    </div>
                     <div style="display:flex;gap:6px;margin-top:8px;">
                         <button class="btn btn-primary" onclick="shareNote()" style="flex:1;justify-content:center;">🚀 اشتراک</button>
-                        <button class="btn" onclick="document.getElementById('quick-note').value=''" style="justify-content:center;">✕</button>
+                        <button class="btn" onclick="document.getElementById('quick-note').value='';document.getElementById('note-password').value='';" style="justify-content:center;">✕</button>
                     </div>
                 </div>
             </div>
@@ -319,14 +327,11 @@
         if(localStorage.getItem('codeorbit_theme')==='light')document.body.classList.add('light-mode');
 
         // ==========================================
-        // TABS - FIXED
+        // TABS
         // ==========================================
         var allTabContents=['tab-upload-content','tab-links-content','tab-history-content','tab-editor-content','tab-stats-content'];
-        var currentTab='upload';
-
         function switchTab(tabName){
-            currentTab=tabName;
-            allTabContents.forEach(function(id){var el=document.getElementById(id);if(el)el.style.display='none';});
+            allTabContents.forEach(id=>{var el=document.getElementById(id);if(el)el.style.display='none';});
             if(tabName==='upload'||tabName==='note'){
                 document.getElementById('tab-upload-content').style.display='block';
                 document.getElementById('tab-links-content').style.display='block';
@@ -343,13 +348,10 @@
                 updateStatsUI();
             }
             localStorage.setItem('codeorbit_active_tab',tabName);
-            document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');if(t.dataset.tab===tabName)t.classList.add('active');});
+            document.querySelectorAll('.tab').forEach(t=>{t.classList.remove('active');if(t.dataset.tab===tabName)t.classList.add('active');});
         }
-
-        document.querySelectorAll('.tab').forEach(function(tab){tab.addEventListener('click',function(){switchTab(this.dataset.tab);});});
-
-        var savedTab=localStorage.getItem('codeorbit_active_tab')||'upload';
-        switchTab(savedTab);
+        document.querySelectorAll('.tab').forEach(tab=>tab.addEventListener('click',function(){switchTab(this.dataset.tab);}));
+        switchTab(localStorage.getItem('codeorbit_active_tab')||'upload');
 
         // ==========================================
         // OPFS
@@ -441,18 +443,39 @@
         }
 
         // ==========================================
-        // NOTE
+        // NOTE (با پشتیبانی از رمز)
         // ==========================================
         async function shareNote(){
             var text=document.getElementById('quick-note').value.trim();
             if(!text){showToast('❌ متنی نوشته نشده','error');return;}
+            var notePassword=document.getElementById('note-password').value.trim();
             var id='n_'+Date.now()+'_'+Math.random().toString(36).substr(2,9);
             var key='codeorbit_shared_'+id,base=location.origin+location.pathname.replace('dashboard.html',''),url;
-            if(text.length<1500){url=base+'runner.html?code='+LZString.compressToEncodedURIComponent(text)+'&type=note&name='+encodeURIComponent('یادداشت '+new Date().toLocaleString('fa-IR'));}
-            else{var stored=await smartStore(key,{name:text.substring(0,40),content:text,language:'NOTE',date:new Date().toISOString()});if(stored){url=base+'runner.html?share='+id;}else{showToast('❌ خطا','error');return;}}
+            
+            // اگر رمز وجود داشت، همیشه از share ID استفاده کن (در OPFS/IndexedDB ذخیره شود)
+            if(notePassword || text.length >= 1500){
+                var data={name:text.substring(0,40),content:text,language:'NOTE',date:new Date().toISOString()};
+                if(notePassword) data._password = notePassword;
+                var stored=await smartStore(key,data);
+                if(stored){
+                    url=base+'runner.html?share='+id;
+                    if(notePassword) linkPasswords[id]=notePassword;
+                }else{
+                    showToast('❌ خطا در ذخیره','error');
+                    return;
+                }
+            }else{
+                // متن کوتاه و بدون رمز -> در URL کدگذاری شود
+                url=base+'runner.html?code='+LZString.compressToEncodedURIComponent(text)+'&type=note&name='+encodeURIComponent('یادداشت '+new Date().toLocaleString('fa-IR'));
+            }
+            
             shareLinks.push({id:id,name:text.substring(0,40),url:url,type:'note',size:formatSize(text.length),date:new Date().toISOString()});
             codes.push({id:id,name:'Note: '+text.substring(0,25),size:formatSize(text.length),date:new Date().toISOString(),language:'NOTE'});
-            save();showLinkModal(shareLinks[shareLinks.length-1]);document.getElementById('quick-note').value='';showToast('✅ یادداشت شد!','success');
+            save();
+            showLinkModal(shareLinks[shareLinks.length-1]);
+            document.getElementById('quick-note').value='';
+            document.getElementById('note-password').value='';
+            showToast('✅ یادداشت شد!','success');
         }
 
         // ==========================================
@@ -461,7 +484,7 @@
         function livePreview(){document.getElementById('live-preview').srcdoc=document.getElementById('live-editor').value;}
 
         // ==========================================
-        // MODAL + QR + PASSWORD (FIXED)
+        // MODAL + QR + PASSWORD (با ذخیره در داده)
         // ==========================================
         function showLinkModal(link){
             document.getElementById('modal-link').textContent=link.url;
@@ -475,7 +498,6 @@
         function copyLink(id){var link=shareLinks.find(l=>l.id===id);if(link){navigator.clipboard.writeText(link.url).then(()=>showToast('✅ کپی شد','success'));}}
         function openLink(id){var link=shareLinks.find(l=>l.id===id);if(link){var pw=linkPasswords[id];if(pw){var input=prompt('🔒 این لینک رمز دارد. رمز را وارد کنید:');if(input!==pw){showToast('❌ رمز اشتباه','error');return;}}viewHistory.push({name:link.name,date:new Date().toISOString()});save();window.open(link.url,'_blank');}}
         
-        // 🔥 اصلاح شده: ذخیره رمز در خود داده
         async function closeModal(){
             var linkUrl = document.getElementById('modal-link').textContent;
             var pw = document.getElementById('link-password').value.trim();
@@ -485,61 +507,30 @@
             if (link && pw) {
                 linkPasswords[link.id] = pw;
                 save();
-                
-                // به‌روزرسانی در OPFS
                 if (key) {
                     var opfsData = await getFromOPFS(key);
-                    if (opfsData) {
-                        opfsData._password = pw;
-                        await storeInOPFS(key, opfsData);
-                    }
-                    // به‌روزرسانی در IndexedDB
+                    if (opfsData) { opfsData._password = pw; await storeInOPFS(key, opfsData); }
                     var dbData = await getFromDB(key);
-                    if (dbData) {
-                        dbData._password = pw;
-                        await storeInDB(key, dbData);
-                    }
-                    // به‌روزرسانی در localStorage
+                    if (dbData) { dbData._password = pw; await storeInDB(key, dbData); }
                     var lsData = localStorage.getItem(key);
-                    if (lsData) {
-                        try {
-                            var parsed = JSON.parse(lsData);
-                            parsed._password = pw;
-                            localStorage.setItem(key, JSON.stringify(parsed));
-                        } catch(e) {}
-                    }
+                    if (lsData) { try { var parsed=JSON.parse(lsData); parsed._password=pw; localStorage.setItem(key,JSON.stringify(parsed)); } catch(e) {} }
                 }
                 showToast('🔒 رمز تنظیم شد', 'success');
             } else if (link && !pw && linkPasswords[link.id]) {
                 delete linkPasswords[link.id];
                 save();
-                
-                // حذف رمز از داده
                 if (key) {
                     var opfsData = await getFromOPFS(key);
-                    if (opfsData && opfsData._password) {
-                        delete opfsData._password;
-                        await storeInOPFS(key, opfsData);
-                    }
+                    if (opfsData && opfsData._password) { delete opfsData._password; await storeInOPFS(key, opfsData); }
                     var dbData = await getFromDB(key);
-                    if (dbData && dbData._password) {
-                        delete dbData._password;
-                        await storeInDB(key, dbData);
-                    }
+                    if (dbData && dbData._password) { delete dbData._password; await storeInDB(key, dbData); }
                     var lsData = localStorage.getItem(key);
-                    if (lsData) {
-                        try {
-                            var parsed = JSON.parse(lsData);
-                            delete parsed._password;
-                            localStorage.setItem(key, JSON.stringify(parsed));
-                        } catch(e) {}
-                    }
+                    if (lsData) { try { var parsed=JSON.parse(lsData); delete parsed._password; localStorage.setItem(key,JSON.stringify(parsed)); } catch(e) {} }
                 }
                 showToast('🔓 رمز برداشته شد', 'info');
             }
-            
-            document.getElementById('link-modal').style.display = 'none';
-            document.getElementById('link-password').value = '';
+            document.getElementById('link-modal').style.display='none';
+            document.getElementById('link-password').value='';
         }
 
         function deleteLink(id){if(!confirm('⚠️ حذف شود؟'))return;shareLinks=shareLinks.filter(l=>l.id!==id);codes=codes.filter(c=>c.id!==id);var key='codeorbit_shared_'+id;deleteFromOPFS(key);deleteFromDB(key);if(localStorage.getItem(key))localStorage.removeItem(key);delete linkPasswords[id];save();showToast('🗑️ حذف شد','error');}
@@ -553,7 +544,7 @@
         window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);pCanvas.width=innerWidth;pCanvas.height=innerHeight;});
 
         updateUI();
-        console.log('🌍 CODEORBIT v12 · Commander Raibod · Password Embedded');
+        console.log('🌍 CODEORBIT v12 · Commander Raibod · Note Password Ready');
     </script>
 </body>
-</html>
+<html>
