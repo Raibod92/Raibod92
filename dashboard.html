@@ -691,90 +691,130 @@
         });
 
         function handleFiles(files) {
-            if(!files||files.length===0) { showToast('❌ فایلی انتخاب نشد','error'); return; }
+            if (!files || files.length === 0) {
+                showToast('❌ فایلی انتخاب نشد', 'error');
+                return;
+            }
 
-            let ok=0, err=0;
+            let ok = 0, err = 0;
             const total = files.length;
-            showToast(`⏳ ${total} فایل در حال پردازش...`,'info');
+            const base = location.origin + location.pathname.replace('dashboard.html', '');
+            
+            showToast(`⏳ ${total} فایل در حال پردازش...`, 'info');
 
-            Array.from(files).forEach(function(file){
-                // Check size limit: 20MB
-                if(file.size > 20*1024*1024) {
+            Array.from(files).forEach(function(file) {
+                // Check size
+                if (file.size > 20 * 1024 * 1024) {
                     err++;
-                    showToast(`⚠️ ${file.name} بزرگتر از ۲۰MB - رد شد`,'error');
-                    if(ok+err===total&&ok===0) finishAll();
+                    showToast(`⚠️ ${file.name} - بزرگتر از ۲۰MB`, 'error');
+                    checkDone();
                     return;
                 }
 
                 const reader = new FileReader();
+
                 reader.onload = function(e) {
                     const content = e.target.result;
-                    if(!content||content.length===0) { err++; if(ok+err===total) finishAll(); return; }
+                    if (!content || content.length === 0) {
+                        err++;
+                        checkDone();
+                        return;
+                    }
 
-                    const id = 'c_'+Date.now()+'_'+Math.random().toString(36).substr(2,9);
-                    const ext = file.name.split('.').pop()?.toLowerCase()||'txt';
-                    const base = location.origin+location.pathname.replace('dashboard.html','');
+                    const id = 'c_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                    const ext = file.name.split('.').pop()?.toLowerCase() || 'txt';
                     let url;
-                    const originalSize = content.length;
 
+                    // Save to codes list
                     codes.push({
-                        id, name:file.name, size:formatSize(file.size),
-                        date:new Date().toISOString(), language:ext.toUpperCase()
+                        id: id,
+                        name: file.name,
+                        size: formatSize(file.size),
+                        date: new Date().toISOString(),
+                        language: ext.toUpperCase()
                     });
 
-                    // SMART: Small files -> URL encode, Large files -> Compressed localStorage
-                    if(content.length < 1500) {
-                        url = base+'runner.html?code='+LZString.compressToEncodedURIComponent(content)+'&type='+ext+'&name='+encodeURIComponent(file.name);
+                    // Store content
+                    const key = 'codeorbit_shared_' + id;
+                    
+                    if (content.length < 1500) {
+                        // Small file - encode in URL
+                        url = base + 'runner.html?code=' + LZString.compressToEncodedURIComponent(content) + '&type=' + ext + '&name=' + encodeURIComponent(file.name);
                     } else {
-                        // Compress with LZString before storing
-                        const key = 'codeorbit_shared_'+id;
+                        // Large file - compress and store in localStorage
                         try {
                             const compressed = LZString.compressToUTF16(content);
-                            localStorage.setItem(key, JSON.stringify({
-                                name:file.name, content:compressed,
-                                language:ext.toUpperCase(), date:new Date().toISOString(),
-                                compressed:true
-                            }));
-                            url = base+'runner.html?share='+id;
+                            const dataToStore = JSON.stringify({
+                                name: file.name,
+                                content: compressed,
+                                language: ext.toUpperCase(),
+                                date: new Date().toISOString(),
+                                compressed: true
+                            });
+                            
+                            // Check if we have space
+                            localStorage.setItem(key, dataToStore);
+                            url = base + 'runner.html?share=' + id;
                         } catch(e) {
-                            // Try without compression
+                            // Storage full - try cleanup
                             try {
-                                localStorage.setItem(key, JSON.stringify({
-                                    name:file.name, content:content,
-                                    language:ext.toUpperCase(), date:new Date().toISOString()
-                                }));
-                                url = base+'runner.html?share='+id;
-                            } catch(e2) {
                                 cleanupStorage();
-                                try {
-                                    localStorage.setItem(key, JSON.stringify({
-                                        name:file.name, content:content,
-                                        language:ext.toUpperCase(), date:new Date().toISOString()
-                                    }));
-                                    url = base+'runner.html?share='+id;
-                                } catch(e3) {
-                                    err++;
-                                    showToast(`❌ ${file.name} - حافظه پر شد`,'error');
-                                    if(ok+err===total) finishAll();
-                                    return;
-                                }
+                                const compressed = LZString.compressToUTF16(content);
+                                localStorage.setItem(key, JSON.stringify({
+                                    name: file.name, content: compressed,
+                                    language: ext.toUpperCase(), date: new Date().toISOString(),
+                                    compressed: true
+                                }));
+                                url = base + 'runner.html?share=' + id;
+                            } catch(e2) {
+                                err++;
+                                showToast(`❌ ${file.name} - حافظه پر شد`, 'error');
+                                checkDone();
+                                return;
                             }
                         }
                     }
 
+                    // Add to share links
                     shareLinks.push({
-                        id, name:file.name, url,
-                        type:ext==='py'?'python':ext==='html'?'html':ext==='js'?'js':'other',
-                        size:formatSize(file.size), date:new Date().toISOString(),
-                        originalSize
+                        id: id,
+                        name: file.name,
+                        url: url,
+                        type: ext === 'py' ? 'python' : ext === 'html' ? 'html' : ext === 'js' ? 'js' : 'other',
+                        size: formatSize(file.size),
+                        date: new Date().toISOString(),
+                        originalSize: content.length
                     });
+
                     ok++;
-                    if(ok+err===total) finishAll();
+                    checkDone();
                 };
-                reader.onerror = function() { err++; if(ok+err===total) finishAll(); };
+
+                reader.onerror = function() {
+                    err++;
+                    showToast(`❌ خطا در خواندن ${file.name}`, 'error');
+                    checkDone();
+                };
+
                 reader.readAsText(file);
             });
 
+            function checkDone() {
+                if (ok + err === total) {
+                    save();
+                    if (ok > 0) {
+                        showToast(`✅ ${ok} فایل آپلود شد!`, 'success');
+                        if (shareLinks.length > 0) {
+                            const last = shareLinks[shareLinks.length - 1];
+                            document.getElementById('modal-link').textContent = last.url;
+                            document.getElementById('link-modal').style.display = 'flex';
+                        }
+                    } else {
+                        showToast(`❌ هیچ فایلی آپلود نشد (${err} خطا)`, 'error');
+                    }
+                }
+            }
+        }
             function finishAll() {
                 save();
                 if(ok>0) {
