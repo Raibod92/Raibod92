@@ -275,6 +275,13 @@ if(shareId) {
         return;
     }
 }
+            // بعد از این خط:
+// if (pw && pw.length > 0) { ... return; }
+// (یعنی بعد از آکولاد بسته if(shareId))
+
+// اگر به اینجا رسیدیم، رمزی وجود ندارد یا رمز قبلاً تأیید شده است
+document.getElementById('loading').style.display = 'none';
+renderCode(codeData);
 
         function checkPassword() {
             var input = document.getElementById('pw-input').value;
