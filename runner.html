@@ -3,289 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CODEORBIT | اجرای کد</title>
+    <title id="page-title">اجرای کد</title>
     
     <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;700&display=swap');
-        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700&display=swap');
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
-
-        :root {
-            --neon: #00ff41;
-            --neon-glow: rgba(0, 255, 65, 0.7);
-            --bg: #020202;
-            --terminal-bg: #080808;
-        }
-
         * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        body {
-            font-family: 'Vazirmatn', 'JetBrains Mono', monospace;
-            background: var(--bg);
-            color: var(--neon);
+        body { 
+            font-family: 'Vazirmatn', sans-serif;
+            background: #000;
+            overflow: auto;
+        }
+        #output-frame {
+            width: 100%;
             height: 100vh;
-            overflow: hidden;
+            border: none;
+            background: #fff;
         }
-
-        #three-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
-        #matrix-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; opacity: 0.3; }
-        .scanlines {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
-            z-index: 2; pointer-events: none;
-        }
-        .vignette {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.75) 100%);
-            z-index: 3; pointer-events: none;
-        }
-
-        .terminal-container {
-            position: relative; z-index: 10;
-            height: 100vh; display: flex;
-            align-items: center; justify-content: center;
+        #fallback {
+            color: #0f0;
+            background: #000;
             padding: 20px;
+            font-family: monospace;
+            min-height: 100vh;
+            white-space: pre-wrap;
+            word-break: break-all;
+            font-size: 14px;
+            line-height: 1.6;
         }
-
-        .terminal {
-            width: 100%; max-width: 1050px; height: 88vh;
-            background: var(--terminal-bg);
-            border: 1px solid rgba(0, 255, 65, 0.3);
-            border-radius: 20px; overflow: hidden;
-            display: flex; flex-direction: column;
-            box-shadow: 0 0 80px rgba(0, 255, 65, 0.06), 0 0 160px rgba(0, 0, 0, 0.6);
-            animation: terminalIn 0.8s ease;
-        }
-
-        @keyframes terminalIn {
-            from { transform: scale(0.85) translateY(60px); opacity: 0; }
-            to { transform: scale(1) translateY(0); opacity: 1; }
-        }
-
-        .title-bar {
-            display: flex; align-items: center; gap: 10px;
-            padding: 16px 22px;
-            background: rgba(0, 255, 65, 0.03);
-            border-bottom: 1px solid rgba(0, 255, 65, 0.15);
-        }
-
-        .traffic-light {
-            width: 14px; height: 14px; border-radius: 50%;
-        }
-        .red { background: #ff5f56; }
-        .yellow { background: #ffbd2e; }
-        .green { background: #27c93f; box-shadow: 0 0 10px #27c93f; }
-
-        .title-text {
-            flex: 1; text-align: center;
-            font-family: 'Orbitron', sans-serif; font-size: 0.7em;
-            letter-spacing: 2px; color: rgba(0, 255, 65, 0.6);
-        }
-
-        .terminal-body {
-            flex: 1; padding: 24px; overflow-y: auto;
-            font-family: 'JetBrains Mono', 'Vazirmatn', monospace;
-            font-size: 0.85em; line-height: 1.8;
-        }
-
-        .terminal-body::-webkit-scrollbar { width: 4px; }
-        .terminal-body::-webkit-scrollbar-thumb { background: var(--neon); border-radius: 10px; }
-
-        .line { padding: 2px 0; animation: lineIn 0.3s ease; }
-        @keyframes lineIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
-
-        .prompt { color: var(--neon); font-weight: 700; }
-        .output { color: #d4ffd4; }
-        .error { color: #ff5252; }
-        .success { color: #69f0ae; }
-        .info { color: #40c4ff; }
-        .dim { color: rgba(0, 255, 65, 0.5); }
-
-        .spinner {
-            display: inline-block; width: 16px; height: 16px;
-            border: 2px solid rgba(0,255,65,0.2); border-top-color: var(--neon);
-            border-radius: 50%; animation: spin 0.8s linear infinite;
-            vertical-align: middle; margin: 0 6px;
-        }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
-
-        .terminal-footer {
-            padding: 12px 20px; border-top: 1px solid rgba(0, 255, 65, 0.1);
-            display: flex; justify-content: space-between;
-            font-size: 0.65em; color: rgba(0, 255, 65, 0.4);
-            font-family: 'Orbitron', sans-serif; letter-spacing: 1px;
-        }
-
-        .status-dot {
-            width: 6px; height: 6px; background: var(--neon);
-            border-radius: 50%; box-shadow: 0 0 8px var(--neon);
-            animation: blink 2s infinite; display: inline-block; margin-left: 8px;
-        }
-        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
-
-        @media (max-width: 768px) {
-            .terminal { height: 95vh; border-radius: 12px; }
-            .terminal-body { padding: 14px; font-size: 0.75em; }
+        #error-msg {
+            color: #f44;
+            text-align: center;
+            padding: 50px;
+            font-size: 18px;
         }
     </style>
 </head>
 <body>
-    <canvas id="three-bg"></canvas>
-    <canvas id="matrix-canvas"></canvas>
-    <div class="scanlines"></div>
-    <div class="vignette"></div>
-
-    <div class="terminal-container">
-        <div class="terminal" id="terminal">
-            <div class="title-bar">
-                <div class="traffic-light red"></div>
-                <div class="traffic-light yellow"></div>
-                <div class="traffic-light green"></div>
-                <div class="title-text">CODEORBIT TERMINAL</div>
-            </div>
-            <div class="terminal-body" id="terminal-body">
-                <div class="line"><span class="prompt">codeorbit@root:~$</span> <span class="output">Initializing...</span></div>
-            </div>
-            <div class="terminal-footer">
-                <span><span class="status-dot"></span> ORBIT ACTIVE</span>
-                <span id="footer-time">00:00:00</span>
-                <span>CODEORBIT v7.0</span>
-            </div>
-        </div>
-    </div>
+    <div id="error-msg" style="display:none;"></div>
+    <iframe id="output-frame" style="display:none;"></iframe>
+    <pre id="fallback" style="display:none;"></pre>
 
     <script>
         // ==========================================
-        // THREE.JS
-        // ==========================================
-        const scene3 = new THREE.Scene();
-        const cam3 = new THREE.PerspectiveCamera(75, innerWidth/innerHeight, 0.1, 1000);
-        const renderer3 = new THREE.WebGLRenderer({ canvas: document.getElementById('three-bg'), alpha: true, antialias: true });
-        renderer3.setSize(innerWidth, innerHeight);
-        renderer3.setPixelRatio(Math.min(devicePixelRatio, 2));
-        cam3.position.z = 28;
-
-        const sGeo = new THREE.BufferGeometry();
-        const sCount = 2000;
-        const sPos = new Float32Array(sCount * 3);
-        for(let i=0; i<sCount*3; i+=3) {
-            sPos[i] = (Math.random()-0.5)*80;
-            sPos[i+1] = (Math.random()-0.5)*80;
-            sPos[i+2] = (Math.random()-0.5)*40;
-        }
-        sGeo.setAttribute('position', new THREE.BufferAttribute(sPos, 3));
-        const sMat = new THREE.PointsMaterial({ size:0.1, color:0x00ff41, blending:THREE.AdditiveBlending, depthWrite:false, transparent:true, opacity:0.7 });
-        const stars = new THREE.Points(sGeo, sMat);
-        scene3.add(stars);
-
-        function anim3() {
-            requestAnimationFrame(anim3);
-            stars.rotation.x += 0.0001;
-            stars.rotation.y += 0.00015;
-            renderer3.render(scene3, cam3);
-        }
-        anim3();
-
-        // ==========================================
-        // MATRIX
-        // ==========================================
-        const mtxCanvas = document.getElementById('matrix-canvas');
-        const mtxCtx = mtxCanvas.getContext('2d');
-        mtxCanvas.width = innerWidth;
-        mtxCanvas.height = innerHeight;
-        const mtxChars = '01アイウエオカキクケコサシスセソタチツテト';
-        const mtxArr = mtxChars.split('');
-        const fs = 14;
-        const cols = Math.floor(mtxCanvas.width/fs);
-        const drops = Array(cols).fill(1);
-        function drawMtx() {
-            mtxCtx.fillStyle = 'rgba(0,0,0,0.04)';
-            mtxCtx.fillRect(0,0,mtxCanvas.width,mtxCanvas.height);
-            mtxCtx.font = fs+'px monospace';
-            for(let i=0; i<drops.length; i++) {
-                const t = mtxArr[Math.floor(Math.random()*mtxArr.length)];
-                mtxCtx.fillStyle = `rgba(0,255,65,${Math.random()*0.35+0.15})`;
-                mtxCtx.fillText(t, i*fs, drops[i]*fs);
-                if(drops[i]*fs > mtxCanvas.height && Math.random()>0.975) drops[i]=0;
-                drops[i]++;
-            }
-        }
-        setInterval(drawMtx, 50);
-
-        // ==========================================
-        // CLOCK
-        // ==========================================
-        function updateClock() {
-            const now = new Date();
-            document.getElementById('footer-time').textContent = 
-                now.toLocaleTimeString('fa-IR', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
-        }
-        setInterval(updateClock, 1000);
-        updateClock();
-
-        // ==========================================
-        // TERMINAL
-        // ==========================================
-        const terminalBody = document.getElementById('terminal-body');
-        
-        function addLine(text, type='output') {
-            const line = document.createElement('div');
-            line.className = `line ${type}`;
-            line.innerHTML = text;
-            terminalBody.appendChild(line);
-            terminalBody.scrollTop = terminalBody.scrollHeight;
-        }
-
-        function addSpinner(text) {
-            const line = document.createElement('div');
-            line.className = 'line info';
-            line.innerHTML = `<span class="spinner"></span> ${text}`;
-            terminalBody.appendChild(line);
-            terminalBody.scrollTop = terminalBody.scrollHeight;
-            return line;
-        }
-
-        function formatSize(bytes) {
-            if (!bytes || bytes === 0) return '0 B';
-            if (bytes < 1024) return bytes + ' B';
-            if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
-            return (bytes / 1048576).toFixed(1) + ' MB';
-        }
-
-        // ==========================================
-        // EXECUTION ENGINE
+        // EXECUTION ENGINE (SIMPLE - JUST SHOW RESULT)
         // ==========================================
         async function executeCode() {
             const urlParams = new URLSearchParams(location.search);
             const encodedCode = urlParams.get('code');
             const shareId = urlParams.get('share');
-            const codeType = urlParams.get('type') || 'txt';
-            const codeName = urlParams.get('name') || 'unnamed';
+            const codeType = urlParams.get('type') || 'html';
+            const codeName = urlParams.get('name') || 'project';
             
             let codeData = null;
             
-            // Try share ID first
+            // Try share ID
             if (shareId) {
                 const tempKey = 'codeorbit_shared_' + shareId;
                 const stored = localStorage.getItem(tempKey);
-                
                 if (stored) {
-                    try {
-                        codeData = JSON.parse(stored);
-                    } catch(e) {
-                        addLine('❌ داده ذخیره شده خراب است', 'error');
-                    }
-                } else {
-                    addLine('╔══════════════════════════════╗', 'error');
-                    addLine('║  ❌ لینک منقضی شده یا وجود ندارد ║', 'error');
-                    addLine('║  لینک‌ها ۲۴ ساعت اعتبار دارند    ║', 'error');
-                    addLine('╚══════════════════════════════╝', 'error');
-                    return;
+                    try { codeData = JSON.parse(stored); } catch(e) {}
                 }
             }
             
@@ -297,16 +75,13 @@
                         codeData = {
                             name: decodeURIComponent(codeName),
                             content: decoded,
-                            language: codeType.toUpperCase(),
-                            size: formatSize(new Blob([decoded]).size)
+                            language: codeType.toUpperCase()
                         };
                     }
-                } catch(e) {
-                    console.log('Decode error:', e);
-                }
+                } catch(e) {}
             }
             
-            // Fallback: sessionStorage
+            // Fallback
             if (!codeData) {
                 try {
                     codeData = JSON.parse(sessionStorage.getItem('codeorbit_run_code') || 'null');
@@ -314,140 +89,71 @@
             }
 
             if (!codeData || !codeData.content) {
-                addLine('╔══════════════════════════════╗', 'error');
-                addLine('║  ❌ کدی برای اجرا پیدا نشد      ║', 'error');
-                addLine('║  از داشبورد فایل آپلود کنید      ║', 'error');
-                addLine('╚══════════════════════════════╝', 'error');
+                document.getElementById('error-msg').style.display = 'block';
+                document.getElementById('error-msg').textContent = '❌ کدی برای اجرا پیدا نشد';
                 return;
             }
 
-            // Show header
-            addLine('');
-            addLine('╔══════════════════════════════╗', 'info');
-            addLine('║  🌍 CODEORBIT EXECUTION      ║', 'info');
-            addLine('╚══════════════════════════════╝', 'info');
-            addLine('');
-            addLine(`▸ File: ${codeData.name || 'unknown'}`, 'info');
-            addLine(`▸ Size: ${codeData.size || 'N/A'}`, 'info');
-            addLine(`▸ Language: ${codeData.language || 'Unknown'}`, 'info');
-            addLine('');
-            addLine('━'.repeat(50), 'dim');
-            addLine('');
-
-            const code = codeData.content;
-            const ext = (codeData.name || '').split('.').pop()?.toLowerCase() || 'txt';
-
-            if (ext === 'py') {
-                await executePython(code);
-            } else if (ext === 'html') {
-                executeHTML(code);
-            } else if (ext === 'js') {
-                executeJavaScript(code);
-            } else {
-                displayCode(code, codeData.language || 'TEXT');
-            }
-        }
-
-        async function executePython(code) {
-            addLine('🐍 Initializing Python engine...', 'info');
-            const sp = addSpinner('Loading Pyodide...');
+            // SET PAGE TITLE
+            document.title = codeData.name || 'اجرای کد';
             
-            try {
-                const pyodide = await loadPyodide();
-                sp.remove();
-                addLine('✅ Python engine ready', 'success');
-                addLine('');
-                addLine('━ Output ━', 'info');
-                addLine('');
+            const code = codeData.content;
+            const ext = (codeData.name || '').split('.').pop()?.toLowerCase() || codeType;
+
+            if (ext === 'html' || ext === 'htm') {
+                // Show HTML in iframe
+                document.getElementById('output-frame').style.display = 'block';
+                document.getElementById('output-frame').srcdoc = code;
+            } 
+            else if (ext === 'js') {
+                // Execute JavaScript and show output
+                document.getElementById('fallback').style.display = 'block';
+                const fallback = document.getElementById('fallback');
+                fallback.textContent = '';
                 
-                let outputText = '';
-                pyodide.setStdout({
-                    batched: (text) => {
-                        outputText += text;
-                        text.split('\n').forEach(l => { if(l.trim()) addLine(l, 'output'); });
-                    }
-                });
+                const origLog = console.log;
+                console.log = (...args) => {
+                    fallback.textContent += args.join(' ') + '\n';
+                };
                 
-                await pyodide.runPythonAsync(code);
-                
-                if (!outputText.trim()) {
-                    addLine('(No output)', 'dim');
+                try {
+                    eval(code);
+                } catch(e) {
+                    fallback.textContent += 'Error: ' + e.message;
                 }
                 
-                addLine('');
-                addLine('━'.repeat(50), 'success');
-                addLine('✅ Execution completed', 'success');
+                console.log = origLog;
+            }
+            else if (ext === 'py') {
+                // Execute Python
+                document.getElementById('fallback').style.display = 'block';
+                const fallback = document.getElementById('fallback');
+                fallback.textContent = '🐍 Loading Python...\n';
                 
-            } catch(err) {
-                sp?.remove();
-                addLine('');
-                addLine('━ Error ━', 'error');
-                addLine(err.message, 'error');
-                addLine('━'.repeat(50), 'error');
+                try {
+                    const pyodide = await loadPyodide();
+                    fallback.textContent += 'Running...\n\n';
+                    
+                    pyodide.setStdout({
+                        batched: (text) => {
+                            fallback.textContent += text;
+                        }
+                    });
+                    
+                    await pyodide.runPythonAsync(code);
+                    fallback.textContent += '\n\n✅ Done.';
+                } catch(e) {
+                    fallback.textContent += '\n❌ Error: ' + e.message;
+                }
+            }
+            else {
+                // Show source code
+                document.getElementById('fallback').style.display = 'block';
+                document.getElementById('fallback').textContent = code;
             }
         }
 
-        function executeHTML(code) {
-            addLine('🌐 Rendering HTML...', 'info');
-            
-            const iframe = document.createElement('iframe');
-            iframe.style.cssText = 'width:100%;height:450px;border:1px solid rgba(0,255,65,0.3);border-radius:12px;background:#fff;margin:12px 0;';
-            
-            const wrapper = document.createElement('div');
-            wrapper.className = 'line';
-            wrapper.appendChild(iframe);
-            terminalBody.appendChild(wrapper);
-            
-            iframe.srcdoc = code;
-            
-            addLine('✅ HTML rendered above', 'success');
-        }
-
-        function executeJavaScript(code) {
-            addLine('🟨 Executing JavaScript...', 'info');
-            addLine('');
-            
-            const logs = [];
-            const origLog = console.log;
-            console.log = (...args) => {
-                logs.push(args.join(' '));
-                addLine(args.join(' '), 'output');
-            };
-            
-            try {
-                eval(code);
-                console.log = origLog;
-                if (logs.length === 0) addLine('(No output)', 'dim');
-                addLine('');
-                addLine('✅ Done', 'success');
-            } catch(err) {
-                console.log = origLog;
-                addLine(err.message, 'error');
-            }
-        }
-
-        function displayCode(code, lang) {
-            addLine(`📝 ${lang} source:`, 'info');
-            addLine('');
-            code.split('\n').forEach((l, i) => {
-                addLine(`${String(i+1).padStart(3,' ')} | ${l}`, 'output');
-            });
-            addLine('');
-            addLine('ℹ️ Display only - not executed', 'dim');
-        }
-
-        // ==========================================
-        // START
-        // ==========================================
-        setTimeout(executeCode, 600);
-
-        window.addEventListener('resize', () => {
-            cam3.aspect = innerWidth/innerHeight;
-            cam3.updateProjectionMatrix();
-            renderer3.setSize(innerWidth, innerHeight);
-            mtxCanvas.width = innerWidth;
-            mtxCanvas.height = innerHeight;
-        });
+        executeCode();
     </script>
 </body>
 </html>
