@@ -62,8 +62,14 @@
             if (shareId) {
                 const tempKey = 'codeorbit_shared_' + shareId;
                 const stored = localStorage.getItem(tempKey);
+                
                 if (stored) {
                     try { codeData = JSON.parse(stored); } catch(e) {}
+                    
+                    
+                    if (codeData && codeData.compressed) {
+                        codeData.content = LZString.decompressFromUTF16(codeData.content);
+                    }
                 }
             }
             
