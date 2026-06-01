@@ -11,32 +11,38 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Vazirmatn', sans-serif; background: #000; overflow: auto; }
-        #output-frame { width: 100%; height: 100vh; border: none; background: #fff; }
-        #fallback { color: #0f0; background: #000; padding: 20px; font-family: monospace; min-height: 100vh; white-space: pre-wrap; word-break: break-all; font-size: 14px; line-height: 1.6; }
-        #error-msg { color: #f44; text-align: center; padding: 50px; font-size: 18px; }
+        #output-frame { width: 100%; height: 100vh; border: none; background: #fff; display: none; }
+        #fallback { color: #0f0; background: #000; padding: 20px; font-family: monospace; min-height: 100vh; white-space: pre-wrap; word-break: break-all; font-size: 14px; line-height: 1.6; display: none; }
+        #error-msg { color: #f44; text-align: center; padding: 50px; font-size: 18px; display: none; }
         #loading { color: #0f0; text-align: center; padding: 50px; font-size: 18px; font-family: monospace; }
     </style>
 </head>
 <body>
     <div id="loading">⏳ در حال بارگذاری...</div>
-    <div id="error-msg" style="display:none;"></div>
-    <iframe id="output-frame" style="display:none;"></iframe>
-    <pre id="fallback" style="display:none;"></pre>
+    <div id="error-msg"></div>
+    <iframe id="output-frame"></iframe>
+    <pre id="fallback"></pre>
 
     <script>
         // ==========================================
-        // INDEXEDDB READER
+        // INDEXEDDB
         // ==========================================
-        function getFromDB(id) {
-            return new Promise((resolve) => {
-                const req = indexedDB.open('CodeOrbitDB', 1);
+        function getFromDB(key) {
+            return new Promise(function(resolve) {
+                var req = indexedDB.open('CodeOrbitDB', 1);
                 req.onsuccess = function(e) {
-                    const db = e.target.result;
-                    if (!db.objectStoreNames.contains('files')) { resolve(null); return; }
-                    const tx = db.transaction('files', 'readonly');
-                    const store = tx.objectStore('files');
-                    const getReq = store.get(id);
-                    getReq.onsuccess = function() { resolve(getReq.result ? getReq.result.data : null); };
+                    var db = e.target.result;
+                    if (!db.objectStoreNames.contains('files')) { db.close(); resolve(null); return; }
+                    var tx = db.transaction('files', 'readonly');
+                    var store = tx.objectStore('files');
+                    var getReq = store.get(key);
+                    getReq.onsuccess = function() {
+                        if (getReq.result && getReq.result.data) {
+                            resolve(getReq.result.data);
+                        } else {
+                            resolve(null);
+                        }
+                    };
                     getReq.onerror = function() { resolve(null); };
                     tx.oncomplete = function() { db.close(); };
                 };
@@ -44,39 +50,28 @@
             });
         }
 
-        function formatSize(bytes) {
-            if (!bytes || bytes === 0) return '0 B';
-            if (bytes < 1024) return bytes + ' B';
-            if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
-            return (bytes / 1048576).toFixed(1) + ' MB';
-        }
-
         // ==========================================
-        // EXECUTION ENGINE
+        // MAIN
         // ==========================================
-        async function executeCode() {
-            const urlParams = new URLSearchParams(location.search);
-            const encodedCode = urlParams.get('code');
-            const shareId = urlParams.get('share');
-            const codeType = urlParams.get('type') || 'html';
-            const codeName = urlParams.get('name') || 'project';
+        async function main() {
+            var params = new URLSearchParams(location.search);
+            var shareId = params.get('share');
+            var encodedCode = params.get('code');
+            var codeType = params.get('type') || 'html';
+            var codeName = params.get('name') || 'project';
+            var codeData = null;
             
-            let codeData = null;
-            
-            // 1. Try IndexedDB (for large files)
+            // 1. Try IndexedDB
             if (shareId) {
-                const dbKey = 'codeorbit_shared_' + shareId;
-                const dbData = await getFromDB(dbKey);
+                var dbKey = 'codeorbit_shared_' + shareId;
+                codeData = await getFromDB(dbKey);
                 
-                if (dbData) {
-                    codeData = dbData;
-                } else {
-                    // 2. Fallback: Try localStorage
-                    const stored = localStorage.getItem(dbKey);
+                // 2. Fallback: localStorage
+                if (!codeData) {
+                    var stored = localStorage.getItem(dbKey);
                     if (stored) {
-                        try { 
+                        try {
                             codeData = JSON.parse(stored);
-                            // Check if compressed
                             if (codeData && codeData.compressed) {
                                 codeData.content = LZString.decompressFromUTF16(codeData.content);
                             }
@@ -85,10 +80,10 @@
                 }
             }
             
-            // 3. Try encoded URL (for small files)
+            // 3. Try encoded URL
             if (!codeData && encodedCode) {
                 try {
-                    const decoded = LZString.decompressFromEncodedURIComponent(encodedCode);
+                    var decoded = LZString.decompressFromEncodedURIComponent(encodedCode);
                     if (decoded) {
                         codeData = {
                             name: decodeURIComponent(codeName),
@@ -99,61 +94,61 @@
                 } catch(e) {}
             }
             
-            // 4. Fallback: sessionStorage
+            // 4. sessionStorage fallback
             if (!codeData) {
                 try {
                     codeData = JSON.parse(sessionStorage.getItem('codeorbit_run_code') || 'null');
                 } catch(e) {}
             }
-
+            
+            // Check result
             if (!codeData || !codeData.content) {
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('error-msg').style.display = 'block';
                 document.getElementById('error-msg').textContent = '❌ کدی برای اجرا پیدا نشد';
                 return;
             }
-
-            // Hide loading
-            document.getElementById('loading').style.display = 'none';
             
-            // Set page title
+            // Success!
+            document.getElementById('loading').style.display = 'none';
             document.title = codeData.name || 'اجرای کد';
             
-            const code = codeData.content;
-            const ext = (codeData.name || '').split('.').pop()?.toLowerCase() || codeType;
-
+            var code = codeData.content;
+            var ext = (codeData.name || '').split('.').pop()?.toLowerCase() || 'html';
+            
             if (ext === 'html' || ext === 'htm') {
-                document.getElementById('output-frame').style.display = 'block';
-                document.getElementById('output-frame').srcdoc = code;
-            } 
-            else if (ext === 'js') {
-                document.getElementById('fallback').style.display = 'block';
-                const fb = document.getElementById('fallback');
+                var iframe = document.getElementById('output-frame');
+                iframe.style.display = 'block';
+                iframe.srcdoc = code;
+            } else if (ext === 'js') {
+                var fb = document.getElementById('fallback');
+                fb.style.display = 'block';
                 fb.textContent = '';
-                const origLog = console.log;
-                console.log = (...args) => { fb.textContent += args.join(' ') + '\n'; };
+                var origLog = console.log;
+                console.log = function() {
+                    fb.textContent += Array.prototype.join.call(arguments, ' ') + '\n';
+                };
                 try { eval(code); } catch(e) { fb.textContent += 'Error: ' + e.message; }
                 console.log = origLog;
-            }
-            else if (ext === 'py') {
-                document.getElementById('fallback').style.display = 'block';
-                const fb = document.getElementById('fallback');
+            } else if (ext === 'py') {
+                var fb = document.getElementById('fallback');
+                fb.style.display = 'block';
                 fb.textContent = '🐍 Loading Python...\n';
                 try {
-                    const pyodide = await loadPyodide();
+                    var pyodide = await loadPyodide();
                     fb.textContent += 'Running...\n\n';
-                    pyodide.setStdout({ batched: (text) => { fb.textContent += text; } });
+                    pyodide.setStdout({ batched: function(text) { fb.textContent += text; } });
                     await pyodide.runPythonAsync(code);
                     fb.textContent += '\n\n✅ Done.';
                 } catch(e) { fb.textContent += '\n❌ Error: ' + e.message; }
-            }
-            else {
-                document.getElementById('fallback').style.display = 'block';
-                document.getElementById('fallback').textContent = code;
+            } else {
+                var fb = document.getElementById('fallback');
+                fb.style.display = 'block';
+                fb.textContent = code;
             }
         }
-
-        executeCode();
+        
+        main();
     </script>
 </body>
 </html>
